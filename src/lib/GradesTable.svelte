@@ -148,8 +148,9 @@
                     ).toFixed(2);
                     
                     const rowElement = e.getRow().getElement();
-                    if (rowElement && rowElement.children[2]) {
-                        rowElement.children[2].innerText = dataRR.Val;
+                    const valCellElement = e.getRow().getCell("Val")?.getElement();
+                    if (valCellElement) {
+                        valCellElement.innerText = dataRR.Val;
                     }
                     datosTabla[rowIdx] = dataRR;
                     e.getRow().reformat();
@@ -378,65 +379,58 @@
                 },
             },
             rowFormatter: function (row: any) {
-                const element = row.getElement();
-                if (!element) return;
-
-                // Apply background colors to groups of columns
-                for (let i = 3; i <= 5; i++) { // Saber
-                    if (element.children[i]) {
-                        element.children[i].style.backgroundColor = 'rgb(231,255,231)';
-                        element.children[i].style.border = '1px solid gray';
-                    }
-                }
-                for (let i = 6; i <= 8; i++) { // Hacer
-                    if (element.children[i]) {
-                        element.children[i].style.backgroundColor = 'rgb(255,238,225)';
-                        element.children[i].style.border = '1px solid gray';
-                    }
-                }
-                for (let i = 9; i <= 11; i++) { // Ser
-                    if (element.children[i]) {
-                        element.children[i].style.backgroundColor = 'rgb(240,245,255)';
-                        element.children[i].style.border = '1px solid gray';
-                    }
-                }
-                if (element.children[12]) { // Autoevaluación
-                    element.children[12].style.backgroundColor = 'rgb(255,213,214)';
-                    element.children[12].style.border = '1px solid gray';
-                }
-                if (element.children[13]) { // Coevaluación
-                    element.children[13].style.backgroundColor = 'rgb(255,250,214)';
-                    element.children[13].style.border = '1px solid gray';
-                }
-
                 const dataRR = row.getData();
-                const valCellElement = element.children[2]; // 'Val' column
 
-                if (valCellElement) {
-                    valCellElement.style.backgroundColor = 'gray';
-                    valCellElement.style.border = '1px solid black';
+                const valCell = row.getCell("Val");
+                if (valCell) {
+                    const valCellElement = valCell.getElement();
+                    if (valCellElement) {
+                        valCellElement.style.backgroundColor = 'gray';
+                        valCellElement.style.border = '1px solid black';
 
-                    if (dataRR && dataRR.Val !== undefined && dataRR.Val !== null) {
-                        const val = parseFloat(dataRR.Val);
-                        if (val >= 3) {
-                            valCellElement.style.backgroundColor = 'green';
-                            valCellElement.style.color = 'white';
-                        } else {
-                            valCellElement.style.backgroundColor = 'red';
-                            valCellElement.style.color = 'white';
+                        if (dataRR && dataRR.Val !== undefined && dataRR.Val !== null) {
+                            const val = parseFloat(dataRR.Val);
+                            if (val >= 3) {
+                                valCellElement.style.backgroundColor = 'green';
+                                valCellElement.style.color = 'white';
+                            } else {
+                                valCellElement.style.backgroundColor = 'red';
+                                valCellElement.style.color = 'white';
+                            }
                         }
                     }
                 }
 
-                // Apply red color to individual grades if less than 3
-                for (let i = 3; i <= 15; i++) {
-                    const cell = row.getCells()[i];
-                    if (cell) {
-                        const cellValue = parseFloat(cell.getValue());
-                        if (!isNaN(cellValue) && cellValue < 3) {
-                            cell.getElement().style.color = 'red';
+                // Apply red color to individual grades if less than 3, and group background colors
+                for (let i = 1; i <= 12; i++) {
+                    const fieldName = "N" + i;
+                    const nCell = row.getCell(fieldName);
+                    if (nCell) {
+                        const nCellValue = parseFloat(nCell.getValue());
+                        const cellElement = nCell.getElement();
+
+                        if (!isNaN(nCellValue) && nCellValue < 3) {
+                            cellElement.style.color = 'red';
                         } else {
-                             cell.getElement().style.color = ''; // Reset color if not red
+                            cellElement.style.color = ''; // Reset color if not red
+                        }
+
+                        // Apply background colors to groups
+                        if (i >= 1 && i <= 3) { // Saber
+                            cellElement.style.backgroundColor = 'rgb(231,255,231)';
+                            cellElement.style.border = '1px solid gray';
+                        } else if (i >= 4 && i <= 6) { // Hacer
+                            cellElement.style.backgroundColor = 'rgb(255,238,225)';
+                            cellElement.style.border = '1px solid gray';
+                        } else if (i >= 7 && i <= 9) { // Ser
+                            cellElement.style.backgroundColor = 'rgb(240,245,255)';
+                            cellElement.style.border = '1px solid gray';
+                        } else if (i === 10) { // Autoevaluación
+                            cellElement.style.backgroundColor = 'rgb(255,213,214)';
+                            cellElement.style.border = '1px solid gray';
+                        } else if (i === 11) { // Coevaluación
+                            cellElement.style.backgroundColor = 'rgb(255,250,214)';
+                            cellElement.style.border = '1px solid gray';
                         }
                     }
                 }
