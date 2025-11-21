@@ -442,15 +442,10 @@
 
         tableInstance.on('renderComplete', async function () {
             try {
-                for (let i = 1; i <= 12; i++) {
-                    tableInstance.hideColumn('aspecto' + i);
-                    tableInstance.hideColumn('porcentaje' + i);
-                    tableInstance.hideColumn('fechaa' + i);
-                    tableInstance.hideColumn('fecha' + i);
-                }
-                tableInstance.hideColumn('estudiante');
+                // All columns are now visible by default.
+                // Removed explicit column hiding as per user request.
             } catch (error) {
-                consolelog('Error hiding columns:', error);
+                consolelog('Error in renderComplete:', error); // Keep logging for general errors
             }
 
             datosTabla = tableInstance.getData();
