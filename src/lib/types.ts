@@ -32,9 +32,14 @@ export interface Asignatura {
   docente: string;
 }
 
+export interface AsignaturaOrdenItem {
+  abreviatura: string;
+  docenteId: string;
+}
+
 export interface ConcentradorParsed {
   estudiantes: EstudianteRow[];
-  asignaturasOrden: string[];
+  asignaturasOrden: AsignaturaOrdenItem[];
   asignaturas?: Asignatura[];
 }
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import PayloadForm from './lib/PayloadForm.svelte'
-  import { loadConcentrador, loading, error, parsed, showPeriodos, selectedPeriodos, currentOrden, lastDuration, exportCSV, exportExcel, payload, concentradorType, selectedAsignatura } from './lib/storeConcentrador'
+  import { loadConcentradorData, loading, error, parsed, showPeriodos, selectedPeriodos, currentOrden, lastDuration, exportCSV, exportExcel, payload, concentradorType, selectedAsignatura } from './lib/storeConcentrador'
   import type { EstudianteRow, NotasDetalladoPayload, NotaDetalle, ConcentradorParsed, ConcentradorAreasParsed, EstudianteRowArea } from './lib/types'
   import { onMount } from 'svelte'
   import { get } from 'svelte/store'
@@ -18,6 +18,7 @@
   let showNotasDetalleDialog = false
   let showInfoCantDialog = false
   let showGradesTableDialog = false // New state variable
+  let selectedDocenteId: string = '' // New state variable for docenteId
   let showInasistenciasDetallado = false // New state variable for InasistenciasDetallado
   let showConvivenciaDialog = false // New state variable for ConvivenciaDialog
   let currentNotasDetalle: NotaDetalle[] = []
@@ -42,7 +43,8 @@
     showInasistenciasDetallado = true;
   }
 
-  function handleHeaderClick() {
+  function handleHeaderClick(docenteId: string) {
+    selectedDocenteId = docenteId;
     showGradesTableDialog = true;
   }
 
@@ -207,5 +209,5 @@
     />
   {/if}
 
-  <GradesTableDialog bind:showDialog={showGradesTableDialog} />
+  <GradesTableDialog bind:showDialog={showGradesTableDialog} docenteId={selectedDocenteId} />
 </div>

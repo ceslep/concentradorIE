@@ -4,6 +4,7 @@
     import { selectedAsignatura } from './storeConcentrador';
 
     export let showDialog: boolean;
+    export let docenteId: string; // New prop
 
     function closeDialog() {
         showDialog = false;
@@ -49,7 +50,7 @@
 
             <div class="p-4 overflow-y-auto flex-grow">
                 <!-- GradesTable.svelte will automatically read from Svelte stores -->
-                <GradesTable tableNotasId="gradesTableInDialog" />
+                <GradesTable tableNotasId="gradesTableInDialog" {docenteId} />
             </div>
 
             <div class="p-4 border-t flex justify-end

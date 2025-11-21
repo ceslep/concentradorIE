@@ -1,6 +1,6 @@
 <script lang="ts">
   import { theme } from './themeStore'
-  import { loadConcentrador, loading, lastDuration, exportCSV, exportExcel, concentradorType } from './storeConcentrador'
+  import { loadConcentradorData, loading, lastDuration, exportCSV, exportExcel, concentradorType } from './storeConcentrador'
 
   export let showPayloadForm: boolean
   export let showInfoCantDialog: boolean
@@ -9,7 +9,7 @@
   function handleConcentradorTypeChange(event: Event) {
     const target = event.target as HTMLInputElement;
     concentradorType.set(target.checked ? 'areas' : 'asignaturas');
-    loadConcentrador(true); // Reload data when concentrador type changes
+    loadConcentradorData(); // Reload data when concentrador type changes
   }
 </script>
 
@@ -91,7 +91,7 @@
 
     <!-- Botón para recargar datos -->
     <button
-      on:click={() => loadConcentrador(true)}
+      on:click={() => loadConcentradorData()}
       disabled={$loading}
       class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
       aria-label="Recargar Datos"

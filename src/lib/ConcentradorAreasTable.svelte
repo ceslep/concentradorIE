@@ -122,7 +122,7 @@
             {#each $currentOrden as itemAbrev}
               {#if itemAbrev}
                 <th scope="col" class="p-2 whitespace-nowrap text-center">
-                  <span class="block text-xs font-medium">{itemAbrev}</span>
+                  <span class="block text-xs font-medium">{itemAbrev.abreviatura}</span>
                 </th>
               {/if}
             {/each}
@@ -140,14 +140,14 @@
                       {#each $selectedPeriodos.filter((p: string) => p !== 'DEF') as per}
                         <span
                           class="px-1 rounded-full border-2 {getPeriodBorderColor(per)}"
-                          title="{getItemName(itemAbrev)} - {per}"
+                          title="{getItemName(itemAbrev.abreviatura)} - {per}"
                         >
                           {getShortPeriodName(per)}
                         </span>
                       {/each}
                       <span
                         class="rounded-md px-1 text-xs font-bold border-2 {getPeriodBorderColor('DEF')}"
-                        title="{getItemName(itemAbrev)} - Definitiva"
+                        title="{getItemName(itemAbrev.abreviatura)} - Definitiva"
                       >
                         DEF
                       </span>
@@ -173,11 +173,11 @@
                     {#if !$showPeriodos}
                       <button
                         type="button"
-                        class="font-bold text-lg {colorNota(valorPeriodo(est, itemAbrev, 'DEF'))} px-2 py-1 rounded-md border-2 {getPeriodBorderColor('DEF')} cursor-pointer"
-                        on:click={() => handleValoracionClick(est, itemAbrev, 'DEF', valorPeriodo(est, itemAbrev, 'DEF'))}
-                        title="{est.nombres} – {getItemName(itemAbrev)} – Definitiva: {valorPeriodo(est, itemAbrev, 'DEF') || 'Sin nota'}"
+                        class="font-bold text-lg {colorNota(valorPeriodo(est, itemAbrev.abreviatura, 'DEF'))} px-2 py-1 rounded-md border-2 {getPeriodBorderColor('DEF')} cursor-pointer"
+                        on:click={() => handleValoracionClick(est, itemAbrev.abreviatura, 'DEF', valorPeriodo(est, itemAbrev.abreviatura, 'DEF'))}
+                        title="{est.nombres} – {getItemName(itemAbrev.abreviatura)} – Definitiva: {valorPeriodo(est, itemAbrev.abreviatura, 'DEF') || 'Sin nota'}"
                       >
-                        {valorPeriodo(est, itemAbrev, 'DEF') || '-'}
+                        {valorPeriodo(est, itemAbrev.abreviatura, 'DEF') || '-'}
                       </button>
                     {:else}
                       <div
@@ -187,20 +187,20 @@
                         {#each $selectedPeriodos.filter((p: string) => p !== 'DEF') as per}
                           <button
                             type="button"
-                            class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, itemAbrev, per))} border-2 {getPeriodBorderColor(per)} cursor-pointer"
-                            on:click={() => handleValoracionClick(est, itemAbrev, per, valorPeriodo(est, itemAbrev, per))}
-                            title="{est.nombres} – {getItemName(itemAbrev)} – Período {getShortPeriodName(per)}: {valorPeriodo(est, itemAbrev, per) || 'Sin nota'}"
+                            class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, itemAbrev.abreviatura, per))} border-2 {getPeriodBorderColor(per)} cursor-pointer"
+                            on:click={() => handleValoracionClick(est, itemAbrev.abreviatura, per, valorPeriodo(est, itemAbrev.abreviatura, per))}
+                            title="{est.nombres} – {getItemName(itemAbrev.abreviatura)} – Período {getShortPeriodName(per)}: {valorPeriodo(est, itemAbrev.abreviatura, per) || 'Sin nota'}"
                           >
-                            {valorPeriodo(est, itemAbrev, per) || '-'}
+                            {valorPeriodo(est, itemAbrev.abreviatura, per) || '-'}
                           </button>
                         {/each}
                         <button
                           type="button"
-                          class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, itemAbrev, 'DEF'))} border-2 {getPeriodBorderColor('DEF')} cursor-pointer"
-                          on:click={() => handleValoracionClick(est, itemAbrev, 'DEF', valorPeriodo(est, itemAbrev, 'DEF'))}
-                          title="{est.nombres} – {getItemName(itemAbrev)} – Definitiva: {valorPeriodo(est, itemAbrev, 'DEF') || 'Sin nota'}"
+                          class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, itemAbrev.abreviatura, 'DEF'))} border-2 {getPeriodBorderColor('DEF')} cursor-pointer"
+                          on:click={() => handleValoracionClick(est, itemAbrev.abreviatura, 'DEF', valorPeriodo(est, itemAbrev.abreviatura, 'DEF'))}
+                          title="{est.nombres} – {getItemName(itemAbrev.abreviatura)} – Definitiva: {valorPeriodo(est, itemAbrev.abreviatura, 'DEF') || 'Sin nota'}"
                         >
-                          {valorPeriodo(est, itemAbrev, 'DEF') || '-'}
+                          {valorPeriodo(est, itemAbrev.abreviatura, 'DEF') || '-'}
                         </button>
                       </div>
                     {/if}

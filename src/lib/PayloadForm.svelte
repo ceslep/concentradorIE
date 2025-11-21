@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { payload, showPeriodos, selectedPeriodos, loadConcentrador } from "./storeConcentrador";
+  import { payload, showPeriodos, selectedPeriodos, loadConcentradorData } from "./storeConcentrador";
   import type { Sede } from "./api";
   import { fetchAsignaciones, fetchPeriodos, fetchYears } from "./api";
   import type { Periodo, Year } from "./types";
@@ -64,7 +64,7 @@
         }
 
         // After all payload values are set, load the concentrador data
-        loadConcentrador(false);
+        loadConcentradorData();
 
       } catch (error) {
         console.error("Error al cargar datos iniciales:", error);
@@ -172,7 +172,7 @@
           ? 'bg-gray-700 border-gray-600 text-white'
           : 'bg-gray-100 border-gray-300 text-gray-900'}"
         bind:value={$payload.nivel}
-        on:change={() => { updateNumeros(); loadConcentrador(true); }}
+        on:change={() => { updateNumeros(); loadConcentradorData(); }}
         {disabled}
       >
         {#each niveles as nivel}
@@ -196,7 +196,7 @@
           ? 'bg-gray-700 border-gray-600 text-white'
           : 'bg-gray-100 border-gray-300 text-gray-900'}"
         bind:value={$payload.numero}
-        on:change={() => loadConcentrador(true)}
+        on:change={() => loadConcentradorData()}
         {disabled}
       >
         {#each numeros as numero}

@@ -14,8 +14,9 @@
     export let initialPeriodo: string | undefined = undefined;
     export let layout: "fitDataTable" | "fitData" | "fitColumns" | "fitDataFill" | "fitDataStretch" = 'fitDataTable'; // Reinstated layout prop
     export let acceso: any = {}; // Reinstated acceso prop
+    export let docenteId: string; // New prop
 
-    $: docente = $payload.Asignacion; // Assuming docente is the same as Asignacion
+    $: docente = docenteId || $payload.Asignacion; // Use docenteId if provided, otherwise fallback to payload.Asignacion
     $: nivel = $payload.nivel;
     $: numero = $payload.numero;
     $: asignatura = $selectedAsignatura;
@@ -25,7 +26,7 @@
     // Reactive statement to load notes when docente or asignatura changes
     $: if (docente && asignatura) {
         consolelog('Reactive loadNotas triggered by docente or asignatura change:', { docente, asignatura });
-        loadNotas(`#${tableNotasId}`);
+        loadNotas(`#${tableNotasId}`, docente, asignatura);
     }
 
     let tableInstance: any;
@@ -202,12 +203,12 @@
         // so we'll just acknowledge its call.
     };
 
-    const loadNotas = async (targetTableId: string) => {
-        consolelog('loadNotas called with:', { targetTableId, docente, asignatura, initialPeriodo });
+    const loadNotas = async (targetTableId: string, currentDocente: string, currentAsignatura: string) => {
+        consolelog('loadNotas called with:', { targetTableId, currentDocente, currentAsignatura, initialPeriodo });
         const targetElement = document.querySelector(targetTableId);
         consolelog('Target element existence:', targetElement ? 'Found' : 'Not Found', targetElement);
 
-        if (docente === '') {
+        if (currentDocente === '') {
             consolelog('docente is empty, returning early from loadNotas');
             return;
         }
@@ -220,7 +221,7 @@
             currentPeriodo = per;
             // let a = new Object(); a = { ...docente, nivel, numero, asignatura }; // Original had a bug, `docente` is a string
             // Corrected:
-            Nasignatura(nivel, numero, asignatura, currentPeriodo);
+            Nasignatura(nivel, numero, currentAsignatura, currentPeriodo);
         }
 
         // UI feedback
@@ -251,10 +252,10 @@
                 return response;
             },
             ajaxParams: {
-                docente,
+                docente: currentDocente,
                 nivel,
                 numero,
-                asignatura,
+                asignatura: currentAsignatura,
                 periodo: Elperiodo,
                 asignacion: asignation,
                 year
@@ -646,8 +647,8 @@
         if (nestudianteSpan) nestudianteSpan.innerText = Nombres;
         if (estudianteInput) estudianteInput.value = estudiante;
         if (periodoInput) periodoInput.value = (document.getElementById('periodonotas') as HTMLInputElement)?.value || currentPeriodo;
-        if (docenteInput) docenteInput.value = docente; // Assuming `docente` prop is `elDocente`
-        if (materiaInput) materiaInput.value = asignatura; // Assuming `asignatura` prop is `Asignatura`
+        if (docenteInput) docenteInput.value = docente ?? ''; // Assuming `docente` prop is `elDocente`
+        if (materiaInput) materiaInput.value = asignatura ?? ''; // Assuming `asignatura` prop is `Asignatura`
         if (nivelInput) nivelInput.value = nivel; // Assuming `nivel` prop is `Nivel`
         if (numeroInput) numeroInput.value = numero; // Assuming `numeroi` prop is `Numero`
         if (asignacionInput) asignacionInput.value = asignation; // Assuming `asignacioni` prop is `Asignacion`

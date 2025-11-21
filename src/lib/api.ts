@@ -1,5 +1,5 @@
 import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT, GET_CONCENTRADOR_AREAS_ENDPOINT, GET_VALORACIONES_AREAS_ENDPOINT, GET_NOTAS_DETALLADO_AREAS_ENDPOINT, GET_ORDERS_ENDPOINT, GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT, GET_CONVIVENCIA_DETALLADO_ENDPOINT } from '../../constants'
-import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion, ValoracionAreasResponseItem, AreaOrder, AreaOrderPayload, ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado } from './types' // Import ConcentradorParsed
+import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion, ValoracionAreasResponseItem, AreaOrder, AreaOrderPayload, ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado, AsignaturaOrdenItem, EstudianteRow, Asignatura } from './types' // Import EstudianteRow, Asignatura
 
 export interface Sede {
   ind: string;
@@ -63,7 +63,25 @@ export async function fetchConcentrador(payload: ConcentradorPayload = defaultCo
   if (!res.ok) {
     throw new Error('Error al obtener concentrador: ' + res.status)
   }
-  return res.json()
+  // Explicitly define an intermediate type for the raw response
+  interface RawConcentradorResponse {
+    estudiantes: EstudianteRow[];
+    asignaturasOrden: string[]; // Expecting string[] from the raw API response
+    asignaturas?: Asignatura[];
+  }
+
+  const rawData: RawConcentradorResponse = await res.json();
+
+  // Parse asignaturasOrden from "x:y" string array to AsignaturaOrdenItem[]
+  const parsedAsignaturasOrden: AsignaturaOrdenItem[] = rawData.asignaturasOrden.map(item => {
+    const [abreviatura, docenteId] = item.split(':');
+    return { abreviatura, docenteId };
+  });
+
+  return {
+    ...rawData,
+    asignaturasOrden: parsedAsignaturasOrden
+  };
 }
 
 export async function fetchConcentradorAreas(payload: ConcentradorPayload = defaultConcentradorPayload): Promise<ConcentradorAreasParsed> {

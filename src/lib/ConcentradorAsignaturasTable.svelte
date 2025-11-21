@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { EstudianteRow, ConcentradorParsed } from './types'
+  import type { EstudianteRow, ConcentradorParsed, AsignaturaOrdenItem } from './types'
   import { theme } from './themeStore'
   import { parsed, loading, payload, showPeriodos, selectedPeriodos, currentOrden, concentradorType, selectedAsignatura } from './storeConcentrador'
 
   export let handleValoracionClick: (est: EstudianteRow, asignaturaAbrev: string, periodo: string, valoracion: string) => Promise<void>
-  export let onHeaderClick: () => void // New prop
+  export let onHeaderClick: (docenteId: string) => void // Updated prop
   let handleShowInasistencias: (estudianteId: string, nombres: string, asignatura: string, periodo: string) => void
 
   let search = ''
@@ -60,7 +60,8 @@
     }
   }
 
-  function getItemName(abreviatura: string): string {
+  function getItemName(item: string | AsignaturaOrdenItem): string {
+    const abreviatura = typeof item === 'string' ? item : item.abreviatura;
     if (!$parsed || $concentradorType !== 'asignaturas') return abreviatura
     const p = $parsed as ConcentradorParsed
     if (!p.asignaturas) return abreviatura
@@ -115,16 +116,16 @@
                 />
               </div>
             </th>
-            {#each $currentOrden as itemAbrev}
-              {#if itemAbrev}
+            {#each $currentOrden as asignaturaItem (asignaturaItem.abreviatura)}
+              {#if asignaturaItem}
                 <th scope="col" class="p-0 whitespace-nowrap text-center">
                   <button
                     class="block w-full h-full p-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200
                            {$theme === 'dark' ? 'text-gray-400 hover:bg-gray-600' : 'text-gray-600 hover:bg-gray-200'}"
-                    on:click={() => { selectedAsignatura.set(itemAbrev); onHeaderClick(); }}
-                    title="Seleccionar {getItemName(itemAbrev)}"
+                    on:click={() => { selectedAsignatura.set(asignaturaItem.abreviatura); onHeaderClick(asignaturaItem.docenteId); }}
+                    title="Seleccionar {getItemName(asignaturaItem.abreviatura)}"
                   >
-                    {getItemName(itemAbrev)}
+                    {getItemName(asignaturaItem.abreviatura)}
                   </button>
                 </th>
               {/if}
@@ -133,8 +134,8 @@
 
           {#if $showPeriodos}
             <tr class="border-t {bgHeader} {dark ? 'border-gray-600' : 'border-gray-300'}">
-              {#each $currentOrden as itemAbrev}
-                {#if itemAbrev}
+              {#each $currentOrden as asignaturaItem (asignaturaItem.abreviatura)}
+                {#if asignaturaItem}
                   <th class="p-0">
                     <div
                       class="grid gap-1 justify-items-center"
@@ -143,14 +144,14 @@
                       {#each $selectedPeriodos.filter((p: string) => p !== 'DEF') as per}
                         <span
                           class="px-1 rounded-full border-2 {getPeriodBorderColor(per)}"
-                          title="{getItemName(itemAbrev)} - Período {getShortPeriodName(per)}"
+                          title="{getItemName(asignaturaItem.abreviatura)} - Período {getShortPeriodName(per)}"
                         >
                           {getShortPeriodName(per)}
                         </span>
                       {/each}
                       <span
                         class="rounded-md px-1 text-xs font-bold border-2 {getPeriodBorderColor('DEF')}"
-                        title="{getItemName(itemAbrev)} - Definitiva"
+                        title="{getItemName(asignaturaItem.abreviatura)} - Definitiva"
                       >
                         DEF
                       </span>
@@ -168,18 +169,18 @@
               <td class="p-4 font-medium sticky left-0 z-10 whitespace-nowrap {textPrimary} {bgSurface} {hoverBg}">
                 {est.nombres}
               </td>
-              {#each $currentOrden as itemAbrev}
-                {#if itemAbrev}
+              {#each $currentOrden as asignaturaItem (asignaturaItem.abreviatura)}
+                {#if asignaturaItem}
                   <td class="p-2 text-center align-middle">
                     {#if !$showPeriodos}
                       {#if $payload && $payload.periodo}
                         <button
                           type="button"
-                          class="font-bold text-lg {colorNota(valorPeriodo(est, itemAbrev, $payload.periodo))} px-2 py-1 rounded-md border-2 {getPeriodBorderColor($payload.periodo)} cursor-pointer"
-                          on:click={() => handleValoracionClick(est, itemAbrev, $payload.periodo, valorPeriodo(est, itemAbrev, $payload.periodo))}
-                          title="{est.nombres} – {getItemName(itemAbrev)} – Período {getShortPeriodName($payload.periodo)}: {valorPeriodo(est, itemAbrev, $payload.periodo) || 'Sin nota'}"
+                          class="font-bold text-lg {colorNota(valorPeriodo(est, asignaturaItem.abreviatura, $payload.periodo))} px-2 py-1 rounded-md border-2 {getPeriodBorderColor($payload.periodo)} cursor-pointer"
+                          on:click={() => handleValoracionClick(est, asignaturaItem.abreviatura, $payload.periodo, valorPeriodo(est, asignaturaItem.abreviatura, $payload.periodo))}
+                          title="{est.nombres} – {getItemName(asignaturaItem.abreviatura)} – Período {getShortPeriodName($payload.periodo)}: {valorPeriodo(est, asignaturaItem.abreviatura, $payload.periodo) || 'Sin nota'}"
                         >
-                          {valorPeriodo(est, itemAbrev, $payload.periodo) || '-'}
+                          {valorPeriodo(est, asignaturaItem.abreviatura, $payload.periodo) || '-'}
                         </button>
                       {/if}
                     {:else}
@@ -190,20 +191,20 @@
                         {#each $selectedPeriodos.filter((p: string) => p !== 'DEF') as per}
                           <button
                             type="button"
-                            class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, itemAbrev, per))} border-2 {getPeriodBorderColor(per)} cursor-pointer"
-                            on:click={() => handleValoracionClick(est, itemAbrev, per, valorPeriodo(est, itemAbrev, per))}
-                            title="{est.nombres} – {getItemName(itemAbrev)} – Período {getShortPeriodName(per)}: {valorPeriodo(est, itemAbrev, per) || 'Sin nota'}"
+                            class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, asignaturaItem.abreviatura, per))} border-2 {getPeriodBorderColor(per)} cursor-pointer"
+                            on:click={() => handleValoracionClick(est, asignaturaItem.abreviatura, per, valorPeriodo(est, asignaturaItem.abreviatura, per))}
+                            title="{est.nombres} – {getItemName(asignaturaItem.abreviatura)} – Período {getShortPeriodName(per)}: {valorPeriodo(est, asignaturaItem.abreviatura, per) || 'Sin nota'}"
                           >
-                            {valorPeriodo(est, itemAbrev, per) || '-'}
+                            {valorPeriodo(est, asignaturaItem.abreviatura, per) || '-'}
                           </button>
                         {/each}
                         <button
                           type="button"
-                          class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, itemAbrev, 'DEF'))} border-2 {getPeriodBorderColor('DEF')} cursor-pointer"
-                          on:click={() => handleValoracionClick(est, itemAbrev, 'DEF', valorPeriodo(est, itemAbrev, 'DEF'))}
-                          title="{est.nombres} – {getItemName(itemAbrev)} – Definitiva: {valorPeriodo(est, itemAbrev, 'DEF') || 'Sin nota'}"
+                          class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, asignaturaItem.abreviatura, 'DEF'))} border-2 {getPeriodBorderColor('DEF')} cursor-pointer"
+                          on:click={() => handleValoracionClick(est, asignaturaItem.abreviatura, 'DEF', valorPeriodo(est, asignaturaItem.abreviatura, 'DEF'))}
+                          title="{est.nombres} – {getItemName(asignaturaItem.abreviatura)} – Definitiva: {valorPeriodo(est, asignaturaItem.abreviatura, 'DEF') || 'Sin nota'}"
                         >
-                          {valorPeriodo(est, itemAbrev, 'DEF') || '-'}
+                          {valorPeriodo(est, asignaturaItem.abreviatura, 'DEF') || '-'}
                         </button>
                       </div>
                     {/if}
