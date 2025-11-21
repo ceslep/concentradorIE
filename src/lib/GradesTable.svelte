@@ -325,7 +325,8 @@
         if (tableInstance) {
             tableInstance.destroy(); // Destroy previous instance if it exists
         }
-
+        
+        consolelog('AJAX Params:', { docente: currentDocente, nivel, numero, asignatura: currentAsignatura, periodo: Elperiodo, asignacion: asignation, year });
         tableInstance = new Tabulator(targetTableId, {
             height: '1220px',
             layout: layout,
@@ -355,11 +356,13 @@
             ajaxURL: GET_NOTAS_ENDPOINT,
             headerSort: false,
             ajaxResponse: function (url: string, params: any, response: any) {
+                consolelog('Raw AJAX response:', response);
                 response = response.sort((a: any, b: any) => {
                     if (a.Nombres > b.Nombres) return 1;
                     if (a.Nombres < b.Nombres) return -1;
                     return 0;
                 });
+                consolelog('Sorted AJAX response:', response);
                 return response;
             },
             ajaxParams: {
@@ -380,6 +383,7 @@
             },
             rowFormatter: function (row: any) {
                 const dataRR = row.getData();
+                consolelog('Row data in rowFormatter:', dataRR);
 
                 const valCell = row.getCell("Val");
                 if (valCell) {
