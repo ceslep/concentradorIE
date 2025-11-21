@@ -12,6 +12,7 @@ export const search = writable('')
 export const showPeriodos = writable(false)
 export const selectedPeriodos = writable<string[]>(['UNO','DOS','TRES','CUATRO','DEF'])
 export const concentradorType = writable<'asignaturas' | 'areas'>('asignaturas') // New store
+export const selectedAsignatura = writable<string>('') // New store for the selected asignatura
 
 export const lastDuration = writable<number | null>(null)
 

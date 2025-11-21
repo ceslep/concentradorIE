@@ -17,6 +17,8 @@ export const GET_NOTAS_DETALLADO_AREAS_ENDPOINT = `${API_BASE_URL}/getNotasDetal
 export const GET_ORDERS_ENDPOINT = `${API_BASE_URL}/getOrders.php`;
 export const GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT = `${API_BASE_URL}/consolidadoConvivenciaEstudiante.php`;
 export const GET_CONVIVENCIA_DETALLADO_ENDPOINT = `${API_BASE_URL}/convivenciaDetallado.php`;
+export const GET_NOTAS_ENDPOINT = `${API_BASE_URL}/getNotas.php`;
+export const GET_PERIODOS_NOTAS_ENDPOINT = `${API_BASE_URL}/getPeriodosNotas.php`;
 
 // Ejemplo de uso (fetch):
 // fetch(GET_CONCENTRADOR_ENDPOINT)

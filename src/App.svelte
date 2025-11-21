@@ -1,6 +1,6 @@
 <script lang="ts">
   import PayloadForm from './lib/PayloadForm.svelte'
-  import { loadConcentrador, loading, error, parsed, showPeriodos, selectedPeriodos, currentOrden, lastDuration, exportCSV, exportExcel, payload, concentradorType } from './lib/storeConcentrador'
+  import { loadConcentrador, loading, error, parsed, showPeriodos, selectedPeriodos, currentOrden, lastDuration, exportCSV, exportExcel, payload, concentradorType, selectedAsignatura } from './lib/storeConcentrador'
   import type { EstudianteRow, NotasDetalladoPayload, NotaDetalle, ConcentradorParsed, ConcentradorAreasParsed, EstudianteRowArea } from './lib/types'
   import { onMount } from 'svelte'
   import { get } from 'svelte/store'
@@ -13,9 +13,11 @@
   import ConcentradorAsignaturasTable from './lib/ConcentradorAsignaturasTable.svelte'
   import ConcentradorAreasTable from './lib/ConcentradorAreasTable.svelte'
   import AppHeader from './lib/AppHeader.svelte'
+  import GradesTableDialog from './lib/GradesTableDialog.svelte' // New import
 
   let showNotasDetalleDialog = false
   let showInfoCantDialog = false
+  let showGradesTableDialog = false // New state variable
   let showInasistenciasDetallado = false // New state variable for InasistenciasDetallado
   let showConvivenciaDialog = false // New state variable for ConvivenciaDialog
   let currentNotasDetalle: NotaDetalle[] = []
@@ -38,6 +40,10 @@
     inasistenciasAsignatura = asignatura;
     inasistenciasPeriodo = periodo;
     showInasistenciasDetallado = true;
+  }
+
+  function handleHeaderClick() {
+    showGradesTableDialog = true;
   }
 
   onMount(() => {
@@ -71,6 +77,7 @@
 
     selectedEstudianteId = est.id
     selectedStudentName = est.nombres
+    selectedAsignatura.set(itemAbrev); // Update the store
     selectedAsignaturaNombre = selectedItemName
     selectedPeriodoForDialog = periodo // Set the clicked period
 
@@ -145,6 +152,7 @@
   {#if $concentradorType === 'asignaturas'}
     <ConcentradorAsignaturasTable
       {handleValoracionClick}
+      onHeaderClick={handleHeaderClick}
     />
   {:else}
     <ConcentradorAreasTable
@@ -198,4 +206,6 @@
       bind:showDialog={showInasistenciasDetallado}
     />
   {/if}
+
+  <GradesTableDialog bind:showDialog={showGradesTableDialog} />
 </div>

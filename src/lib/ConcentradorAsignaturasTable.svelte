@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { EstudianteRow, ConcentradorParsed } from './types'
   import { theme } from './themeStore'
-  import { parsed, loading, payload, showPeriodos, selectedPeriodos, currentOrden, concentradorType } from './storeConcentrador'
+  import { parsed, loading, payload, showPeriodos, selectedPeriodos, currentOrden, concentradorType, selectedAsignatura } from './storeConcentrador'
 
   export let handleValoracionClick: (est: EstudianteRow, asignaturaAbrev: string, periodo: string, valoracion: string) => Promise<void>
+  export let onHeaderClick: () => void // New prop
   let handleShowInasistencias: (estudianteId: string, nombres: string, asignatura: string, periodo: string) => void
 
   let search = ''
@@ -116,8 +117,15 @@
             </th>
             {#each $currentOrden as itemAbrev}
               {#if itemAbrev}
-                <th scope="col" class="p-2 whitespace-nowrap text-center">
-                  <span class="block text-xs font-medium">{getItemName(itemAbrev)}</span>
+                <th scope="col" class="p-0 whitespace-nowrap text-center">
+                  <button
+                    class="block w-full h-full p-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200
+                           {$theme === 'dark' ? 'text-gray-400 hover:bg-gray-600' : 'text-gray-600 hover:bg-gray-200'}"
+                    on:click={() => { selectedAsignatura.set(itemAbrev); onHeaderClick(); }}
+                    title="Seleccionar {getItemName(itemAbrev)}"
+                  >
+                    {getItemName(itemAbrev)}
+                  </button>
                 </th>
               {/if}
             {/each}
