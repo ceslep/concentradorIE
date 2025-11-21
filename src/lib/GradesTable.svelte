@@ -71,6 +71,96 @@
         return !isNaN(numValue) && numValue >= parameters.min && numValue <= parameters.max;
     };
 
+    // Helper function to create grade columns (N1-N12)
+    function createGradeColumn(title: string, field: string): ColumnDefinition {
+        return {
+            title: title,
+            field: field,
+            editor: "number",
+            editorParams: { verticalNavigation: 'table' },
+            hozAlign: "right",
+            validator: [{ type: valid, parameters: { min: 1, max: 5 } }],
+            headerMenu: headerMenu,
+            cellEdited: async (e: any) => {
+                try {
+                    colT = e;
+                    dataRR = await e.getRow().getData();
+                    rowIdx = await e.getRow().getPosition(true);
+
+                    let Val = 0;
+                    let n = 0;
+                    let porcentajes = false;
+                    let Saber35 = 0;
+                    let Hacer35 = 0;
+                    let Ser20 = 0;
+                    let Autoe5 = 0;
+                    let Coev5 = 0;
+                    let arraycounts: any[] = [];
+
+                    Object.entries(dataRR).forEach(([key, value]) => {
+                        if (key.includes('N') && key !== 'Nombres') {
+                            if (value !== ' ' && value !== null && value !== '') {
+                                let idx = key.slice(key.lastIndexOf('N') + 1, key.length);
+                                if (dataRR[`fecha${idx}`] == null) {
+                                    dataRR[`fecha${idx}`] = toDateInputValue(new Date());
+                                }
+                                let porcentaje = 1;
+                                if (dataRR[`porcentaje${idx}`] != null && dataRR[`porcentaje${idx}`] !== '') {
+                                    porcentaje = parseFloat(dataRR[`porcentaje${idx}`]) / 100;
+                                    porcentajes = true;
+                                }
+                                Val += parseFloat(value as string) * porcentaje;
+                                if (porcentaje === 1) n++;
+
+                                const numVal = parseFloat(value as string);
+                                if (!isNaN(numVal)) {
+                                    if (idx === '1' || idx === '2' || idx === '3') {
+                                        Saber35 += numVal;
+                                    } else if (idx === '4' || idx === '5' || idx === '6') {
+                                        Hacer35 += numVal;
+                                    } else if (idx === '7' || idx === '8' || idx === '9') {
+                                        Ser20 += numVal;
+                                    } else if (idx === '10') {
+                                        Autoe5 += numVal;
+                                    } else if (idx === '11') {
+                                        Coev5 += numVal;
+                                    }
+                                }
+                            }
+                            arraycounts = [...arraycounts, value];
+                        }
+                    });
+
+                    let contadores = countNonEmptyGroups(arraycounts);
+
+                    const saberAvg = contadores[0] !== 0 ? Saber35 / contadores[0] : 0;
+                    const hacerAvg = contadores[1] !== 0 ? Hacer35 / contadores[1] : 0;
+                    const serAvg = contadores[2] !== 0 ? Ser20 / contadores[2] : 0;
+                    const autoeVal = Autoe5;
+                    const coevVal = Coev5;
+
+                    dataRR.Val = (
+                        saberAvg * 0.35 +
+                        hacerAvg * 0.35 +
+                        serAvg * 0.20 +
+                        autoeVal * 0.05 +
+                        coevVal * 0.05
+                    ).toFixed(2);
+                    
+                    const rowElement = e.getRow().getElement();
+                    if (rowElement && rowElement.children[2]) {
+                        rowElement.children[2].innerText = dataRR.Val;
+                    }
+                    datosTabla[rowIdx] = dataRR;
+                    e.getRow().reformat();
+                } catch (error) {
+                    consolelog('Error in cellEdited:', error);
+                }
+            }
+        };
+    }
+
+
     const countNonEmptyGroups = (array: any[]) => {
         const groups = [
             array.slice(0, 3),
@@ -239,8 +329,28 @@
             height: '1220px',
             layout: layout,
             placeholder: 'No hay datos',
-            autoColumns: true,
             responsiveLayout: true,
+            columns: [
+                {
+                    title: "Nombres, Val, N1..N12", // Main header
+                    columns: [
+                        { title: "Nombres", field: "Nombres", widthGrow: 2, headerFilter: true, headerFilterPlaceholder: 'Buscar Estudiante...', cellClick: function (e: Event, cell: any) { Inasistencias(cell.getRow().getData()); } },
+                        { title: "Val", field: "Val", hozAlign: "center", maxWidth: 40, resizable: false },
+                        createGradeColumn("N1", "N1"),
+                        createGradeColumn("N2", "N2"),
+                        createGradeColumn("N3", "N3"),
+                        createGradeColumn("N4", "N4"),
+                        createGradeColumn("N5", "N5"),
+                        createGradeColumn("N6", "N6"),
+                        createGradeColumn("N7", "N7"),
+                        createGradeColumn("N8", "N8"),
+                        createGradeColumn("N9", "N9"),
+                        createGradeColumn("N10", "N10"),
+                        createGradeColumn("N11", "N11"),
+                        createGradeColumn("N12", "N12"),
+                    ]
+                }
+            ],
             ajaxURL: GET_NOTAS_ENDPOINT,
             headerSort: false,
             ajaxResponse: function (url: string, params: any, response: any) {
@@ -331,122 +441,11 @@
                     }
                 }
             },
-            autoColumnsDefinitions: function (definitions: ColumnDefinition[] | undefined): Partial<ColumnDefinition>[] {
-                if (!definitions) {
-                    return [];
-                }
-                definitions.forEach((column, index) => {
-                    column.responsive = 0;
-                    column.resizable = false;
-                    if (index === 1) { // Assuming this is the "Nombres" column
-                        column.headerFilter = true;
-                        column.headerFilterPlaceholder = 'Buscar Estudiante...';
-                        column.cellClick = function (e: Event, cell: any) {
-                            Inasistencias(cell.getRow().getData());
-                        };
-                    } else if (index === 2) { // Assuming this is the "Val" column
-                        column.hozAlign = 'center';
-                        column.maxWidth = 40;
-                    } else if (index > 2 && index < 15) { // Grade columns
-                        column.cellClick = async function (e: Event, cell: any) {
-                            colT = cell;
-                            rr = await cell.getRow();
-                            rowIdx = await rr.getPosition(true);
-                        };
-                        column.cellEdited = async (e: any) => {
-                            try {
-                                colT = e;
-                                dataRR = await e.getRow().getData();
-                                rowIdx = await e.getRow().getPosition(true);
-
-                                let Val = 0;
-                                let n = 0;
-                                let porcentajes = false;
-                                let Saber35 = 0;
-                                let Hacer35 = 0;
-                                let Ser20 = 0;
-                                let Autoe5 = 0;
-                                let Coev5 = 0;
-                                let arraycounts: any[] = [];
-
-                                Object.entries(dataRR).forEach(([key, value]) => {
-                                    if (key.includes('N') && key !== 'Nombres') {
-                                        if (value !== ' ' && value !== null && value !== '') {
-                                            let idx = key.slice(key.lastIndexOf('N') + 1, key.length);
-                                            if (dataRR[`fecha${idx}`] == null) {
-                                                dataRR[`fecha${idx}`] = toDateInputValue(new Date());
-                                            }
-                                            let porcentaje = 1;
-                                            if (dataRR[`porcentaje${idx}`] != null && dataRR[`porcentaje${idx}`] !== '') {
-                                                porcentaje = parseFloat(dataRR[`porcentaje${idx}`]) / 100;
-                                                porcentajes = true;
-                                            }
-                                            Val += parseFloat(value as string) * porcentaje;
-                                            if (porcentaje === 1) n++;
-
-                                            const numVal = parseFloat(value as string);
-                                            if (!isNaN(numVal)) {
-                                                if (idx === '1' || idx === '2' || idx === '3') {
-                                                    Saber35 += numVal;
-                                                } else if (idx === '4' || idx === '5' || idx === '6') {
-                                                    Hacer35 += numVal;
-                                                } else if (idx === '7' || idx === '8' || idx === '9') {
-                                                    Ser20 += numVal;
-                                                } else if (idx === '10') {
-                                                    Autoe5 += numVal;
-                                                } else if (idx === '11') {
-                                                    Coev5 += numVal;
-                                                }
-                                            }
-                                        }
-                                        arraycounts = [...arraycounts, value];
-                                    }
-                                });
-
-                                let contadores = countNonEmptyGroups(arraycounts);
-                                
-                                const saberAvg = contadores[0] !== 0 ? Saber35 / contadores[0] : 0;
-                                const hacerAvg = contadores[1] !== 0 ? Hacer35 / contadores[1] : 0;
-                                const serAvg = contadores[2] !== 0 ? Ser20 / contadores[2] : 0;
-                                const autoeVal = Autoe5;
-                                const coevVal = Coev5;
-
-                                dataRR.Val = (
-                                    saberAvg * 0.35 +
-                                    hacerAvg * 0.35 +
-                                    serAvg * 0.20 +
-                                    autoeVal * 0.05 +
-                                    coevVal * 0.05
-                                ).toFixed(2);
-                                
-                                const rowElement = e.getRow().getElement();
-                                if (rowElement && rowElement.children[2]) {
-                                    rowElement.children[2].innerText = dataRR.Val;
-                                }
-                                datosTabla[rowIdx] = dataRR;
-                                e.getRow().reformat();
-                            } catch (error) {
-                                consolelog('Error in cellEdited:', error);
-                            }
-                        };
-                        column.headerMenu = headerMenu;
-                        column.editor = 'number';
-                        column.editorParams = { verticalNavigation: 'table' };
-                        column.hozAlign = 'right';
-                        column.validator = [{ type: valid, parameters: { min: 1, max: 5 } }];
-                    }
-                });
-                return definitions;
-            },
         });
 
         tableInstance.on('renderComplete', async function () {
-            try {
-                // All columns are now visible by default.
-                // Removed explicit column hiding as per user request.
-            } catch (error) {
-                consolelog('Error in renderComplete:', error); // Keep logging for general errors
-            }
+            // Column hiding logic removed as columns are now explicitly defined
+            // and only the requested columns are included.
 
             datosTabla = tableInstance.getData();
             datosTablai = [...datosTabla];
