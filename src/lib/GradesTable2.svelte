@@ -209,6 +209,8 @@
             Elperiodo,
         });
 
+        const isMobile = window.innerWidth < 768;
+
         tableInstance = new Tabulator(element, {
             height: "100%",
             layout: "fitDataTable", // Allow horizontal scroll
@@ -225,8 +227,8 @@
                 {
                     title: "Nombres",
                     field: "Nombres",
-                    width: 300,
-                    frozen: true, // Freeze name column
+                    width: isMobile ? 200 : 300,
+                    frozen: !isMobile, // Freeze name column only on desktop
                     headerFilter: "input",
                     headerFilterPlaceholder: "Buscar...",
                 },
@@ -236,7 +238,7 @@
                     hozAlign: "center",
                     width: 60,
                     formatter: gradeFormatter,
-                    frozen: true, // Freeze Val column
+                    frozen: !isMobile, // Freeze Val column only on desktop
                 },
                 createGradeColumn("N1", "N1"),
                 createGradeColumn("N2", "N2"),
