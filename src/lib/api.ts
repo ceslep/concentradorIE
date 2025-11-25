@@ -1,5 +1,5 @@
 import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT, GET_CONCENTRADOR_AREAS_ENDPOINT, GET_VALORACIONES_AREAS_ENDPOINT, GET_NOTAS_DETALLADO_AREAS_ENDPOINT, GET_ORDERS_ENDPOINT, GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT, GET_CONVIVENCIA_DETALLADO_ENDPOINT } from '../../constants'
-import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion, ValoracionAreasResponseItem, AreaOrder, AreaOrderPayload, ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado, AsignaturaOrdenItem, EstudianteRow, Asignatura } from './types' // Import EstudianteRow, Asignatura
+import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion, ValoracionAreasResponseItem, AreaOrder, AreaOrderPayload, ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado, AsignaturaOrdenItem, EstudianteRow, Asignatura, Area } from './types' // Import EstudianteRow, Asignatura, Area
 
 export interface Sede {
   ind: string;
@@ -85,17 +85,78 @@ export async function fetchConcentrador(payload: ConcentradorPayload = defaultCo
 }
 
 export async function fetchConcentradorAreas(payload: ConcentradorPayload = defaultConcentradorPayload): Promise<ConcentradorAreasParsed> {
-  const res = await fetch(GET_CONCENTRADOR_AREAS_ENDPOINT, {
+  // Obtener estructura base (estudiantes y áreas)
+  const resBase = await fetch(GET_CONCENTRADOR_AREAS_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(payload)
   })
-  if (!res.ok) {
-    throw new Error('Error al obtener concentrador por áreas: ' + res.status)
+  if (!resBase.ok) {
+    throw new Error('Error al obtener concentrador por áreas: ' + resBase.status)
   }
-  return res.json()
+  const baseData = await resBase.json()
+  
+  // Obtener valoraciones
+  const resValoraciones = await fetch(GET_VALORACIONES_AREAS_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  if (!resValoraciones.ok) {
+    throw new Error('Error al obtener valoraciones por áreas: ' + resValoraciones.status)
+  }
+  const valoracionesData: ValoracionAreasResponseItem[] = await resValoraciones.json()
+  
+  // Crear areasOrden a partir de baseData.areas
+  const areasOrden = baseData.areas ? baseData.areas.map((a: Area) => a.abreviatura) : [];
+  
+  // Combinar datos: agregar valoraciones a cada estudiante
+  const estudiantesConValoraciones = baseData.estudiantes.map((est: any) => {
+    // Filtrar valoraciones de este estudiante
+    const valoracionesEstudiante = valoracionesData.filter(v => v.estudiante === est.estudiante);
+    
+    // Agrupar por área (v.asignat es la abreviatura del área)
+    const areasMap = new Map<string, number>();
+    
+    valoracionesEstudiante.forEach(v => {
+      // v.asignat contiene la ABREVIATURA del área (CPOL, CNAT, etc.)
+      // v.valoracion es la valoración DEFINITIVA
+      areasMap.set(v.asignat, v.valoracion);
+    });
+    
+    // Convertir a estructura AreaNota[]
+    const areas = Array.from(areasMap.entries()).map(([areaAbrev, valoracionDef]) => {
+      // Solo crear el período DEF con la valoración
+      const periodos = [{
+        periodo: 'DEF',
+        valoracion: valoracionDef
+      }];
+      
+      return {
+        area: areaAbrev,
+        periodos,
+        estudianteId: est.estudiante.toString()
+      };
+    });
+    
+    return {
+      id: est.estudiante.toString(),
+      nombres: est.nombres,
+      areas
+    };
+  });
+  
+  const result: ConcentradorAreasParsed = {
+    estudiantes: estudiantesConValoraciones,
+    areasOrden,
+    areas: baseData.areas
+  };
+  
+  return result;
 }
 
 export async function fetchNotasDetallado(payload: NotasDetalladoPayload): Promise<NotaDetalle[]> {

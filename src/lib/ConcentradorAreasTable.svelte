@@ -46,6 +46,7 @@
       return [] as EstudianteRowArea[];
     const p = $parsed as ConcentradorAreasParsed;
     const list = p.estudiantes;
+
     if (!search.trim()) return list;
     const q = search.toLowerCase();
     return list.filter((est) => est.nombres.toLowerCase().includes(q));

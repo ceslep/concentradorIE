@@ -45,7 +45,12 @@
         estudiante: estudianteId,
         year: year,
       };
-      convivenciaRecords = await fetchConsolidadoConvivencia(payload);
+      // Agregar un delay mínimo para que el loading sea visible
+      const [data] = await Promise.all([
+        fetchConsolidadoConvivencia(payload),
+        new Promise((resolve) => setTimeout(resolve, 800)), // 800ms delay mínimo
+      ]);
+      convivenciaRecords = data;
       hasConvivenciaRecords = convivenciaRecords.length > 0; // Update prop
     } catch (e: any) {
       error = e.message;
@@ -149,21 +154,70 @@
         </button>
       </div>
 
+      <!-- Professional Loading Overlay -->
+      {#if loading}
+        <div
+          class="absolute inset-0 z-20 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-md"
+          transition:fade={{ duration: 300 }}
+        >
+          <div class="flex flex-col items-center space-y-6">
+            <!-- Animated Spinner Circle -->
+            <div class="relative">
+              <!-- Outer Ring -->
+              <div
+                class="w-24 h-24 rounded-full border-4 border-gray-200 dark:border-gray-700"
+              ></div>
+              <!-- Animated Ring -->
+              <div
+                class="absolute inset-0 w-24 h-24 rounded-full border-4 border-transparent border-t-indigo-600 dark:border-t-indigo-400 animate-spin"
+              ></div>
+              <!-- Inner Icon -->
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span
+                  class="material-symbols-rounded text-4xl text-indigo-600 dark:text-indigo-400 animate-pulse"
+                  style="font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 48;"
+                >
+                  school
+                </span>
+              </div>
+            </div>
+
+            <!-- Loading Text -->
+            <div class="text-center space-y-2">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Cargando registros
+              </h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                Obteniendo datos de convivencia...
+              </p>
+            </div>
+
+            <!-- Animated Dots -->
+            <div class="flex space-x-2">
+              <div
+                class="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce"
+                style="animation-delay: 0ms;"
+              ></div>
+              <div
+                class="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce"
+                style="animation-delay: 150ms;"
+              ></div>
+              <div
+                class="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce"
+                style="animation-delay: 300ms;"
+              ></div>
+            </div>
+          </div>
+        </div>
+      {/if}
+
       <!-- Body Content -->
       <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
         <!-- Left Sidebar: List of Records -->
         <div
           class="w-full md:w-80 lg:w-96 flex-none border-r border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-black/20 overflow-y-auto p-4 space-y-3 custom-scrollbar"
         >
-          {#if loading}
-            <div class="space-y-3">
-              {#each Array(4) as _}
-                <div
-                  class="animate-pulse bg-white dark:bg-gray-800 h-24 rounded-xl border border-gray-200 dark:border-gray-700"
-                ></div>
-              {/each}
-            </div>
-          {:else if error}
+          {#if error}
             <div
               class="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 text-center"
             >
