@@ -1,10 +1,16 @@
 <script lang="ts">
-  import { payload, showPeriodos, selectedPeriodos, loadConcentradorData } from "./storeConcentrador";
+  import {
+    payload,
+    showPeriodos,
+    selectedPeriodos,
+    loadConcentradorData,
+  } from "./storeConcentrador";
   import type { Sede } from "./api";
   import { fetchAsignaciones, fetchPeriodos, fetchYears } from "./api";
   import type { Periodo, Year } from "./types";
   import { onMount } from "svelte";
   import { theme } from "./themeStore";
+  import { slide } from "svelte/transition";
 
   export let disabled: boolean = false;
 
@@ -38,7 +44,7 @@
 
         periods = await fetchPeriodos();
         if (periods.length > 0) {
-          const selectedPeriod = periods.find(p => p.selected === "selected");
+          const selectedPeriod = periods.find((p) => p.selected === "selected");
           if (selectedPeriod) {
             $payload.periodo = selectedPeriod.nombre;
           } else if (!$payload.periodo) {
@@ -49,7 +55,7 @@
         years = await fetchYears();
         if (years.length > 0) {
           const currentYear = new Date().getFullYear().toString();
-          const currentYearExists = years.some(y => y.year === currentYear);
+          const currentYearExists = years.some((y) => y.year === currentYear);
 
           if (currentYearExists) {
             $payload.year = currentYear;
@@ -65,7 +71,6 @@
 
         // After all payload values are set, load the concentrador data
         loadConcentradorData();
-
       } catch (error) {
         console.error("Error al cargar datos iniciales:", error);
       }
@@ -83,7 +88,11 @@
     const selectedSede = sedes.find((s) => s.ind === $payload.Asignacion);
     if (selectedSede) {
       const uniqueNiveles = [
-        ...new Set(selectedSede.grados.map((g: { nivel: string; numero: string }) => g.nivel)),
+        ...new Set(
+          selectedSede.grados.map(
+            (g: { nivel: string; numero: string }) => g.nivel,
+          ),
+        ),
       ];
       niveles = uniqueNiveles;
       if (niveles.length > 0) {
@@ -99,7 +108,9 @@
     const selectedSede = sedes.find((s) => s.ind === $payload.Asignacion);
     if (selectedSede) {
       const filteredNumeros = selectedSede.grados
-        .filter((g: { nivel: string; numero: string }) => g.nivel === $payload.nivel)
+        .filter(
+          (g: { nivel: string; numero: string }) => g.nivel === $payload.nivel,
+        )
         .map((g: { nivel: string; numero: string }) => g.numero);
       numeros = filteredNumeros;
       if (resetNumero && numeros.length > 0) {
@@ -126,180 +137,232 @@
 </script>
 
 <div
-  class="p-6 rounded-lg shadow-lg w-full max-w-full mx-auto {$theme === 'dark'
-    ? 'bg-gray-800 text-white'
-    : 'bg-white text-gray-900'}"
+  class="w-full max-w-full mx-auto font-sans"
+  style="font-family: 'Inter', sans-serif;"
 >
   <div
-    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end"
+    class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300"
   >
-    <!-- Sede -->
-    <div class="flex flex-col">
-      <label
-        for="fld-asignacion"
-        class="mb-1 font-semibold text-sm {$theme === 'dark'
-          ? 'text-gray-400'
-          : 'text-gray-700'}">Sede</label
+    <div class="p-6">
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"
       >
-      <select
-        id="fld-asignacion"
-        class="rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme ===
-        'dark'
-          ? 'bg-gray-700 border-gray-600 text-white'
-          : 'bg-gray-100 border-gray-300 text-gray-900'}"
-        bind:value={$payload.Asignacion}
-        on:change={() => updateNiveles()}
-        {disabled}
-      >
-        {#each sedes as sede}
-          <option value={sede.ind}>{sede.sede}</option>
-        {/each}
-      </select>
-    </div>
+        <!-- Sede -->
+        <div class="flex flex-col gap-1.5 group">
+          <label
+            for="fld-asignacion"
+            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+          >
+            <span class="material-symbols-rounded text-lg">business</span>
+            Sede
+          </label>
+          <div class="relative">
+            <select
+              id="fld-asignacion"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              bind:value={$payload.Asignacion}
+              on:change={() => updateNiveles()}
+              {disabled}
+            >
+              {#each sedes as sede}
+                <option value={sede.ind}>{sede.sede}</option>
+              {/each}
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+            >
+              <span class="material-symbols-rounded text-xl">expand_more</span>
+            </div>
+          </div>
+        </div>
 
-    <!-- Nivel -->
-    <div class="flex flex-col">
-      <label
-        for="fld-nivel"
-        class="mb-1 font-semibold text-sm {$theme === 'dark'
-          ? 'text-gray-400'
-          : 'text-gray-700'}">Nivel</label
-      >
-      <select
-        id="fld-nivel"
-        class="rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme ===
-        'dark'
-          ? 'bg-gray-700 border-gray-600 text-white'
-          : 'bg-gray-100 border-gray-300 text-gray-900'}"
-        bind:value={$payload.nivel}
-        on:change={() => { updateNumeros(); loadConcentradorData(); }}
-        {disabled}
-      >
-        {#each niveles as nivel}
-          <option value={nivel}>{nivel}</option>
-        {/each}
-      </select>
-    </div>
+        <!-- Nivel -->
+        <div class="flex flex-col gap-1.5 group">
+          <label
+            for="fld-nivel"
+            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+          >
+            <span class="material-symbols-rounded text-lg">school</span>
+            Nivel
+          </label>
+          <div class="relative">
+            <select
+              id="fld-nivel"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              bind:value={$payload.nivel}
+              on:change={() => {
+                updateNumeros();
+                loadConcentradorData();
+              }}
+              {disabled}
+            >
+              {#each niveles as nivel}
+                <option value={nivel}>{nivel}</option>
+              {/each}
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+            >
+              <span class="material-symbols-rounded text-xl">expand_more</span>
+            </div>
+          </div>
+        </div>
 
-    <!-- Número -->
-    <div class="flex flex-col">
-      <label
-        for="fld-numero"
-        class="mb-1 font-semibold text-sm {$theme === 'dark'
-          ? 'text-gray-400'
-          : 'text-gray-700'}">Número</label
-      >
-      <select
-        id="fld-numero"
-        class="rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme ===
-        'dark'
-          ? 'bg-gray-700 border-gray-600 text-white'
-          : 'bg-gray-100 border-gray-300 text-gray-900'}"
-        bind:value={$payload.numero}
-        on:change={() => loadConcentradorData()}
-        {disabled}
-      >
-        {#each numeros as numero}
-          <option value={numero}>{numero}</option>
-        {/each}
-      </select>
-    </div>
+        <!-- Número -->
+        <div class="flex flex-col gap-1.5 group">
+          <label
+            for="fld-numero"
+            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+          >
+            <span class="material-symbols-rounded text-lg">numbers</span>
+            Número
+          </label>
+          <div class="relative">
+            <select
+              id="fld-numero"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              bind:value={$payload.numero}
+              on:change={() => loadConcentradorData()}
+              {disabled}
+            >
+              {#each numeros as numero}
+                <option value={numero}>{numero}</option>
+              {/each}
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+            >
+              <span class="material-symbols-rounded text-xl">expand_more</span>
+            </div>
+          </div>
+        </div>
 
-    <!-- Periodo -->
-    <div class="flex flex-col">
-      <label
-        for="fld-periodo"
-        class="mb-1 font-semibold text-sm {$theme === 'dark'
-          ? 'text-gray-400'
-          : 'text-gray-700'}">Periodo</label
-      >
-      <select
-        id="fld-periodo"
-        class="rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme ===
-        'dark'
-          ? 'bg-gray-700 border-gray-600 text-white'
-          : 'bg-gray-100 border-gray-300 text-gray-900'}"
-        bind:value={$payload.periodo}
-        {disabled}
-      >
-        {#each periods as period}
-          <option value={period.nombre}>{period.nombre}</option>
-        {/each}
-      </select>
-    </div>
+        <!-- Periodo -->
+        <div class="flex flex-col gap-1.5 group">
+          <label
+            for="fld-periodo"
+            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+          >
+            <span class="material-symbols-rounded text-lg">calendar_month</span>
+            Periodo
+          </label>
+          <div class="relative">
+            <select
+              id="fld-periodo"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              bind:value={$payload.periodo}
+              {disabled}
+            >
+              {#each periods as period}
+                <option value={period.nombre}>{period.nombre}</option>
+              {/each}
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+            >
+              <span class="material-symbols-rounded text-xl">expand_more</span>
+            </div>
+          </div>
+        </div>
 
-    <!-- Año -->
-    <div class="flex flex-col">
-      <label
-        for="fld-year"
-        class="mb-1 font-semibold text-sm {$theme === 'dark'
-          ? 'text-gray-400'
-          : 'text-gray-700'}">Año</label
-      >
-      <select
-        id="fld-year"
-        class="rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme ===
-        'dark'
-          ? 'bg-gray-700 border-gray-600 text-white'
-          : 'bg-gray-100 border-gray-300 text-gray-900'}"
-        bind:value={$payload.year}
-        {disabled}
-      >
-        {#each years as yearOption}
-          <option value={yearOption.year}>{yearOption.year}</option>
-        {/each}
-      </select>
-    </div>
+        <!-- Año -->
+        <div class="flex flex-col gap-1.5 group">
+          <label
+            for="fld-year"
+            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+          >
+            <span class="material-symbols-rounded text-lg">calendar_today</span>
+            Año
+          </label>
+          <div class="relative">
+            <select
+              id="fld-year"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              bind:value={$payload.year}
+              {disabled}
+            >
+              {#each years as yearOption}
+                <option value={yearOption.year}>{yearOption.year}</option>
+              {/each}
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+            >
+              <span class="material-symbols-rounded text-xl">expand_more</span>
+            </div>
+          </div>
+        </div>
 
-    <!-- Activos (CORREGIDO) -->
-    <div class="flex flex-col">
-      <label
-        for="fld-activos"
-        class="mb-1 font-semibold text-sm {$theme === 'dark'
-          ? 'text-gray-400'
-          : 'text-gray-700'}">Activos</label
-      >
-      <select
-        id="fld-activos"
-        class="rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme ===
-        'dark'
-          ? 'bg-gray-700 border-gray-600 text-white'
-          : 'bg-gray-100 border-gray-300 text-gray-900'}"
-        value={activosString}
-        on:change={(e) => {
-          const target = e.target as HTMLSelectElement;
-          setActivos(target.value);
-        }}
-        {disabled}
-      >
-        <option value="true">Sí</option>
-        <option value="false">No</option>
-      </select>
+        <!-- Activos -->
+        <div class="flex flex-col gap-1.5 group">
+          <label
+            for="fld-activos"
+            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+          >
+            <span class="material-symbols-rounded text-lg">
+              {activosString === "true" ? "toggle_on" : "toggle_off"}
+            </span>
+            Activos
+          </label>
+          <div class="relative">
+            <select
+              id="fld-activos"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              value={activosString}
+              on:change={(e) => {
+                const target = e.target as HTMLSelectElement;
+                setActivos(target.value);
+              }}
+              {disabled}
+            >
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+            >
+              <span class="material-symbols-rounded text-xl">expand_more</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de selección de periodos -->
+      {#if $showPeriodos}
+        <div
+          class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700"
+          transition:slide={{ duration: 200 }}
+        >
+          <h3
+            class="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"
+          >
+            <span class="material-symbols-rounded text-indigo-500"
+              >checklist</span
+            >
+            Seleccionar Periodos
+          </h3>
+          <div class="flex flex-wrap gap-3">
+            {#each allPeriods as p (p)}
+              <label class="relative cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={$selectedPeriodos.includes(p)}
+                  on:change={() => handlePeriodoChange(p)}
+                  class="peer sr-only"
+                />
+                <div
+                  class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium transition-all duration-200
+                            peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:text-indigo-600
+                            dark:peer-checked:bg-indigo-900/20 dark:peer-checked:border-indigo-500 dark:peer-checked:text-indigo-400
+                            group-hover:border-indigo-300 dark:group-hover:border-indigo-700"
+                >
+                  {p}
+                </div>
+              </label>
+            {/each}
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
-
-  <!-- Sección de selección de periodos -->
-  {#if $showPeriodos}
-    <div class="mt-6 border-t border-gray-300 pt-6 dark:border-gray-700">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4 dark:text-white">
-        Seleccionar Periodos
-      </h3>
-      <div class="flex flex-wrap gap-4">
-        {#each allPeriods as p (p)}
-          <label
-            class="flex items-center space-x-2 cursor-pointer p-2 rounded-md hover:bg-gray-200 transition duration-200 dark:hover:bg-gray-700"
-          >
-            <input
-              type="checkbox"
-              checked={$selectedPeriodos.includes(p)}
-              on:change={() => handlePeriodoChange(p)}
-              class="h-5 w-5 bg-gray-100 border-gray-300 rounded text-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500"
-            />
-            <span class="text-gray-700 font-medium dark:text-gray-300">{p}</span
-            >
-          </label>
-        {/each}
-      </div>
-    </div>
-  {/if}
 </div>

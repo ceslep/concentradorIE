@@ -1,9 +1,15 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { fetchConsolidadoConvivencia, fetchConvivenciaDetallado } from './api'; // Import fetchConvivenciaDetallado
-  import type { ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado } from './types'; // Import ConvivenciaDetallado
-  import Skeleton from './Skeleton.svelte';
-  import { theme } from './themeStore';
+  import { createEventDispatcher, onMount } from "svelte";
+  import { fade, scale } from "svelte/transition";
+  import {
+    fetchConsolidadoConvivencia,
+    fetchConvivenciaDetallado,
+  } from "./api"; // Import fetchConvivenciaDetallado
+  import type {
+    ConvivenciaRecord,
+    ConsolidadoConvivenciaPayload,
+    ConvivenciaDetallado,
+  } from "./types"; // Import ConvivenciaDetallado
 
   export let showDialog: boolean;
   export let estudianteId: string;
@@ -28,7 +34,7 @@
     convivenciaDetallado = null; // Reset detailed data
     errorDetalle = null; // Reset detailed error
     hasConvivenciaRecords = false; // Reset on close
-    dispatch('close');
+    dispatch("close");
   }
 
   async function loadConvivenciaData() {
@@ -37,7 +43,7 @@
     try {
       const payload: ConsolidadoConvivenciaPayload = {
         estudiante: estudianteId,
-        year: year
+        year: year,
       };
       convivenciaRecords = await fetchConsolidadoConvivencia(payload);
       hasConvivenciaRecords = convivenciaRecords.length > 0; // Update prop
@@ -54,7 +60,10 @@
     errorDetalle = null;
     convivenciaDetallado = null; // Clear previous detailed data
     try {
-      convivenciaDetallado = await fetchConvivenciaDetallado({ ind: recordInd, year: year });
+      convivenciaDetallado = await fetchConvivenciaDetallado({
+        ind: recordInd,
+        year: year,
+      });
     } catch (e: any) {
       errorDetalle = e.message;
     } finally {
@@ -73,149 +82,402 @@
 </script>
 
 {#if showDialog}
-  <div class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-opacity duration-300"
-       class:opacity-100={showDialog}
-       class:opacity-0={!showDialog}>
-    <div class="rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border transform transition-all duration-300 ease-out
-                {$theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700' : 'bg-white border-gray-300'}"
-         class:scale-100={showDialog}
-         class:scale-95={!showDialog}
-         class:opacity-100={showDialog}
-         class:opacity-0={!showDialog}>
-      <div class="flex justify-between items-center p-4 border-b
-                  {$theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}">
-        <h3 class="text-2xl font-extrabold tracking-wide {$theme === 'dark' ? 'text-white' : 'text-gray-800'}">
-          Consolidado de Convivencia
-          {#if estudianteId}
-            <span class="text-sm {$theme === 'dark' ? 'text-yellow-400' : 'text-yellow-600'}">Estudiante ID: {estudianteId}</span><br>
-          {/if}
-          {#if year}
-            <span class="text-sm {$theme === 'dark' ? 'text-green-400' : 'text-green-600'}">Año: {year}</span>
-          {/if}
-        </h3>
-        <button on:click={closeDialog} class="text-gray-400 hover:text-red-500 transition duration-300 transform hover:scale-110" title="Cerrar">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 font-sans"
+    transition:fade={{ duration: 200 }}
+    style="font-family: 'Inter', sans-serif;"
+  >
+    <!-- Backdrop -->
+    <div
+      class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+      role="button"
+      tabindex="0"
+      on:click={closeDialog}
+      on:keydown={(e) => e.key === "Escape" && closeDialog()}
+    ></div>
+
+    <!-- Modal Container -->
+    <div
+      class="relative w-full max-w-6xl max-h-[90vh] flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 transform transition-all"
+      transition:scale={{ start: 0.96, duration: 200 }}
+    >
+      <!-- Header -->
+      <div
+        class="flex-none flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10"
+      >
+        <div>
+          <h2
+            class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none"
+          >
+            Consolidado de Convivencia
+          </h2>
+          <div
+            class="flex items-center gap-3 mt-2 text-sm text-gray-500 dark:text-gray-400"
+          >
+            {#if estudianteId}
+              <div
+                class="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-md"
+              >
+                <span class="material-symbols-rounded text-sm text-gray-400"
+                  >person</span
+                >
+                <span class="font-medium text-gray-700 dark:text-gray-300"
+                  >{estudianteId}</span
+                >
+              </div>
+            {/if}
+            {#if year}
+              <div
+                class="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md text-indigo-600 dark:text-indigo-400"
+              >
+                <span class="material-symbols-rounded text-sm"
+                  >calendar_month</span
+                >
+                <span class="font-semibold">{year}</span>
+              </div>
+            {/if}
+          </div>
+        </div>
+        <button
+          on:click={closeDialog}
+          class="group p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/40"
+        >
+          <span
+            class="material-symbols-rounded text-gray-400 group-hover:text-red-500 transition-colors text-2xl"
+            >close</span
+          >
         </button>
       </div>
 
-      <div class="p-4 flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 overflow-y-auto">
-        <!-- Columna de tarjetas (izquierda) -->
-        <div class="md:col-span-1 overflow-y-auto pr-4 border-r {$theme === 'dark' ? 'border-gray-700' : 'border-gray-300'}">
+      <!-- Body Content -->
+      <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+        <!-- Left Sidebar: List of Records -->
+        <div
+          class="w-full md:w-80 lg:w-96 flex-none border-r border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-black/20 overflow-y-auto p-4 space-y-3 custom-scrollbar"
+        >
           {#if loading}
-            <Skeleton rows={5} columns={1} theme={$theme} />
-          {:else if error}
-            <p class="error text-red-500 font-medium text-center py-4">Error al cargar el consolidado de convivencia: {error}</p>
-          {:else if convivenciaRecords.length > 0}
-            <ul class="space-y-4">
-              {#each convivenciaRecords as record (record.ind)}
-                <li>
-                  <div
-                    class="p-5 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl
-                                  {$theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-white hover:bg-gray-50 border border-gray-200'}
-                                  {selectedRecord === record ? ($theme === 'dark' ? 'ring-2 ring-blue-500 border-blue-500' : 'ring-2 ring-blue-400 border-blue-400') : ''}"
-                  >
-                    <p class="text-lg font-semibold {$theme === 'dark' ? 'text-white' : 'text-gray-800'} mb-1">{record.fecha} - {record.hora}</p>
-                    <p class="text-sm {$theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}">{record.tipoFalta}</p>
-                    <p class="text-sm {$theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}">Asignatura: {record.asignatura}</p>
-                    <div class="text-center">
-                      <button
-                        on:click={() => (selectedRecord = record)}
-                        class="mt-4 px-5 py-2.5 rounded-full text-sm font-bold tracking-wide transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-3 focus:ring-opacity-60
-                                    {$theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500' : 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-400'}">
-                        Ver Detalles
-                      </button>
-                    </div>
-                  </div>
-                </li>
+            <div class="space-y-3">
+              {#each Array(4) as _}
+                <div
+                  class="animate-pulse bg-white dark:bg-gray-800 h-24 rounded-xl border border-gray-200 dark:border-gray-700"
+                ></div>
               {/each}
-            </ul>
+            </div>
+          {:else if error}
+            <div
+              class="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 text-center"
+            >
+              <p class="text-sm text-red-600 dark:text-red-400 font-medium">
+                Error al cargar
+              </p>
+              <p class="text-xs text-red-500 dark:text-red-500 mt-1">{error}</p>
+            </div>
+          {:else if convivenciaRecords.length > 0}
+            {#each convivenciaRecords as record (record.ind)}
+              <button
+                on:click={() => (selectedRecord = record)}
+                class="w-full text-left group relative p-4 rounded-xl transition-all duration-200 border
+                       {selectedRecord === record
+                  ? 'bg-white dark:bg-gray-800 border-indigo-500 dark:border-indigo-500 shadow-md ring-1 ring-indigo-500 z-10'
+                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm'}"
+              >
+                <div class="flex justify-between items-start mb-2">
+                  <span
+                    class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500"
+                  >
+                    {record.fecha}
+                  </span>
+                  <span
+                    class="text-xs font-mono text-gray-400 dark:text-gray-500"
+                  >
+                    {record.hora}
+                  </span>
+                </div>
+                <h4
+                  class="text-sm font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                >
+                  {record.tipoFalta}
+                </h4>
+                <p
+                  class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1"
+                >
+                  {record.asignatura}
+                </p>
+
+                {#if selectedRecord === record}
+                  <div
+                    class="absolute left-0 top-4 bottom-4 w-1 bg-indigo-500 rounded-r-full"
+                    transition:scale={{ start: 0, duration: 200 }}
+                  ></div>
+                {/if}
+              </button>
+            {/each}
           {:else}
-            <p class="text-center py-8 text-lg {$theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}">No se encontraron registros de convivencia.</p>
+            <div
+              class="flex flex-col items-center justify-center h-64 text-center p-6"
+            >
+              <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3">
+                <span class="material-symbols-rounded text-4xl text-gray-400"
+                  >inbox</span
+                >
+              </div>
+              <p class="text-gray-500 dark:text-gray-400 font-medium">
+                No hay registros
+              </p>
+              <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Este estudiante no tiene registros de convivencia.
+              </p>
+            </div>
           {/if}
         </div>
 
-        <!-- Columna de contenido (derecha) -->
-        <div class="md:col-span-2 p-6 {$theme === 'dark' ? 'bg-gray-800 rounded-xl shadow-inner' : 'bg-gray-50 rounded-xl shadow-inner'}">
+        <!-- Right Main: Details -->
+        <div
+          class="flex-1 bg-white dark:bg-gray-900 overflow-y-auto relative custom-scrollbar"
+        >
           {#if loadingDetalle}
-            <Skeleton rows={10} columns={1} theme={$theme} />
+            <div class="p-8 space-y-6">
+              <div
+                class="w-1/3 h-8 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"
+              ></div>
+              <div class="grid grid-cols-2 gap-6">
+                <div
+                  class="h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"
+                ></div>
+                <div
+                  class="h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"
+                ></div>
+                <div
+                  class="h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"
+                ></div>
+                <div
+                  class="h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"
+                ></div>
+              </div>
+              <div
+                class="h-32 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"
+              ></div>
+            </div>
           {:else if errorDetalle}
-            <p class="error text-red-500 font-medium text-center py-4">Error al cargar el detalle de convivencia: {errorDetalle}</p>
+            <div
+              class="flex flex-col items-center justify-center h-full p-8 text-center"
+            >
+              <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-full mb-4">
+                <span class="material-symbols-rounded text-4xl text-red-500"
+                  >error</span
+                >
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                Error al cargar detalles
+              </h3>
+              <p class="text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+                {errorDetalle}
+              </p>
+            </div>
           {:else if convivenciaDetallado}
-            <div class="space-y-5 {$theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}">
-              <h4 class="text-2xl font-extrabold mb-5 pb-2 border-b {$theme === 'dark' ? 'border-gray-700 text-white' : 'border-gray-200 text-gray-900'}">Detalle del Registro</h4>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <p><strong>Nombres:</strong> {convivenciaDetallado.nombres}</p>
-                <p><strong>Docente:</strong> {convivenciaDetallado.cv_docente}</p>
-                <p><strong>Asignatura:</strong> {convivenciaDetallado.cv_asignatura}</p>
-                <p><strong>Tipo de Situación:</strong> {convivenciaDetallado.cv_tipoFalta}</p>
-                <p><strong>Fecha:</strong> {convivenciaDetallado.cv_fecha}</p>
-                <p><strong>Hora:</strong> {convivenciaDetallado.cv_hora}</p>
+            <div class="p-6 md:p-8 space-y-8" in:fade={{ duration: 200 }}>
+              <!-- Header Section of Details -->
+              <div>
+                <div class="flex items-center gap-2 mb-4">
+                  <span
+                    class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                  >
+                    Detalle del Registro
+                  </span>
+                  <span class="text-xs text-gray-400 dark:text-gray-500">
+                    Registrado: {convivenciaDetallado.cv_fechahora}
+                  </span>
+                </div>
+                <h3
+                  class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-tight"
+                >
+                  {convivenciaDetallado.cv_tipoFalta}
+                </h3>
               </div>
 
-              {#if convivenciaDetallado.cv_faltas}
-                <div class="p-4 rounded-lg {$theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} shadow-sm">
-                  <p class="font-semibold mb-2">Faltas:</p>
-                  <p class="text-sm"> {convivenciaDetallado.cv_faltas}</p>
+              <!-- Info Grid -->
+              <div
+                class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800"
+              >
+                <div>
+                  <p
+                    class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    Estudiante
+                  </p>
+                  <p
+                    class="text-base font-medium text-gray-900 dark:text-white"
+                  >
+                    {convivenciaDetallado.nombres}
+                  </p>
                 </div>
-              {/if}
-
-              {#if convivenciaDetallado.cv_descripcionSituacion}
-                <div class="p-4 rounded-lg {$theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} shadow-sm">
-                  <p class="font-semibold mb-2">Descripción de la Situación:</p>
-                  <p class="text-sm"> {convivenciaDetallado.cv_descripcionSituacion}</p>
+                <div>
+                  <p
+                    class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    Docente
+                  </p>
+                  <p
+                    class="text-base font-medium text-gray-900 dark:text-white"
+                  >
+                    {convivenciaDetallado.cv_docente}
+                  </p>
                 </div>
-              {/if}
-
-              {#if convivenciaDetallado.cv_descargosEstudiante}
-                <div class="p-4 rounded-lg {$theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} shadow-sm">
-                  <p class="font-semibold mb-2">Descargos del Estudiante:</p>
-                  <p class="text-sm"> {convivenciaDetallado.cv_descargosEstudiante}</p>
+                <div>
+                  <p
+                    class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    Asignatura
+                  </p>
+                  <p
+                    class="text-base font-medium text-gray-900 dark:text-white"
+                  >
+                    {convivenciaDetallado.cv_asignatura}
+                  </p>
                 </div>
-              {/if}
-
-              {#if convivenciaDetallado.cv_positivos}
-                <div class="p-4 rounded-lg {$theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} shadow-sm">
-                  <p class="font-semibold mb-2">Aspectos Positivos:</p>
-                  <p class="text-sm"> {convivenciaDetallado.cv_positivos}</p>
+                <div>
+                  <p
+                    class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    Fecha y Hora
+                  </p>
+                  <p
+                    class="text-base font-medium text-gray-900 dark:text-white"
+                  >
+                    {convivenciaDetallado.cv_fecha} - {convivenciaDetallado.cv_hora}
+                  </p>
                 </div>
-              {/if}
-              
-              <p class="text-sm text-right {$theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}">Registrado: {convivenciaDetallado.cv_fechahora}</p>
+              </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <!-- Content Sections -->
+              <div class="space-y-6">
+                {#if convivenciaDetallado.cv_faltas}
+                  <div class="prose dark:prose-invert max-w-none">
+                    <h4
+                      class="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2"
+                    >
+                      <span class="w-1 h-6 bg-orange-500 rounded-full"></span> Faltas
+                    </h4>
+                    <div
+                      class="p-4 bg-orange-50 dark:bg-orange-900/10 rounded-xl text-gray-700 dark:text-gray-300 border border-orange-100 dark:border-orange-900/20"
+                    >
+                      {convivenciaDetallado.cv_faltas}
+                    </div>
+                  </div>
+                {/if}
+
+                {#if convivenciaDetallado.cv_descripcionSituacion}
+                  <div class="prose dark:prose-invert max-w-none">
+                    <h4
+                      class="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2"
+                    >
+                      <span class="w-1 h-6 bg-blue-500 rounded-full"></span> Descripción
+                      de la Situación
+                    </h4>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {convivenciaDetallado.cv_descripcionSituacion}
+                    </p>
+                  </div>
+                {/if}
+
+                {#if convivenciaDetallado.cv_descargosEstudiante}
+                  <div class="prose dark:prose-invert max-w-none">
+                    <h4
+                      class="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2"
+                    >
+                      <span class="w-1 h-6 bg-purple-500 rounded-full"></span> Descargos
+                      del Estudiante
+                    </h4>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {convivenciaDetallado.cv_descargosEstudiante}
+                    </p>
+                  </div>
+                {/if}
+
+                {#if convivenciaDetallado.cv_positivos}
+                  <div class="prose dark:prose-invert max-w-none">
+                    <h4
+                      class="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2"
+                    >
+                      <span class="w-1 h-6 bg-green-500 rounded-full"></span> Aspectos
+                      Positivos
+                    </h4>
+                    <div
+                      class="p-4 bg-green-50 dark:bg-green-900/10 rounded-xl text-gray-700 dark:text-gray-300 border border-green-100 dark:border-green-900/20"
+                    >
+                      {convivenciaDetallado.cv_positivos}
+                    </div>
+                  </div>
+                {/if}
+              </div>
+
+              <!-- Signatures -->
+              <div
+                class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-gray-100 dark:border-gray-800 mt-8"
+              >
                 {#if convivenciaDetallado.cv_firma}
-                  <div class="p-4 rounded-lg {$theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} shadow-sm text-center">
-                    <p class="font-semibold mb-2">Firma del Estudiante:</p>
-                    <img src="{convivenciaDetallado.cv_firma}" alt="Firma del Estudiante" class="max-w-full h-auto border {$theme === 'dark' ? 'border-gray-600' : 'border-gray-300'} rounded-md mx-auto"/>
+                  <div class="text-center">
+                    <div
+                      class="bg-white dark:bg-white rounded-lg border border-gray-200 p-2 inline-block shadow-sm mb-3"
+                    >
+                      <img
+                        src={convivenciaDetallado.cv_firma}
+                        alt="Firma del Estudiante"
+                        class="h-24 object-contain"
+                      />
+                    </div>
+                    <p
+                      class="text-sm font-medium text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-2 inline-block px-8"
+                    >
+                      Firma del Estudiante
+                    </p>
                   </div>
                 {/if}
                 {#if convivenciaDetallado.firmaAcudiente}
-                  <div class="p-4 rounded-lg {$theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} shadow-sm text-center">
-                    <p class="font-semibold mb-2">Firma del Acudiente:</p>
-                    <img src="{convivenciaDetallado.firmaAcudiente}" alt="Firma del Acudiente" class="max-w-full h-auto border {$theme === 'dark' ? 'border-gray-600' : 'border-gray-300'} rounded-md mx-auto"/>
+                  <div class="text-center">
+                    <div
+                      class="bg-white dark:bg-white rounded-lg border border-gray-200 p-2 inline-block shadow-sm mb-3"
+                    >
+                      <img
+                        src={convivenciaDetallado.firmaAcudiente}
+                        alt="Firma del Acudiente"
+                        class="h-24 object-contain"
+                      />
+                    </div>
+                    <p
+                      class="text-sm font-medium text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-2 inline-block px-8"
+                    >
+                      Firma del Acudiente
+                    </p>
                   </div>
                 {/if}
               </div>
             </div>
-          {:else if selectedRecord}
-            <div class="flex items-center justify-center h-full">
-              <p class="text-lg {$theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}">Cargando detalle...</p>
-            </div>
           {:else}
-            <div class="flex items-center justify-center h-full">
-              <p class="text-lg {$theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}">Seleccione un registro para ver el detalle.</p>
+            <!-- Empty State for Details -->
+            <div
+              class="flex flex-col items-center justify-center h-full text-center p-8 opacity-50"
+            >
+              <div
+                class="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6"
+              >
+                <span
+                  class="material-symbols-rounded text-5xl text-gray-300 dark:text-gray-600"
+                  >touch_app</span
+                >
+              </div>
+              <h3
+                class="text-xl font-semibold text-gray-900 dark:text-white mb-2"
+              >
+                Seleccione un registro
+              </h3>
+              <p class="text-gray-500 dark:text-gray-400 max-w-sm">
+                Haga clic en uno de los registros de la lista izquierda para ver
+                los detalles completos de la convivencia.
+              </p>
             </div>
           {/if}
         </div>
-      </div>
-
-      <div class="p-4 border-t flex justify-end
-                  {$theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}">
-        <button on:click={closeDialog} class="px-6 py-2 rounded-lg text-white font-semibold transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-50
-                    {$theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' : 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-400'}">Cerrar</button>
       </div>
     </div>
   </div>

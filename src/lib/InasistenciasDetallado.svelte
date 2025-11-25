@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { fetchInasistenciasDetallado } from './api';
-  import type { Inasistencia, InasistenciasDetalladoPayload } from './types';
-  import Skeleton from './Skeleton.svelte';
-  import { theme } from './themeStore';
+  import { onMount } from "svelte";
+  import { fetchInasistenciasDetallado } from "./api";
+  import type { Inasistencia, InasistenciasDetalladoPayload } from "./types";
+  import { theme } from "./themeStore";
+  import { fade, scale } from "svelte/transition";
 
   export let showDialog: boolean;
   export let estudianteId: string;
@@ -29,7 +29,7 @@
         estudiante: estudianteId,
         nombres: nombres,
         asignatura: asignatura,
-        periodo: periodo
+        periodo: periodo,
       };
       inasistencias = await fetchInasistenciasDetallado(payload);
     } catch (e: any) {
@@ -56,144 +56,284 @@
 </script>
 
 {#if showDialog}
-  <div class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-opacity duration-300"
-       class:opacity-100={showDialog}
-       class:opacity-0={!showDialog}>
-    <div class="rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col border transform transition-all duration-300 ease-out
-                {$theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700' : 'bg-white border-gray-300'}"
-         class:scale-100={showDialog}
-         class:scale-95={!showDialog}
-         class:opacity-100={showDialog}
-         class:opacity-0={!showDialog}>
-      <div class="flex justify-between items-center p-4 border-b
-                  {$theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}">
-        <h3 class="text-2xl font-extrabold tracking-wide {$theme === 'dark' ? 'text-white' : 'text-gray-800'}">
-          Inasistencias Detalladas
-          {#if nombres}
-            <span class="text-sm {$theme === 'dark' ? 'text-yellow-400' : 'text-yellow-600'}">Estudiante: {nombres}</span><br>
-          {/if}
-          {#if asignatura}
-            <span class="text-sm {$theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}">Asignatura: {asignatura}</span>
-          {/if}
-          {#if periodo}
-            <span class="text-sm {$theme === 'dark' ? 'text-green-400' : 'text-green-600'}">Periodo: {periodo}</span>
-          {/if}
-        </h3>
-        <button on:click={closeDialog} class="text-gray-400 hover:text-red-500 transition duration-300 transform hover:scale-110" title="Cerrar">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 font-sans"
+    transition:fade={{ duration: 200 }}
+    style="font-family: 'Inter', sans-serif;"
+  >
+    <!-- Backdrop -->
+    <div
+      class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+      role="button"
+      tabindex="0"
+      on:click={closeDialog}
+      on:keydown={(e) => e.key === "Escape" && closeDialog()}
+    ></div>
+
+    <!-- Modal Container -->
+    <div
+      class="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 transform transition-all"
+      transition:scale={{ start: 0.96, duration: 200 }}
+    >
+      <!-- Header -->
+      <div
+        class="flex-none flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10"
+      >
+        <div>
+          <h2
+            class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none"
+          >
+            Inasistencias Detalladas
+          </h2>
+          <div
+            class="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500 dark:text-gray-400"
+          >
+            {#if nombres}
+              <div
+                class="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-md"
+              >
+                <span class="material-symbols-rounded text-sm text-gray-400"
+                  >person</span
+                >
+                <span class="font-medium text-gray-700 dark:text-gray-300"
+                  >{nombres}</span
+                >
+              </div>
+            {/if}
+            {#if asignatura}
+              <div
+                class="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md text-indigo-600 dark:text-indigo-400"
+              >
+                <span class="material-symbols-rounded text-sm">book</span>
+                <span class="font-semibold">{asignatura}</span>
+              </div>
+            {/if}
+            {#if periodo}
+              <div
+                class="flex items-center gap-1.5 bg-green-50 dark:bg-green-900/30 px-2.5 py-1 rounded-md text-green-600 dark:text-green-400"
+              >
+                <span class="material-symbols-rounded text-sm"
+                  >calendar_today</span
+                >
+                <span class="font-semibold">Periodo {periodo}</span>
+              </div>
+            {/if}
+          </div>
+        </div>
+        <button
+          on:click={closeDialog}
+          class="group p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/40"
+        >
+          <span
+            class="material-symbols-rounded text-gray-400 group-hover:text-red-500 transition-colors text-2xl"
+            >close</span
+          >
         </button>
       </div>
 
-      <div class="p-4 overflow-y-auto flex-grow {$theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}">
+      <!-- Content -->
+      <div
+        class="flex-1 overflow-y-auto p-0 custom-scrollbar bg-gray-50 dark:bg-black/20"
+      >
         {#if loading}
-          <Skeleton rows={5} columns={4} theme={$theme} />
+          <div class="flex flex-col items-center justify-center h-64 space-y-4">
+            <div class="relative">
+              <span
+                class="material-symbols-rounded text-6xl text-indigo-500 animate-spin"
+                >progress_activity</span
+              >
+            </div>
+            <p
+              class="text-sm font-medium text-gray-500 dark:text-gray-400 animate-pulse"
+            >
+              Cargando inasistencias...
+            </p>
+          </div>
         {:else if error}
-          <p class="error text-red-500">Error al cargar las inasistencias: {error}</p>
+          <div
+            class="flex flex-col items-center justify-center h-64 text-center p-8"
+          >
+            <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-full mb-4">
+              <span class="material-symbols-rounded text-4xl text-red-500"
+                >error</span
+              >
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+              Error al cargar
+            </h3>
+            <p class="text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
+              {error}
+            </p>
+          </div>
         {:else if inasistencias.length > 0}
-          <div class="overflow-x-auto rounded-lg border shadow-lg
-                      {$theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}">
-            <table class="min-w-full text-sm text-left
-                          {$theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}">
-              <thead class="text-xs uppercase tracking-wider border-b
-                            {$theme === 'dark' ? 'bg-gray-700 text-gray-400 border-gray-600' : 'bg-gray-100 text-gray-600 border-gray-200'}">
-                <tr>
-                  <th scope="col" class="px-6 py-3">Fecha</th>
-                  <th scope="col" class="px-6 py-3">Horas</th>
-                  <th scope="col" class="px-6 py-3">Hora Clase</th>
-                  <th scope="col" class="px-6 py-3">Detalle</th>
-                  <th scope="col" class="px-6 py-3">Causa Excusa</th>
-                  <th scope="col" class="px-6 py-3">Motivo Excusa</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 {$theme === 'dark' ? 'divide-gray-700 bg-gray-800' : 'bg-white'}">
-                {#each inasistencias as inasistencia (inasistencia.ind)}
-                  <tr class="{$theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}">
-                    <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'} {inasistencia.fecha.length < 4 ? 'text-center' : ''}">{inasistencia.fecha}</td>
-                    <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'} !text-center">{inasistencia.horas}</td>
-                    <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'} {inasistencia.hora_clase.length < 4 ? 'text-center' : ''}">{inasistencia.hora_clase}</td>
-                    <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}">
-                      {#if inasistencia.excusa_motivo}
-                        <span class="flex items-center justify-center gap-1" title="Excusa presente">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.3 2.647-1.3 3.412 0l7.66 13.139A1.999 1.999 0 0118 18H2a1.999 1.999 0 01-1.66-2.762l7.66-13.14zM10 6a1 1 0 011 1v3a1 1 0 11-2 0V7a1 1 0 011-1zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-                          </svg>
-                        </span>
-                      {:else if inasistencia.detalle}
-                        <span class="flex items-center justify-center gap-1">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                          </svg>
-                          {inasistencia.detalle}
-                        </span>
-                      {:else}
-                        <span class="flex items-center justify-center">N/A</span>
-                      {/if}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}">
-                      {#if inasistencia.excusa_causa}
-                        <span class="flex items-center gap-1 {inasistencia.excusa_causa.length < 4 ? 'justify-center' : ''}">
-                          {inasistencia.excusa_causa}
-                        </span>
-                      {:else}
-                        <span class="flex items-center justify-center">N/A</span>
-                      {/if}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}">
-                      {#if inasistencia.excusa_motivo}
-                        <span class="flex items-center gap-1 {inasistencia.excusa_motivo.length < 4 ? 'justify-center' : ''}">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                          </svg>
-                          {inasistencia.excusa_motivo}
-                        </span>
-                      {:else}
-                        <span class="flex items-center justify-center">N/A</span>
-                      {/if}
-                    </td>
+          <div class="p-6">
+            <div
+              class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-900"
+            >
+              <table
+                class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+              >
+                <thead class="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >Fecha</th
+                    >
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >Horas</th
+                    >
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >Hora Clase</th
+                    >
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >Detalle</th
+                    >
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >Excusa</th
+                    >
                   </tr>
-                {/each}
-              </tbody>
-            </table>
+                </thead>
+                <tbody
+                  class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900"
+                >
+                  {#each inasistencias as inasistencia (inasistencia.ind)}
+                    <tr
+                      class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-150"
+                    >
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                          <span
+                            class="text-sm font-medium text-gray-900 dark:text-white"
+                            >{inasistencia.fecha}</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <span
+                          class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                        >
+                          {inasistencia.horas}
+                        </span>
+                      </td>
+                      <td
+                        class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400"
+                      >
+                        {inasistencia.hora_clase}
+                      </td>
+                      <td class="px-6 py-4">
+                        {#if inasistencia.detalle}
+                          <div class="flex items-start gap-2">
+                            <span
+                              class="material-symbols-rounded text-lg text-blue-500 mt-0.5"
+                              >info</span
+                            >
+                            <span
+                              class="text-sm text-gray-600 dark:text-gray-300"
+                              >{inasistencia.detalle}</span
+                            >
+                          </div>
+                        {:else}
+                          <span class="text-sm text-gray-400 italic"
+                            >Sin detalle</span
+                          >
+                        {/if}
+                      </td>
+                      <td class="px-6 py-4">
+                        {#if inasistencia.excusa_motivo}
+                          <div class="flex flex-col gap-1">
+                            <span
+                              class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 w-fit"
+                            >
+                              <span class="material-symbols-rounded text-sm"
+                                >check_circle</span
+                              >
+                              Excusada
+                            </span>
+                            <span
+                              class="text-xs text-gray-500 dark:text-gray-400 ml-1"
+                              >{inasistencia.excusa_motivo}</span
+                            >
+                            {#if inasistencia.excusa_causa}
+                              <span class="text-xs text-gray-400 ml-1"
+                                >Causa: {inasistencia.excusa_causa}</span
+                              >
+                            {/if}
+                          </div>
+                        {:else}
+                          <span
+                            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400"
+                          >
+                            <span class="material-symbols-rounded text-sm"
+                              >cancel</span
+                            >
+                            No Excusada
+                          </span>
+                        {/if}
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
           </div>
         {:else}
-          <p class="text-center py-8 {$theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}">No se encontraron inasistencias para los criterios seleccionados.</p>
+          <div
+            class="flex flex-col items-center justify-center h-64 text-center p-8 opacity-60"
+          >
+            <div
+              class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"
+            >
+              <span class="material-symbols-rounded text-5xl text-gray-400"
+                >event_available</span
+              >
+            </div>
+            <p class="text-lg font-medium text-gray-900 dark:text-white">
+              Sin inasistencias
+            </p>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">
+              No se encontraron registros para este periodo.
+            </p>
+          </div>
         {/if}
       </div>
 
-      <div class="p-4 border-t flex justify-end
-                  {$theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}">
-        <button on:click={closeDialog} class="px-6 py-2 rounded-lg text-white font-semibold transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-50
-                    {$theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' : 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-400'}">Cerrar</button>
+      <!-- Footer -->
+      <div
+        class="flex-none p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 flex justify-end"
+      >
+        <button
+          on:click={closeDialog}
+          class="px-6 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700"
+        >
+          Cerrar
+        </button>
       </div>
     </div>
   </div>
 {/if}
 
 <style>
-  /* Remove the old .inasistencias-detallado style as it's now a dialog */
-  /*
-  .inasistencias-detallado {
-    margin: 20px;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
-  */
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
   }
-
-  th, td {
-    border: 1px solid #e2e8f0;
-    padding: 8px;
-    text-align: left;
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
   }
-
-  th {
-    background-color: #f7fafc;
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(156, 163, 175, 0.8);
   }
 </style>
