@@ -35,11 +35,6 @@
 
     // Reactive trigger
     $: if (mounted && docente && asignatura) {
-        console.log("Reactive loadNotas triggered:", {
-            docente,
-            asignatura,
-            tableNotasId,
-        });
         loadNotas(`#${tableNotasId}`, docente, asignatura);
     }
 
@@ -68,8 +63,6 @@
         local.setMinutes(date.getMinutes() - date.getTimezoneOffset());
         return local.toJSON().slice(0, 10);
     };
-
-    const consolelog = console.log;
 
     const valid = function (
         value: any,
@@ -190,7 +183,7 @@
                     datosTabla[rowIdx] = dataRR;
                     row.update(dataRR); // Actualizar la fila visualmente
                 } catch (error) {
-                    consolelog("Error in cellEdited:", error);
+                    // Error in cellEdited
                 }
             },
         };
@@ -205,7 +198,6 @@
                 "DefaultPeriod"
             );
         } catch (error) {
-            consolelog("Error fetching periodo:", error);
             return "DefaultPeriod";
         }
     };
@@ -216,9 +208,7 @@
         asignatura: string,
         periodo: string,
     ) => {
-        consolelog(
-            `Nasignatura: ${nivel}, ${numero}, ${asignatura}, ${periodo}`,
-        );
+        // Nasignatura called
     };
 
     const loadNotas = async (
@@ -227,7 +217,6 @@
         currentAsignatura: string,
     ) => {
         if (!currentDocente) {
-            console.warn("loadNotas: No docente provided");
             return;
         }
 
@@ -235,21 +224,11 @@
 
         const element = document.querySelector(targetTableId);
         if (!element) {
-            console.error(
-                `loadNotas: Element ${targetTableId} not found in DOM`,
-            );
             return;
         }
 
         const per = await getCurrentPeriodo();
         const Elperiodo = initialPeriodo || per;
-
-        console.log("loadNotas: Initializing Tabulator...", {
-            targetTableId,
-            currentDocente,
-            currentAsignatura,
-            Elperiodo,
-        });
 
         if (per !== currentPeriodo && acceso && !acceso.MAESTRO) {
             currentPeriodo = per;
@@ -304,7 +283,6 @@
             ajaxURL: GET_NOTAS_ENDPOINT,
             headerSort: false,
             ajaxResponse: (_url, _params, response: any[]) => {
-                console.log("Tabulator ajaxResponse:", response);
                 // Calcular Val para cada fila antes de renderizar
                 const processed = response.map((item) => {
                     item.Val = calculateRowVal(item);
@@ -331,7 +309,6 @@
         });
 
         tableInstance.on("renderComplete", async () => {
-            console.log("Tabulator renderComplete");
             datosTabla = tableInstance.getData();
         });
 
@@ -398,7 +375,6 @@
 
     const saveInasistencia = async () => {
         if (!DatosEstux) return;
-        console.log("Guardar inasistencia no implementado completamente");
         if (modalInasistencias?.hide) modalInasistencias.hide();
     };
 

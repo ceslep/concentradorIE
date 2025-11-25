@@ -90,7 +90,6 @@
             notasHistory = getUniqueNotas(fetchedNotas);
         } catch (e: any) {
             error = e.message;
-            console.error("Error fetching notas history:", e);
         } finally {
             loading = false;
         }

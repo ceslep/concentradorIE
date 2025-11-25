@@ -72,7 +72,7 @@
         // After all payload values are set, load the concentrador data
         loadConcentradorData();
       } catch (error) {
-        console.error("Error al cargar datos iniciales:", error);
+        // Error loading initial data
       }
     };
 

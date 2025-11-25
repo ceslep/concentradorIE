@@ -41,7 +41,6 @@
       processData(data);
     } catch (e: any) {
       error = e.message;
-      console.error("Error fetching InfoCant data:", e);
     } finally {
       loading = false;
     }

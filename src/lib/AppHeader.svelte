@@ -216,7 +216,7 @@
           style="font-family: var(--font-heading);"
         >
           Tiempo de carga: <span class="text-gradient font-bold"
-            >{$lastDuration}ms</span
+            >{$lastDuration.toFixed(2)}ms</span
           >
         </span>
       </div>

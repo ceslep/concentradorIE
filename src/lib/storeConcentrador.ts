@@ -52,7 +52,6 @@ export async function loadConcentradorData() {
         parsed.set(data);
     } catch (e: any) {
         error.set(e.message);
-        console.error('Error loading concentrador data:', e);
     } finally {
         const end = performance.now();
         lastDuration.set(end - start);

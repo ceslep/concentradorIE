@@ -113,8 +113,6 @@
     selectedAsignaturaNombre = selectedItemName;
     selectedPeriodoForDialog = periodo; // Set the clicked period
 
-    console.log("Debug: est.id for Inasistencias", est.id); // Add this line for debugging
-
     const payloadDetalle: NotasDetalladoPayload = {
       estudiante: est.id,
       nombres: est.nombres,

@@ -11,6 +11,7 @@
         GET_PERIODOS_NOTAS_ENDPOINT,
     } from "../../constants";
     import { payload, selectedAsignatura } from "./storeConcentrador";
+    import GradeDetailsDialog from "./GradeDetailsDialog.svelte";
 
     // Props
     export let tableNotasId: string = "gradesTable2";
@@ -31,9 +32,24 @@
     let isLoading = false;
     let currentEditingCell: any = null;
 
+    // Dialog state
+    let showDialog = false;
+    let dialogData: {
+        columnName: string;
+        aspecto: string | null;
+        porcentaje: string | null;
+        fechaa: string | null;
+        fecha: string | null;
+    } = {
+        columnName: "",
+        aspecto: null,
+        porcentaje: null,
+        fechaa: null,
+        fecha: null,
+    };
+
     // Trigger load when dependencies change
     $: if (mounted && docente && asignatura) {
-        console.log("GradesTable2: Triggering load", { docente, asignatura });
         loadTable();
     }
 
@@ -152,6 +168,35 @@
         return numValue >= parameters.min && numValue <= parameters.max;
     };
 
+    // Handle header click to show grade details
+    const handleHeaderClick = (columnName: string) => {
+        // Only handle N1-N12 columns
+        if (!columnName.startsWith("N") || columnName === "Nombres") return;
+
+        // Extract the number from the column name (e.g., "N1" -> "1")
+        const columnNumber = columnName.replace("N", "");
+
+        // Get the first row of data to extract the details for this column
+        if (tableInstance) {
+            const data = tableInstance.getData();
+            if (data && data.length > 0) {
+                const firstRow = data[0];
+                dialogData = {
+                    columnName: columnName,
+                    aspecto:
+                        firstRow[`aspecto${columnNumber}`] || "No disponible",
+                    porcentaje:
+                        firstRow[`porcentaje${columnNumber}`] ||
+                        "No disponible",
+                    fechaa:
+                        firstRow[`fechaa${columnNumber}`] || "No disponible",
+                    fecha: firstRow[`fecha${columnNumber}`] || "No disponible",
+                };
+                showDialog = true;
+            }
+        }
+    };
+
     // --- Column Definitions ---
 
     function createGradeColumn(title: string, field: string): ColumnDefinition {
@@ -169,6 +214,10 @@
             hozAlign: "right",
             validator: [{ type: valid, parameters: { min: 1, max: 5 } }],
             formatter: gradeFormatter,
+            headerClick: (e: any, column: any) => {
+                // Handle header click
+                handleHeaderClick(column.getField());
+            },
             cellClick: (e: any, cell: any) => {
                 // Manually focus the cell to enable keyboard navigation
                 cell.getElement().focus();
@@ -217,7 +266,6 @@
                 "DefaultPeriod"
             );
         } catch (error) {
-            console.error("Error fetching periodo:", error);
             return "DefaultPeriod";
         }
     };
@@ -230,7 +278,6 @@
         await tick();
         const element = document.getElementById(tableNotasId);
         if (!element) {
-            console.error(`GradesTable2: Element #${tableNotasId} not found`);
             isLoading = false;
             return;
         }
@@ -239,12 +286,6 @@
         const Elperiodo = initialPeriodo || per;
 
         if (tableInstance) tableInstance.destroy();
-
-        console.log("GradesTable2: Initializing Tabulator...", {
-            docente,
-            asignatura,
-            Elperiodo,
-        });
 
         const isMobile = window.innerWidth < 768;
 
@@ -309,7 +350,6 @@
                 headers: { "Content-type": "application/json; charset=utf-8" },
             },
             ajaxResponse: (_url, _params, response: any[]) => {
-                console.log("GradesTable2: Data received", response?.length);
                 // Pre-calculate Val
                 const processedData = response
                     .map((item) => {
@@ -382,6 +422,17 @@
     <div id={tableNotasId} class:blur-content={isLoading}></div>
 </div>
 
+<!-- Grade Details Dialog -->
+<GradeDetailsDialog
+    show={showDialog}
+    columnName={dialogData.columnName}
+    aspecto={dialogData.aspecto}
+    porcentaje={dialogData.porcentaje}
+    fechaa={dialogData.fechaa}
+    fecha={dialogData.fecha}
+    onClose={() => (showDialog = false)}
+/>
+
 <style>
     @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
@@ -444,6 +495,29 @@
 
     :global(.tabulator .tabulator-header .tabulator-col:hover) {
         background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Make grade column headers look clickable */
+    :global(.tabulator .tabulator-header .tabulator-col[tabulator-field^="N"]) {
+        cursor: pointer;
+        position: relative;
+    }
+
+    :global(
+            .tabulator
+                .tabulator-header
+                .tabulator-col[tabulator-field^="N"]:hover
+        ) {
+        background: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    :global(
+            .tabulator
+                .tabulator-header
+                .tabulator-col[tabulator-field^="N"]:active
+        ) {
+        background: rgba(255, 255, 255, 0.15) !important;
+        transform: translateY(1px);
     }
 
     :global(
