@@ -161,7 +161,10 @@
               id="fld-asignacion"
               class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
               bind:value={$payload.Asignacion}
-              on:change={() => updateNiveles()}
+              on:change={() => {
+                updateNiveles();
+                loadConcentradorData();
+              }}
               {disabled}
             >
               {#each sedes as sede}
@@ -251,6 +254,7 @@
               id="fld-periodo"
               class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
               bind:value={$payload.periodo}
+              on:change={() => loadConcentradorData()}
               {disabled}
             >
               {#each periods as period}
@@ -279,6 +283,7 @@
               id="fld-year"
               class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
               bind:value={$payload.year}
+              on:change={() => loadConcentradorData()}
               {disabled}
             >
               {#each years as yearOption}
@@ -312,6 +317,7 @@
               on:change={(e) => {
                 const target = e.target as HTMLSelectElement;
                 setActivos(target.value);
+                loadConcentradorData();
               }}
               {disabled}
             >

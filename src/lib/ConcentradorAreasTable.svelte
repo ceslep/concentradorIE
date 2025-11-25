@@ -122,7 +122,31 @@
   }
 </script>
 
-{#if $parsed && !$loading && $concentradorType === "areas"}
+{#if $loading}
+  <div
+    class="rounded-2xl shadow-xl overflow-hidden flex-grow flex flex-col {bgSurface} border {borderTable} font-sans min-h-[400px]"
+    style="font-family: 'Inter', sans-serif;"
+    in:fade={{ duration: 200 }}
+  >
+    <div class="flex flex-col items-center justify-center h-full py-20 gap-6">
+      <div class="relative">
+        <div
+          class="w-16 h-16 border-4 border-indigo-200 dark:border-indigo-900 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin"
+        ></div>
+        <div
+          class="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-indigo-400 dark:border-t-indigo-300 rounded-full animate-spin"
+          style="animation-duration: 1.5s; animation-direction: reverse;"
+        ></div>
+      </div>
+      <div class="text-center">
+        <p class="text-lg font-semibold {textPrimary} mb-1">
+          Cargando datos...
+        </p>
+        <p class="text-sm {textSecondary}">Por favor espera un momento</p>
+      </div>
+    </div>
+  </div>
+{:else if $parsed && $concentradorType === "areas"}
   <div
     class="rounded-2xl shadow-xl overflow-hidden flex-grow flex flex-col {bgSurface} border {borderTable} font-sans"
     style="font-family: 'Inter', sans-serif;"
@@ -136,28 +160,30 @@
           <tr>
             <th
               scope="col"
-              class="p-4 text-left sticky left-0 z-30 w-max {bgHeader} border-b {borderTable} min-w-[250px]"
+              class="p-2 text-left sticky left-0 z-30 w-max {bgHeader} border-b {borderTable} min-w-[220px]"
               rowspan={$showPeriodos ? 2 : 1}
             >
-              <div class="flex flex-col gap-2">
+              <div class="flex flex-col gap-1">
                 <span
-                  class="flex items-center gap-1.5 text-xs font-bold text-indigo-500 dark:text-indigo-400"
+                  class="flex items-center gap-1 text-[10px] font-bold text-indigo-500 dark:text-indigo-400"
                 >
-                  <span class="material-symbols-rounded text-lg">school</span>
+                  <span class="material-symbols-rounded text-base">school</span>
                   ESTUDIANTE
                 </span>
                 <div class="relative group">
                   <span
-                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 group-focus-within:text-indigo-500 transition-colors"
+                    class="absolute inset-y-0 left-0 flex items-center pl-2 text-gray-400 group-focus-within:text-indigo-500 transition-colors"
                   >
-                    <span class="material-symbols-rounded text-lg">search</span>
+                    <span class="material-symbols-rounded text-base"
+                      >search</span
+                    >
                   </span>
                   <input
                     type="text"
                     aria-label="Buscar estudiante"
                     placeholder="Buscar..."
                     bind:value={search}
-                    class="w-full pl-9 pr-3 py-2 rounded-xl text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+                    class="w-full pl-7 pr-2 py-1 rounded-lg text-xs border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
                   />
                 </div>
               </div>
@@ -166,19 +192,15 @@
               {#if itemAbrev}
                 <th
                   scope="col"
-                  class="p-1 whitespace-nowrap text-center border-b {borderTable} min-w-[100px]"
+                  class="p-0.5 whitespace-nowrap text-center border-b {borderTable} min-w-[80px]"
                 >
                   <div
-                    class="w-full h-full px-3 py-2 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-1 {textSecondary}"
+                    class="w-full h-full px-2 py-1 rounded-md text-[10px] font-bold flex flex-col items-center justify-center {textSecondary}"
                   >
                     <span
                       class="line-clamp-1"
                       title={getItemName(itemAbrev.abreviatura)}
                       >{getItemName(itemAbrev.abreviatura)}</span
-                    >
-                    <span
-                      class="text-[10px] font-normal opacity-60 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full"
-                      >{itemAbrev.abreviatura}</span
                     >
                   </div>
                 </th>
@@ -190,11 +212,11 @@
             <tr class={bgHeader}>
               {#each $currentOrden as itemAbrev}
                 {#if itemAbrev}
-                  <th class="p-2 border-b {borderTable}">
-                    <div class="flex justify-center gap-1">
+                  <th class="p-1 border-b {borderTable}">
+                    <div class="flex justify-center gap-0.5">
                       {#each $selectedPeriodos.filter((p: string) => p !== "DEF") as per}
                         <span
-                          class="w-6 h-6 flex items-center justify-center rounded-full text-[10px] font-bold border {getPeriodColorClass(
+                          class="w-5 h-5 flex items-center justify-center rounded-full text-[9px] font-bold border {getPeriodColorClass(
                             per,
                           )}"
                           title="Período {getShortPeriodName(per)}"
@@ -203,7 +225,7 @@
                         </span>
                       {/each}
                       <span
-                        class="w-6 h-6 flex items-center justify-center rounded-full text-[10px] font-bold border {getPeriodColorClass(
+                        class="w-5 h-5 flex items-center justify-center rounded-full text-[9px] font-bold border {getPeriodColorClass(
                           'DEF',
                         )}"
                         title="Definitiva"

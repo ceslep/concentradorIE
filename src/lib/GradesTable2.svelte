@@ -16,7 +16,6 @@
     export let tableNotasId: string = "gradesTable2";
     export let docenteId: string;
     export let initialPeriodo: string | undefined = undefined;
-    export let acceso: any = {};
 
     // Reactive State
     $: docente = docenteId || $payload.Asignacion;
@@ -30,6 +29,7 @@
     let mounted = false;
     let currentPeriodo: string = "";
     let isLoading = false;
+    let currentEditingCell: any = null;
 
     // Trigger load when dependencies change
     $: if (mounted && docente && asignatura) {
@@ -128,16 +128,28 @@
             cell.getElement().style.fontWeight = "";
         }
 
-        return isNaN(num) ? val : num.toFixed(2);
+        return isNaN(num) ? val : num.toFixed(1);
     };
 
     const valid = (value: any, parameters: { min: number; max: number }) => {
+        // Allow empty values
+        if (
+            value === "" ||
+            value === " " ||
+            value === null ||
+            value === undefined
+        ) {
+            return true;
+        }
+
+        // Convert to number and validate range
         const numValue = parseFloat(value);
-        return (
-            !isNaN(numValue) &&
-            numValue >= parameters.min &&
-            numValue <= parameters.max
-        );
+
+        if (isNaN(numValue)) {
+            return false;
+        }
+
+        return numValue >= parameters.min && numValue <= parameters.max;
     };
 
     // --- Column Definitions ---
@@ -148,17 +160,37 @@
             field: field,
             editor: "number",
             editorParams: {
-                verticalNavigation: "table",
+                verticalNavigation: "editor",
                 min: 1,
                 max: 5,
                 step: 0.1,
+                selectContents: true,
             },
             hozAlign: "right",
             validator: [{ type: valid, parameters: { min: 1, max: 5 } }],
             formatter: gradeFormatter,
-            cellEdited: (e: any) => {
-                const row = e.getRow();
+            cellClick: (e: any, cell: any) => {
+                // Manually focus the cell to enable keyboard navigation
+                cell.getElement().focus();
+
+                // Prevent default action (opening editor)
+                // This ensures we only edit when pressing Enter (handled by the global keydown listener)
+                return false;
+            },
+            cellEdited: (cell: any) => {
+                const row = cell.getRow();
                 const data = row.getData();
+
+                // Get the current value from the cell
+                const cellValue = cell.getValue();
+
+                // Force format to x.y (one decimal place)
+                const numValue = parseFloat(cellValue);
+                if (!isNaN(numValue)) {
+                    data[field] = numValue.toFixed(1);
+                } else {
+                    data[field] = cellValue; // Keep original if not a number
+                }
 
                 // Recalculate Val
                 data.Val = calculateRowVal(data);
@@ -224,6 +256,12 @@
             reactiveData: true, // Enable reactive data
             ajaxContentType: "json", // Force JSON payload
             responsiveLayout: false, // Disable responsive layout
+            keybindings: {
+                navUp: "up",
+                navDown: "down",
+                navLeft: "left",
+                navRight: "right",
+            },
             columnDefaults: {
                 headerSort: false, // Disable header sorting for all columns
                 headerHozAlign: "center", // Center header names
@@ -234,8 +272,6 @@
                     field: "Nombres",
                     width: isMobile ? 200 : 300,
                     frozen: !isMobile, // Freeze name column only on desktop
-                    headerFilter: "input",
-                    headerFilterPlaceholder: "Buscar...",
                 },
                 {
                     title: "Val",
@@ -289,6 +325,30 @@
 
                 return processedData;
             },
+        });
+
+        // Add keyboard event handler for Enter key editing
+        // Add keyboard event handler for Enter key editing
+        element.addEventListener("keydown", (e: KeyboardEvent) => {
+            if (e.key === "Enter") {
+                const target = e.target as HTMLElement;
+                // Check if the focused element is a cell
+                if (target && target.classList.contains("tabulator-cell")) {
+                    const field = target.getAttribute("tabulator-field");
+                    // Only edit if it's a grade column (N1-N12)
+                    if (field && field.startsWith("N")) {
+                        const rowElement = target.closest(".tabulator-row");
+                        if (rowElement) {
+                            const row = tableInstance.getRow(rowElement);
+                            const cell = row.getCell(field);
+                            if (cell) {
+                                cell.edit();
+                                e.preventDefault();
+                            }
+                        }
+                    }
+                }
+            }
         });
     };
 
@@ -479,32 +539,8 @@
     :global(.tabulator .tabulator-cell[tabulator-field="Nombres"]) {
         font-weight: 600;
         color: #0f172a;
-        background: linear-gradient(90deg, #ffffff 0%, #f9fafb 100%);
+        background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
         font-size: 14px;
-        letter-spacing: -0.01em;
-    }
-
-    :global(.dark .tabulator .tabulator-cell[tabulator-field="Nombres"]) {
-        color: #f8fafc;
-        background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
-    }
-
-    /* Val Column - Highlighted */
-    :global(.tabulator .tabulator-cell[tabulator-field="Val"]) {
-        font-weight: 700;
-        font-size: 16px;
-        text-align: center;
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        color: #78350f;
-        border-radius: 6px;
-        margin: 4px;
-        padding: 8px;
-        box-shadow: 0 2px 4px rgba(251, 191, 36, 0.2);
-    }
-
-    :global(.dark .tabulator .tabulator-cell[tabulator-field="Val"]) {
-        background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
-        color: #fef3c7;
     }
 
     /* Grade Cells - Number columns */
@@ -542,6 +578,26 @@
         font-weight: 600;
         font-family: "Inter", sans-serif;
         font-size: 14px;
+    }
+
+    /* Hide spin buttons for number inputs */
+    :global(
+            .tabulator
+                .tabulator-cell.tabulator-editing
+                input[type="number"]::-webkit-inner-spin-button
+        ),
+    :global(
+            .tabulator
+                .tabulator-cell.tabulator-editing
+                input[type="number"]::-webkit-outer-spin-button
+        ) {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    :global(.tabulator .tabulator-cell.tabulator-editing input[type="number"]) {
+        -moz-appearance: textfield;
+        appearance: textfield;
     }
 
     :global(.dark .tabulator .tabulator-cell.tabulator-editing input) {
