@@ -579,8 +579,6 @@
 
     :global(.tabulator .tabulator-row:hover) {
         background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%) !important;
-        transform: translateX(2px);
-        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1);
     }
 
     :global(.dark .tabulator .tabulator-row:hover) {
@@ -615,6 +613,11 @@
         color: #0f172a;
         background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
         font-size: 14px;
+    }
+
+    :global(.dark .tabulator .tabulator-cell[tabulator-field="Nombres"]) {
+        color: #f1f5f9;
+        background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
     }
 
     /* Grade Cells - Number columns */
