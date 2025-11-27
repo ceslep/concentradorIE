@@ -16,30 +16,21 @@
     let loading: boolean = false;
     let error: string | null = null;
 
-    let columnNames: string[] = [];
-
-    // Reactivo para calcular columnas válidas y ordenarlas
-    $: {
-        if (notasHistory.length > 0) {
-            const allKeys = Object.keys(notasHistory[0]);
-            const notaKeys = allKeys
-                .filter((key) => {
-                    if (!key.startsWith("nota") || key.length > 6) return false;
-                    const suffix = key.substring(4);
-                    if (!/^\d+$/.test(suffix)) return false;
-                    const num = parseInt(suffix, 10);
-                    return num >= 1 && num <= 12;
-                })
-                .sort(
-                    (a, b) =>
-                        parseInt(a.substring(4), 10) -
-                        parseInt(b.substring(4), 10),
-                );
-            columnNames = notaKeys;
-        } else {
-            columnNames = [];
-        }
-    }
+    // Siempre mostrar todas las columnas N1..N12
+    let columnNames: string[] = [
+        "nota1",
+        "nota2",
+        "nota3",
+        "nota4",
+        "nota5",
+        "nota6",
+        "nota7",
+        "nota8",
+        "nota9",
+        "nota10",
+        "nota11",
+        "nota12",
+    ];
 
     const dispatch = createEventDispatcher();
 
