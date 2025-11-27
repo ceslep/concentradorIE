@@ -19,6 +19,7 @@ export const GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT = `${API_BASE_URL}/consolidado
 export const GET_CONVIVENCIA_DETALLADO_ENDPOINT = `${API_BASE_URL}/convivenciaDetallado.php`;
 export const GET_NOTAS_ENDPOINT = `${API_BASE_URL}/getNotas.php`;
 export const GET_PERIODOS_NOTAS_ENDPOINT = `${API_BASE_URL}/getPeriodosNotas.php`;
+export const LOGIN_ENDPOINT = `${API_BASE_URL}/login.php`;
 
 // Ejemplo de uso (fetch):
 // fetch(GET_CONCENTRADOR_ENDPOINT)

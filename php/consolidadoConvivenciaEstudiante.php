@@ -8,6 +8,9 @@ $mysqli = new mysqli($host, $user, $pass, $database);
 $mysqli->query("SET NAMES utf8");
 $mysqli->set_charset('utf8');
 
+// Leer datos del cuerpo
+$input = json_decode(file_get_contents("php://input"), true);
+
 if (!empty($input['debug']) && $input['debug'] === true) {
     $DEBUG_MODE = true;
 }

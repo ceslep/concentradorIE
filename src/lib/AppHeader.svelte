@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { createEventDispatcher } from "svelte";
   import { theme } from "./themeStore";
   import {
     loadConcentradorData,
@@ -12,10 +13,16 @@
   export let showPayloadForm: boolean;
   export let showInfoCantDialog: boolean;
 
+  const dispatch = createEventDispatcher();
+
   function handleConcentradorTypeChange(event: Event) {
     const target = event.target as HTMLInputElement;
     concentradorType.set(target.checked ? "areas" : "asignaturas");
     loadConcentradorData(); // Reload data when concentrador type changes
+  }
+
+  function handleLogout() {
+    dispatch("logout");
   }
 </script>
 
@@ -193,6 +200,24 @@
           <span class="material-symbols-rounded text-xl">info</span>
         </button>
       </div>
+
+      <!-- Divider -->
+      <div
+        class="h-6 w-px {$theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}"
+      ></div>
+
+      <!-- Logout Button -->
+      <button
+        on:click={handleLogout}
+        class="btn-premium p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 hover:scale-105 shadow-md {$theme ===
+        'dark'
+          ? 'bg-gradient-to-br from-red-600 to-rose-600 text-white hover:from-red-500 hover:to-rose-500'
+          : 'bg-gradient-to-br from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600'}"
+        aria-label="Cerrar Sesión"
+        title="Cerrar Sesión"
+      >
+        <span class="material-symbols-rounded text-xl">logout</span>
+      </button>
     </div>
   </div>
 
