@@ -1,24 +1,84 @@
 <script lang="ts">
+    /**
+     * GradesTable2 - Enhanced Grades Table Component
+     *
+     * A highly optimized, feature-rich grades table using Tabulator 6.3
+     *
+     * Features:
+     * - Virtual scrolling for performance
+     * - Inline editing with validation
+     * - Export to Excel/CSV
+     * - Column filters and global search
+     * - Auto-save functionality (optional)
+     * - Undo/Redo support
+     * - Responsive design with dark mode
+     * - Keyboard shortcuts
+     *
+     * @component
+     */
     import { onMount, onDestroy, tick } from "svelte";
-    import { fade } from "svelte/transition";
+    import { fade, scale } from "svelte/transition";
     import {
         TabulatorFull as Tabulator,
         type ColumnDefinition,
+        type CellComponent,
+        type RowComponent,
     } from "tabulator-tables";
-    import "tabulator-tables/dist/css/tabulator.min.css"; // Import styles
+    import "tabulator-tables/dist/css/tabulator.min.css";
     import {
         GET_NOTAS_ENDPOINT,
         GET_PERIODOS_NOTAS_ENDPOINT,
     } from "../../constants";
     import { payload, selectedAsignatura } from "./storeConcentrador";
     import GradeDetailsDialog from "./GradeDetailsDialog.svelte";
+    import {
+        calculateRowVal,
+        gradeFormatter,
+        validateGrade,
+        toDateInputValue,
+        debounce,
+        extractColumnNumber,
+        type GradeData,
+        type HistoryEntry,
+    } from "./utils/gradeTableUtils";
 
-    // Props
+    // ========== PROPS ==========
+
+    /** Unique ID for the table element */
     export let tableNotasId: string = "gradesTable2";
+
+    /** Teacher/Docente ID */
     export let docenteId: string;
+
+    /** Initial period to load */
     export let initialPeriodo: string | undefined = undefined;
 
-    // Reactive State
+    /** Enable export functionality */
+    export let enableExport: boolean = true;
+
+    /** Enable column filters */
+    export let enableFilters: boolean = true;
+
+    /** Enable global search */
+    export let enableSearch: boolean = true;
+
+    /** Enable auto-save (requires onAutoSave callback) */
+    export let enableAutoSave: boolean = false;
+
+    /** Auto-save interval in milliseconds */
+    export let autoSaveInterval: number = 30000;
+
+    /** Callback for auto-save functionality */
+    export let onAutoSave: ((changes: any[]) => Promise<void>) | null = null;
+
+    /** Enable undo/redo functionality */
+    export let enableUndoRedo: boolean = true;
+
+    /** Maximum undo history size */
+    export let maxHistorySize: number = 50;
+
+    // ========== REACTIVE STATE ==========
+
     $: docente = docenteId || $payload.Asignacion;
     $: asignatura = $selectedAsignatura;
     $: nivel = $payload.nivel;
@@ -26,11 +86,23 @@
     $: asignation = $payload.Asignacion;
     $: year = $payload.year;
 
+    // ========== COMPONENT STATE ==========
+
     let tableInstance: any;
     let mounted = false;
     let currentPeriodo: string = "";
     let isLoading = false;
-    let currentEditingCell: any = null;
+    let searchQuery = "";
+
+    // Changes tracking
+    let pendingChanges: Map<string, any> = new Map();
+    let isSaving = false;
+    let lastSaveTime: Date | null = null;
+    let saveError: string | null = null;
+
+    // Undo/Redo state
+    let undoStack: HistoryEntry[] = [];
+    let redoStack: HistoryEntry[] = [];
 
     // Dialog state
     let showDialog = false;
@@ -48,135 +120,53 @@
         fecha: null,
     };
 
-    // Trigger load when dependencies change
-    $: if (mounted && docente && asignatura) {
-        loadTable();
+    // ========== COMPUTED VALUES ==========
+
+    $: canUndo = undoStack.length > 0 && !isSaving;
+    $: canRedo = redoStack.length > 0 && !isSaving;
+    $: hasChanges = pendingChanges.size > 0;
+    $: saveStatusText = getSaveStatusText();
+
+    // ========== HELPER FUNCTIONS ==========
+
+    function getSaveStatusText(): string {
+        if (isSaving) return "Guardando...";
+        if (saveError) return `Error: ${saveError}`;
+        if (hasChanges) return `${pendingChanges.size} cambios pendientes`;
+        if (lastSaveTime) {
+            const elapsed = Date.now() - lastSaveTime.getTime();
+            if (elapsed < 60000) return "Guardado hace un momento";
+            return `Guardado hace ${Math.floor(elapsed / 60000)} min`;
+        }
+        return "Sin cambios";
     }
 
-    // --- Helpers ---
-
-    const toDateInputValue = (date: Date) => {
-        const local = new Date(date);
-        local.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-        return local.toJSON().slice(0, 10);
-    };
-
-    const countNonEmptyGroups = (array: any[]) => {
-        const groups = [
-            array.slice(0, 3), // N1-N3
-            array.slice(3, 6), // N4-N6
-            array.slice(6, 9), // N7-N9
-            array.slice(9, 10), // N10
-            array.slice(10, 11), // N11
-        ];
-        const isEmpty = (val: any) => !val || String(val).trim() === "";
-        return groups.map(
-            (group) => group.filter((val) => !isEmpty(val)).length,
-        );
-    };
-
-    const calculateRowVal = (data: any) => {
-        const noteFields = [
-            "N1",
-            "N2",
-            "N3",
-            "N4",
-            "N5",
-            "N6",
-            "N7",
-            "N8",
-            "N9",
-            "N10",
-            "N11",
-        ];
-        const noteValues = noteFields.map((f) => data[f] || " ");
-        const counts = countNonEmptyGroups(noteValues);
-
-        let Saber35 = 0,
-            Hacer35 = 0,
-            Ser20 = 0,
-            Autoe5 = 0,
-            Coev5 = 0;
-
-        noteFields.forEach((field, idx) => {
-            const val = data[field];
-            if (val !== " " && val !== "" && val != null) {
-                const num = parseFloat(val);
-                if (!isNaN(num)) {
-                    const nIdx = (idx + 1).toString();
-                    if (["1", "2", "3"].includes(nIdx)) Saber35 += num;
-                    else if (["4", "5", "6"].includes(nIdx)) Hacer35 += num;
-                    else if (["7", "8", "9"].includes(nIdx)) Ser20 += num;
-                    else if (nIdx === "10") Autoe5 = num;
-                    else if (nIdx === "11") Coev5 = num;
-                }
-            }
-        });
-
-        const saberAvg = counts[0] ? Saber35 / counts[0] : 0;
-        const hacerAvg = counts[1] ? Hacer35 / counts[1] : 0;
-        const serAvg = counts[2] ? Ser20 / counts[2] : 0;
-
-        const finalVal =
-            saberAvg * 0.35 +
-            hacerAvg * 0.35 +
-            serAvg * 0.2 +
-            Autoe5 * 0.05 +
-            Coev5 * 0.05;
-
-        return finalVal.toFixed(2);
-    };
-
-    const gradeFormatter = (cell: any) => {
-        const val = cell.getValue();
-        if (val === " " || val === "" || val === null || val === undefined) {
-            cell.getElement().style.color = ""; // Reset color
-            return "";
+    /**
+     * Fetches the current active period from the backend
+     */
+    const getCurrentPeriodo = async (): Promise<string> => {
+        try {
+            const res = await fetch(GET_PERIODOS_NOTAS_ENDPOINT);
+            const periodos = await res.json();
+            return (
+                periodos.find((p: any) => p.selected === "selected")?.nombre ||
+                "DefaultPeriod"
+            );
+        } catch (error) {
+            console.error("Error fetching periods:", error);
+            return "DefaultPeriod";
         }
-        const num = parseFloat(val);
-
-        // Pintar de rojo si es menor a 3.0
-        if (!isNaN(num) && num < 3.0) {
-            cell.getElement().style.color = "#ef4444"; // red-500
-            cell.getElement().style.fontWeight = "bold";
-        } else {
-            cell.getElement().style.color = ""; // Reset color
-            cell.getElement().style.fontWeight = "";
-        }
-
-        return isNaN(num) ? val : num.toFixed(1);
     };
 
-    const valid = (value: any, parameters: { min: number; max: number }) => {
-        // Allow empty values
-        if (
-            value === "" ||
-            value === " " ||
-            value === null ||
-            value === undefined
-        ) {
-            return true;
-        }
-
-        // Convert to number and validate range
-        const numValue = parseFloat(value);
-
-        if (isNaN(numValue)) {
-            return false;
-        }
-
-        return numValue >= parameters.min && numValue <= parameters.max;
-    };
-
-    // Handle header click to show grade details
+    /**
+     * Handles header click to show grade details dialog
+     */
     const handleHeaderClick = (columnName: string) => {
         // Only handle N1-N12 columns
         if (!columnName.startsWith("N") || columnName === "Nombres") return;
 
-        // Extract the number from the column name (e.g., "N1" -> "1")
-        const columnNumber = columnName.replace("N", "");
+        const columnNumber = extractColumnNumber(columnName);
 
-        // Get the first row of data to extract the details for this column
         if (tableInstance) {
             const data = tableInstance.getData();
             if (data && data.length > 0) {
@@ -197,83 +187,287 @@
         }
     };
 
-    // --- Column Definitions ---
+    /**
+     * Adds an action to the undo stack
+     */
+    const pushToUndoStack = (entry: HistoryEntry) => {
+        if (!enableUndoRedo) return;
 
+        undoStack.push(entry);
+        if (undoStack.length > maxHistorySize) {
+            undoStack.shift(); // Remove oldest entry
+        }
+        redoStack = []; // Clear redo stack on new action
+    };
+
+    /**
+     * Tracks a cell change for auto-save and undo
+     */
+    const trackChange = (
+        rowId: string,
+        field: string,
+        oldValue: any,
+        newValue: any,
+    ) => {
+        const key = `${rowId}-${field}`;
+        pendingChanges.set(key, { rowId, field, newValue });
+
+        if (enableUndoRedo) {
+            pushToUndoStack({
+                rowId,
+                field,
+                oldValue,
+                newValue,
+                timestamp: Date.now(),
+            });
+        }
+    };
+
+    /**
+     * Performs undo action
+     */
+    const performUndo = () => {
+        if (!canUndo || !tableInstance) return;
+
+        const entry = undoStack.pop();
+        if (!entry) return;
+
+        redoStack.push(entry);
+
+        // Find and update the row
+        const rows = tableInstance.getRows();
+        const row = rows.find((r: any) => r.getData().id === entry.rowId);
+
+        if (row) {
+            const data = row.getData();
+            data[entry.field] = entry.oldValue;
+
+            // Recalculate Val
+            if (entry.field.startsWith("N")) {
+                data.Val = calculateRowVal(data);
+            }
+
+            row.update(data);
+
+            // Remove from pending changes
+            const key = `${entry.rowId}-${entry.field}`;
+            pendingChanges.delete(key);
+        }
+    };
+
+    /**
+     * Performs redo action
+     */
+    const performRedo = () => {
+        if (!canRedo || !tableInstance) return;
+
+        const entry = redoStack.pop();
+        if (!entry) return;
+
+        undoStack.push(entry);
+
+        // Find and update the row
+        const rows = tableInstance.getRows();
+        const row = rows.find((r: any) => r.getData().id === entry.rowId);
+
+        if (row) {
+            const data = row.getData();
+            data[entry.field] = entry.newValue;
+
+            // Recalculate Val
+            if (entry.field.startsWith("N")) {
+                data.Val = calculateRowVal(data);
+            }
+
+            row.update(data);
+
+            // Add back to pending changes
+            const key = `${entry.rowId}-${entry.field}`;
+            pendingChanges.set(key, {
+                rowId: entry.rowId,
+                field: entry.field,
+                newValue: entry.newValue,
+            });
+        }
+    };
+
+    /**
+     * Saves pending changes (auto-save or manual)
+     */
+    const saveChanges = async () => {
+        if (!hasChanges || isSaving || !onAutoSave) return;
+
+        isSaving = true;
+        saveError = null;
+
+        try {
+            const changes = Array.from(pendingChanges.values());
+            await onAutoSave(changes);
+
+            pendingChanges.clear();
+            lastSaveTime = new Date();
+            pendingChanges = new Map(); // Trigger reactivity
+        } catch (error: any) {
+            saveError = error.message || "Error al guardar";
+            console.error("Save error:", error);
+        } finally {
+            isSaving = false;
+        }
+    };
+
+    // Debounced save for auto-save
+    const debouncedSave = debounce(saveChanges, 2000);
+
+    /**
+     * Exports table data to Excel format
+     */
+    const exportToExcel = () => {
+        if (!tableInstance) return;
+
+        const filename = `Notas_${asignatura}_${currentPeriodo}_${year}.xlsx`;
+        tableInstance.download("xlsx", filename, {
+            sheetName: "Calificaciones",
+        });
+    };
+
+    /**
+     * Exports table data to CSV format
+     */
+    const exportToCSV = () => {
+        if (!tableInstance) return;
+
+        const filename = `Notas_${asignatura}_${currentPeriodo}_${year}.csv`;
+        tableInstance.download("csv", filename);
+    };
+
+    /**
+     * Handles global search across all columns
+     */
+    const handleSearch = () => {
+        if (!tableInstance) return;
+
+        if (searchQuery.trim() === "") {
+            tableInstance.clearFilter();
+        } else {
+            tableInstance.setFilter([
+                { field: "Nombres", type: "like", value: searchQuery },
+            ]);
+        }
+    };
+
+    /**
+     * Clears all filters and search
+     */
+    const clearFilters = () => {
+        searchQuery = "";
+        if (tableInstance) {
+            tableInstance.clearFilter();
+            tableInstance.clearHeaderFilter();
+        }
+    };
+
+    /**
+     * Creates a grade column definition
+     */
     function createGradeColumn(title: string, field: string): ColumnDefinition {
         return {
             title: title,
             field: field,
-            editor: "number",
+            editor: "input",
             editorParams: {
-                verticalNavigation: "editor",
-                min: 1,
-                max: 5,
-                step: 0.1,
                 selectContents: true,
             },
             hozAlign: "right",
-            validator: [{ type: valid, parameters: { min: 1, max: 5 } }],
+            validator: [
+                { type: validateGrade, parameters: { min: 1, max: 5 } },
+            ],
             formatter: gradeFormatter,
+            headerFilter: enableFilters ? "input" : undefined,
+            headerFilterPlaceholder: "Filtrar...",
             headerClick: (e: any, column: any) => {
-                // Handle header click
                 handleHeaderClick(column.getField());
             },
-            cellClick: (e: any, cell: any) => {
-                // Manually focus the cell to enable keyboard navigation
-                cell.getElement().focus();
-
-                // Prevent default action (opening editor)
-                // This ensures we only edit when pressing Enter (handled by the global keydown listener)
-                return false;
+            headerTooltip: (column: any) => {
+                const field = column.getField();
+                return `Click para ver detalles de ${field}`;
             },
-            cellEdited: (cell: any) => {
+            cellEdited: (cell: CellComponent) => {
                 const row = cell.getRow();
                 const data = row.getData();
+                const oldValue = data[field];
 
-                // Get the current value from the cell
-                const cellValue = cell.getValue();
+                // Obtener el valor actual de la celda (ya procesado por el editor)
+                let cellValue = cell.getValue();
 
-                // Force format to x.y (one decimal place)
-                const numValue = parseFloat(cellValue);
-                if (!isNaN(numValue)) {
-                    data[field] = numValue.toFixed(1);
+                // Limpiar y validar el input
+                if (
+                    cellValue !== null &&
+                    cellValue !== undefined &&
+                    cellValue !== ""
+                ) {
+                    // Eliminar caracteres no numéricos excepto el punto
+                    cellValue = String(cellValue).replace(/[^\d.]/g, "");
+
+                    const numValue = parseFloat(cellValue);
+
+                    if (!isNaN(numValue)) {
+                        // Asegurar que esté entre 1 y 5
+                        const clampedValue = Math.max(1, Math.min(5, numValue));
+                        // Formatear a 1 decimal
+                        const formattedValue = clampedValue.toFixed(1);
+
+                        // ✅ USAR cell.setValue() PARA ACTUALIZAR LA CELDA
+                        cell.setValue(formattedValue);
+
+                        // Actualizar la fecha si es necesario
+                        const idx = extractColumnNumber(field);
+                        const fechaKey = `fecha${idx}`;
+                        if (!data[fechaKey])
+                            data[fechaKey] = toDateInputValue(new Date());
+
+                        // Recalcular Val
+                        data.Val = calculateRowVal(data as GradeData);
+
+                        // Trackear el cambio
+                        const rowId = data.id || data.Nombres;
+                        trackChange(rowId, field, oldValue, formattedValue);
+
+                        // Resaltar la celda modificada
+                        cell.getElement().classList.add("cell-modified");
+                        cell.getElement().offsetHeight; // Force reflow to restart animation if needed
+
+                        // ✅ ACTUALIZAR LA FILA COMPLETA PARA QUE TABULATOR REFLEJE LOS CAMBIOS
+                        row.update(data);
+
+                        // Trigger auto-save if enabled
+                        if (enableAutoSave) {
+                            debouncedSave();
+                        }
+                    } else {
+                        // Si no es un número válido, establecer vacío
+                        cell.setValue("");
+                        data[field] = "";
+                        data.Val = calculateRowVal(data as GradeData);
+                        row.update(data);
+                    }
                 } else {
-                    data[field] = cellValue; // Keep original if not a number
+                    // Si el valor es vacío o nulo
+                    cell.setValue("");
+                    data[field] = "";
+                    data.Val = calculateRowVal(data as GradeData);
+                    row.update(data);
                 }
-
-                // Recalculate Val
-                data.Val = calculateRowVal(data);
-
-                // Update date if missing
-                const idx = field.replace("N", "");
-                const fechaKey = `fecha${idx}`;
-                if (!data[fechaKey])
-                    data[fechaKey] = toDateInputValue(new Date());
-
-                row.update(data);
             },
         };
     }
 
-    // --- Main Logic ---
-
-    const getCurrentPeriodo = async () => {
-        try {
-            const res = await fetch(GET_PERIODOS_NOTAS_ENDPOINT);
-            const periodos = await res.json();
-            return (
-                periodos.find((p: any) => p.selected === "selected")?.nombre ||
-                "DefaultPeriod"
-            );
-        } catch (error) {
-            return "DefaultPeriod";
-        }
-    };
-
+    /**
+     * Loads and initializes the Tabulator table
+     */
     const loadTable = async () => {
         if (!docente) return;
 
-        isLoading = true; // Start loading
+        isLoading = true;
 
         await tick();
         const element = document.getElementById(tableNotasId);
@@ -284,6 +478,7 @@
 
         const per = await getCurrentPeriodo();
         const Elperiodo = initialPeriodo || per;
+        currentPeriodo = Elperiodo;
 
         if (tableInstance) tableInstance.destroy();
 
@@ -291,12 +486,13 @@
 
         tableInstance = new Tabulator(element, {
             height: "100%",
-            layout: "fitDataTable", // Allow horizontal scroll
-            renderVertical: "basic", // Disable virtualization for modals
-            placeholder: "No hay datos",
-            reactiveData: true, // Enable reactive data
-            ajaxContentType: "json", // Force JSON payload
-            responsiveLayout: false, // Disable responsive layout
+            layout: "fitDataTable",
+            renderVertical: "virtual",
+            placeholder: "No hay datos disponibles",
+            reactiveData: true,
+            ajaxContentType: "json",
+            responsiveLayout: false,
+            editTriggerEvent: "click",
             keybindings: {
                 navUp: "up",
                 navDown: "down",
@@ -304,15 +500,17 @@
                 navRight: "right",
             },
             columnDefaults: {
-                headerSort: false, // Disable header sorting for all columns
-                headerHozAlign: "center", // Center header names
+                headerSort: false,
+                headerHozAlign: "center",
             },
             columns: [
                 {
                     title: "Nombres",
                     field: "Nombres",
                     width: isMobile ? 200 : 300,
-                    frozen: !isMobile, // Freeze name column only on desktop
+                    frozen: !isMobile,
+                    headerFilter: enableFilters ? "input" : undefined,
+                    headerFilterPlaceholder: "Buscar...",
                 },
                 {
                     title: "Val",
@@ -320,7 +518,8 @@
                     hozAlign: "center",
                     width: 60,
                     formatter: gradeFormatter,
-                    frozen: !isMobile, // Freeze Val column only on desktop
+                    frozen: !isMobile,
+                    tooltip: "Valoración final calculada",
                 },
                 createGradeColumn("N1", "N1"),
                 createGradeColumn("N2", "N2"),
@@ -342,7 +541,7 @@
                 numero,
                 asignatura,
                 periodo: Elperiodo,
-                asignacion: asignation,
+                asignation,
                 year,
             },
             ajaxConfig: {
@@ -352,57 +551,217 @@
             ajaxResponse: (_url, _params, response: any[]) => {
                 // Pre-calculate Val
                 const processedData = response
-                    .map((item) => {
+                    .map((item, index) => {
+                        item.id = item.id || `row-${index}`;
                         item.Val = calculateRowVal(item);
                         return item;
                     })
                     .sort((a, b) => a.Nombres.localeCompare(b.Nombres));
 
-                // Hide loading after data is processed
-                setTimeout(() => {
-                    isLoading = false;
-                }, 300); // Small delay for smooth transition
-
                 return processedData;
             },
-        });
+            ajaxRequestFunc: async (url: string, config: any, params: any) => {
+                try {
+                    const response = await fetch(url, {
+                        method: config.method,
+                        headers: config.headers,
+                        body: JSON.stringify(params),
+                    });
 
-        // Add keyboard event handler for Enter key editing
-        // Add keyboard event handler for Enter key editing
-        element.addEventListener("keydown", (e: KeyboardEvent) => {
-            if (e.key === "Enter") {
-                const target = e.target as HTMLElement;
-                // Check if the focused element is a cell
-                if (target && target.classList.contains("tabulator-cell")) {
-                    const field = target.getAttribute("tabulator-field");
-                    // Only edit if it's a grade column (N1-N12)
-                    if (field && field.startsWith("N")) {
-                        const rowElement = target.closest(".tabulator-row");
-                        if (rowElement) {
-                            const row = tableInstance.getRow(rowElement);
-                            const cell = row.getCell(field);
-                            if (cell) {
-                                cell.edit();
-                                e.preventDefault();
-                            }
-                        }
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
+                        );
                     }
+
+                    const data = await response.json();
+
+                    // Hide loading after data is received
+                    setTimeout(() => {
+                        isLoading = false;
+                    }, 200);
+
+                    return data;
+                } catch (error) {
+                    console.error("Error loading grades:", error);
+                    isLoading = false;
+                    saveError = "Error al cargar datos";
+                    throw error;
                 }
-            }
+            },
         });
     };
 
-    onMount(async () => {
+    // ========== KEYBOARD SHORTCUTS ==========
+
+    const handleKeyboardShortcuts = (e: KeyboardEvent) => {
+        // Ctrl+Z: Undo
+        if (e.ctrlKey && e.key === "z" && !e.shiftKey) {
+            e.preventDefault();
+            performUndo();
+        }
+
+        // Ctrl+Shift+Z or Ctrl+Y: Redo
+        if (
+            (e.ctrlKey && e.shiftKey && e.key === "z") ||
+            (e.ctrlKey && e.key === "y")
+        ) {
+            e.preventDefault();
+            performRedo();
+        }
+
+        // Ctrl+S: Save
+        if (e.ctrlKey && e.key === "s") {
+            e.preventDefault();
+            saveChanges();
+        }
+
+        // Ctrl+F: Focus search
+        if (e.ctrlKey && e.key === "f") {
+            e.preventDefault();
+            document.getElementById(`${tableNotasId}-search`)?.focus();
+        }
+    };
+
+    // ========== LIFECYCLE ==========
+
+    onMount(() => {
+        // Initialize periodo asynchronously
+        getCurrentPeriodo().then((periodo) => {
+            currentPeriodo = periodo;
+        });
+
         mounted = true;
-        currentPeriodo = await getCurrentPeriodo();
+
+        // Add keyboard shortcuts
+        window.addEventListener("keydown", handleKeyboardShortcuts);
+
+        // Auto-save interval
+        let interval: ReturnType<typeof setInterval> | null = null;
+        if (enableAutoSave && onAutoSave) {
+            interval = setInterval(() => {
+                if (hasChanges && !isSaving) {
+                    saveChanges();
+                }
+            }, autoSaveInterval);
+        }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     });
 
     onDestroy(() => {
         mounted = false;
         if (tableInstance) tableInstance.destroy();
+        window.removeEventListener("keydown", handleKeyboardShortcuts);
     });
+
+    // Trigger load when dependencies change
+    $: if (mounted && docente && asignatura) {
+        loadTable();
+    }
 </script>
 
+<!-- ========== TOOLBAR ========== -->
+<div class="grades-toolbar">
+    <!-- Search -->
+    {#if enableSearch}
+        <div class="search-container">
+            <span class="material-symbols-rounded search-icon">search</span>
+            <input
+                type="text"
+                id="{tableNotasId}-search"
+                bind:value={searchQuery}
+                on:input={handleSearch}
+                placeholder="Buscar estudiante..."
+                class="search-input"
+            />
+            {#if searchQuery}
+                <button
+                    class="clear-search-btn"
+                    on:click={clearFilters}
+                    title="Limpiar búsqueda"
+                >
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            {/if}
+        </div>
+    {/if}
+
+    <div class="toolbar-actions">
+        <!-- Undo/Redo -->
+        {#if enableUndoRedo}
+            <button
+                class="toolbar-btn"
+                on:click={performUndo}
+                disabled={!canUndo}
+                title="Deshacer (Ctrl+Z)"
+            >
+                <span class="material-symbols-rounded">undo</span>
+            </button>
+            <button
+                class="toolbar-btn"
+                on:click={performRedo}
+                disabled={!canRedo}
+                title="Rehacer (Ctrl+Y)"
+            >
+                <span class="material-symbols-rounded">redo</span>
+            </button>
+            <div class="toolbar-separator"></div>
+        {/if}
+
+        <!-- Export -->
+        {#if enableExport}
+            <button
+                class="toolbar-btn"
+                on:click={exportToExcel}
+                title="Exportar a Excel"
+            >
+                <span class="material-symbols-rounded">download</span>
+                <span class="btn-text">Excel</span>
+            </button>
+            <button
+                class="toolbar-btn"
+                on:click={exportToCSV}
+                title="Exportar a CSV"
+            >
+                <span class="material-symbols-rounded">description</span>
+                <span class="btn-text">CSV</span>
+            </button>
+            <div class="toolbar-separator"></div>
+        {/if}
+
+        <!-- Save Status -->
+        {#if enableAutoSave}
+            <div
+                class="save-status"
+                class:has-changes={hasChanges}
+                class:saving={isSaving}
+                class:error={saveError}
+            >
+                {#if isSaving}
+                    <span class="material-symbols-rounded spinning">sync</span>
+                {:else if saveError}
+                    <span class="material-symbols-rounded">error</span>
+                {:else if hasChanges}
+                    <span class="material-symbols-rounded">edit</span>
+                {:else}
+                    <span class="material-symbols-rounded">check_circle</span>
+                {/if}
+                <span class="save-status-text">{saveStatusText}</span>
+
+                {#if hasChanges && !isSaving}
+                    <button class="save-now-btn" on:click={saveChanges}>
+                        Guardar ahora
+                    </button>
+                {/if}
+            </div>
+        {/if}
+    </div>
+</div>
+
+<!-- ========== TABLE CONTAINER ========== -->
 <div class="grades-table-container">
     {#if isLoading}
         <div class="loading-overlay" transition:fade={{ duration: 200 }}>
@@ -422,7 +781,7 @@
     <div id={tableNotasId} class:blur-content={isLoading}></div>
 </div>
 
-<!-- Grade Details Dialog -->
+<!-- ========== GRADE DETAILS DIALOG ========== -->
 <GradeDetailsDialog
     show={showDialog}
     columnName={dialogData.columnName}
@@ -436,8 +795,210 @@
 <style>
     @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
-    /* Container */
+    /* ===== TOOLBAR ===== */
+    .grades-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 12px 12px 0 0;
+        border-bottom: 2px solid #e2e8f0;
+        flex-wrap: wrap;
+    }
+
+    :global(.dark) .grades-toolbar {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-bottom-color: #334155;
+    }
+
+    .search-container {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+        max-width: 400px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        font-size: 20px;
+        pointer-events: none;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 40px 10px 44px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: "Inter", sans-serif;
+        color: #1e293b;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    :global(.dark) .search-input {
+        background: #1e293b;
+        border-color: #334155;
+        color: #e2e8f0;
+    }
+
+    :global(.dark) .search-input:focus {
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .clear-search-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .clear-search-btn:hover {
+        background: #f1f5f9;
+        color: #ef4444;
+    }
+
+    :global(.dark) .clear-search-btn:hover {
+        background: #334155;
+    }
+
+    .toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        color: #475569;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: "Inter", sans-serif;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .toolbar-btn:hover:not(:disabled) {
+        background: #f8fafc;
+        border-color: #6366f1;
+        color: #6366f1;
+        transform: translateY(-1px);
+    }
+
+    .toolbar-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    :global(.dark) .toolbar-btn {
+        background: #1e293b;
+        border-color: #334155;
+        color: #cbd5e1;
+    }
+
+    :global(.dark) .toolbar-btn:hover:not(:disabled) {
+        background: #334155;
+        border-color: #8b5cf6;
+        color: #8b5cf6;
+    }
+
+    .toolbar-separator {
+        width: 1px;
+        height: 24px;
+        background: #e2e8f0;
+    }
+
+    :global(.dark) .toolbar-separator {
+        background: #334155;
+    }
+
+    .save-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+    }
+
+    .save-status.has-changes {
+        border-color: #f59e0b;
+        color: #d97706;
+    }
+
+    .save-status.saving {
+        border-color: #3b82f6;
+        color: #2563eb;
+    }
+
+    .save-status.error {
+        border-color: #ef4444;
+        color: #dc2626;
+    }
+
+    :global(.dark) .save-status {
+        background: #1e293b;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+
+    .save-now-btn {
+        padding: 4px 10px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .save-now-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+    }
+
+    .spinning {
+        animation: spin 1s linear infinite;
+    }
+
+    /* ===== CONTAINER ===== */
     .grades-table-container {
+        position: relative;
         height: 100%;
         min-height: 500px;
         width: 100%;
@@ -449,19 +1010,18 @@
             "Segoe UI",
             sans-serif;
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-radius: 16px;
+        border-radius: 0 0 16px 16px;
         padding: 20px;
         box-shadow:
             0 4px 6px -1px rgba(0, 0, 0, 0.1),
             0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
-    /* ===== DARK MODE SUPPORT ===== */
     :global(.dark) .grades-table-container {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     }
 
-    /* ===== TABULATOR MAIN STYLES ===== */
+    /* ===== TABULATOR STYLES ===== */
     :global(.tabulator) {
         font-family: "Inter", sans-serif !important;
         font-size: 14px;
@@ -471,7 +1031,6 @@
         overflow: hidden;
     }
 
-    /* ===== HEADER STYLING ===== */
     :global(.tabulator .tabulator-header) {
         background: linear-gradient(
             135deg,
@@ -497,10 +1056,8 @@
         background: rgba(255, 255, 255, 0.1) !important;
     }
 
-    /* Make grade column headers look clickable */
     :global(.tabulator .tabulator-header .tabulator-col[tabulator-field^="N"]) {
         cursor: pointer;
-        position: relative;
     }
 
     :global(
@@ -511,65 +1068,36 @@
         background: rgba(255, 255, 255, 0.2) !important;
     }
 
-    :global(
-            .tabulator
-                .tabulator-header
-                .tabulator-col[tabulator-field^="N"]:active
-        ) {
-        background: rgba(255, 255, 255, 0.15) !important;
-        transform: translateY(1px);
-    }
-
-    :global(
-            .tabulator .tabulator-header .tabulator-col .tabulator-col-content
-        ) {
-        color: white !important;
-        font-weight: 600;
-        letter-spacing: 0.025em;
-        text-transform: uppercase;
-        font-size: 11px;
-    }
-
-    /* Header Filter Input */
+    /* Header Filter */
     :global(.tabulator .tabulator-header-filter input) {
         background: rgba(255, 255, 255, 0.95) !important;
         border: 2px solid rgba(255, 255, 255, 0.2) !important;
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 13px;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 12px;
         color: #1e293b !important;
-        transition: all 0.2s ease;
-        font-family: "Inter", sans-serif;
     }
 
     :global(.tabulator .tabulator-header-filter input:focus) {
         outline: none;
         border-color: #fbbf24 !important;
-        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
-        background: white !important;
+        box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
     }
 
-    :global(.tabulator .tabulator-header-filter input::placeholder) {
-        color: #94a3b8;
-        font-weight: 400;
-    }
-
-    /* ===== TABLE BODY ===== */
+    /* Table Body */
     :global(.tabulator .tabulator-tableholder) {
         background: white;
-        border-radius: 0 0 12px 12px;
     }
 
     :global(.dark .tabulator .tabulator-tableholder) {
         background: #1e293b;
     }
 
-    /* ===== ROWS ===== */
+    /* Rows */
     :global(.tabulator .tabulator-row) {
         background: white !important;
         border-bottom: 1px solid #e2e8f0 !important;
         transition: all 0.15s ease;
-        min-height: 45px;
     }
 
     :global(.dark .tabulator .tabulator-row) {
@@ -585,21 +1113,12 @@
         background: linear-gradient(90deg, #334155 0%, #475569 100%) !important;
     }
 
-    :global(.tabulator .tabulator-row.tabulator-row-even) {
-        background: #f9fafb !important;
-    }
-
-    :global(.dark .tabulator .tabulator-row.tabulator-row-even) {
-        background: #0f172a !important;
-    }
-
-    /* ===== CELLS ===== */
+    /* Cells */
     :global(.tabulator .tabulator-cell) {
         border-right: 1px solid #e2e8f0 !important;
         padding: 10px 12px;
         color: #1e293b;
         font-weight: 500;
-        transition: all 0.15s ease;
     }
 
     :global(.dark .tabulator .tabulator-cell) {
@@ -607,39 +1126,23 @@
         color: #e2e8f0;
     }
 
-    /* Nombres Column - Special Styling */
-    :global(.tabulator .tabulator-cell[tabulator-field="Nombres"]) {
-        font-weight: 600;
-        color: #0f172a;
-        background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
-        font-size: 14px;
+    /* Modified cell indicator */
+    :global(.tabulator .tabulator-cell.cell-modified) {
+        background: #fef3c7 !important;
+        border-left: 3px solid #f59e0b !important;
     }
 
-    :global(.dark .tabulator .tabulator-cell[tabulator-field="Nombres"]) {
-        color: #f1f5f9;
-        background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+    :global(.dark .tabulator .tabulator-cell.cell-modified) {
+        background: #422006 !important;
+        border-left-color: #f59e0b !important;
     }
 
-    /* Grade Cells - Number columns */
-    :global(.tabulator .tabulator-cell[tabulator-field^="N"]) {
-        font-weight: 600;
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-        font-size: 14px;
-        color: #475569;
-    }
-
-    :global(.dark .tabulator .tabulator-cell[tabulator-field^="N"]) {
-        color: #cbd5e1;
-    }
-
-    /* Editable Cell Styling */
+    /* Editing Cell */
     :global(.tabulator .tabulator-cell.tabulator-editing) {
         background: #eff6ff !important;
         border: 2px solid #3b82f6 !important;
         border-radius: 6px;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        padding: 8px 10px;
     }
 
     :global(.dark .tabulator .tabulator-cell.tabulator-editing) {
@@ -655,64 +1158,38 @@
         font-weight: 600;
         font-family: "Inter", sans-serif;
         font-size: 14px;
-    }
-
-    /* Hide spin buttons for number inputs */
-    :global(
-            .tabulator
-                .tabulator-cell.tabulator-editing
-                input[type="number"]::-webkit-inner-spin-button
-        ),
-    :global(
-            .tabulator
-                .tabulator-cell.tabulator-editing
-                input[type="number"]::-webkit-outer-spin-button
-        ) {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-
-    :global(.tabulator .tabulator-cell.tabulator-editing input[type="number"]) {
-        -moz-appearance: textfield;
-        appearance: textfield;
+        text-align: right;
+        width: 100%;
     }
 
     :global(.dark .tabulator .tabulator-cell.tabulator-editing input) {
         color: #f1f5f9;
     }
 
-    /* ===== FROZEN COLUMNS ===== */
+    /* Hide spin buttons for number inputs */
+    :global(.tabulator .tabulator-cell input::-webkit-inner-spin-button),
+    :global(.tabulator .tabulator-cell input::-webkit-outer-spin-button) {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    :global(.tabulator .tabulator-cell input[type="number"]) {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+
+    :global(.tabulator .tabulator-cell input[type="text"]) {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+
+    /* Frozen columns */
     :global(.tabulator .tabulator-frozen) {
         box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
         z-index: 10;
     }
 
-    :global(.tabulator .tabulator-frozen.tabulator-frozen-left) {
-        border-right: 2px solid #e5e7eb !important;
-    }
-
-    :global(.dark .tabulator .tabulator-frozen.tabulator-frozen-left) {
-        border-right-color: #374151 !important;
-    }
-
-    /* ===== PLACEHOLDER ===== */
-    :global(.tabulator .tabulator-placeholder) {
-        color: #64748b !important;
-        font-size: 16px;
-        font-weight: 500;
-        padding: 60px 20px;
-        text-align: center;
-        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-        border-radius: 12px;
-        margin: 20px;
-    }
-
-    :global(.dark .tabulator .tabulator-placeholder) {
-        color: #94a3b8 !important;
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    }
-
-    /* ===== SCROLLBARS ===== */
+    /* Scrollbar */
     :global(.tabulator .tabulator-tableholder::-webkit-scrollbar) {
         width: 10px;
         height: 10px;
@@ -723,85 +1200,14 @@
         border-radius: 10px;
     }
 
-    :global(.dark .tabulator .tabulator-tableholder::-webkit-scrollbar-track) {
-        background: #0f172a;
-    }
-
     :global(.tabulator .tabulator-tableholder::-webkit-scrollbar-thumb) {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         border-radius: 10px;
         border: 2px solid #f1f5f9;
     }
 
-    :global(.dark .tabulator .tabulator-tableholder::-webkit-scrollbar-thumb) {
-        border-color: #0f172a;
-    }
-
     :global(.tabulator .tabulator-tableholder::-webkit-scrollbar-thumb:hover) {
         background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-        .grades-table-container {
-            padding: 12px;
-            border-radius: 12px;
-        }
-
-        :global(.tabulator .tabulator-header .tabulator-col) {
-            padding: 10px 6px;
-        }
-
-        :global(.tabulator .tabulator-cell) {
-            padding: 8px 6px;
-            font-size: 13px;
-        }
-
-        :global(.tabulator .tabulator-cell[tabulator-field="Val"]) {
-            font-size: 14px;
-        }
-    }
-
-    /* ===== GRADE COLOR INDICATORS ===== */
-    /* Excellent (≥ 4.5) - Emerald */
-    :global(.tabulator .tabulator-cell .grade-excellent) {
-        color: #059669 !important;
-        font-weight: 700;
-    }
-
-    :global(.dark .tabulator .tabulator-cell .grade-excellent) {
-        color: #10b981 !important;
-    }
-
-    /* Good (≥ 4.0) - Blue */
-    :global(.tabulator .tabulator-cell .grade-good) {
-        color: #2563eb !important;
-        font-weight: 700;
-    }
-
-    :global(.dark .tabulator .tabulator-cell .grade-good) {
-        color: #3b82f6 !important;
-    }
-
-    /* Acceptable (≥ 3.0) - Amber */
-    :global(.tabulator .tabulator-cell .grade-acceptable) {
-        color: #d97706 !important;
-        font-weight: 600;
-    }
-
-    :global(.dark .tabulator .tabulator-cell .grade-acceptable) {
-        color: #f59e0b !important;
-    }
-
-    /* Low (< 3.0) - Rose */
-    :global(.tabulator .tabulator-cell .grade-low) {
-        color: #dc2626 !important;
-        font-weight: 700;
-        text-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
-    }
-
-    :global(.dark .tabulator .tabulator-cell .grade-low) {
-        color: #f87171 !important;
     }
 
     /* ===== LOADING OVERLAY ===== */
@@ -831,7 +1237,6 @@
         pointer-events: none;
     }
 
-    /* Loading Spinner */
     .loading-spinner {
         position: relative;
         width: 80px;
@@ -860,23 +1265,17 @@
         animation: pulse 1.5s ease-in-out infinite;
     }
 
-    :global(.dark) .loading-icon {
-        color: #8b5cf6;
-    }
-
     .loading-text {
         font-size: 18px;
         font-weight: 600;
         color: #475569;
         margin-bottom: 16px;
-        font-family: "Inter", sans-serif;
     }
 
     :global(.dark) .loading-text {
         color: #cbd5e1;
     }
 
-    /* Loading Dots */
     .loading-dots {
         display: flex;
         gap: 8px;
@@ -888,10 +1287,6 @@
         background: #6366f1;
         border-radius: 50%;
         animation: bounce 1.4s ease-in-out infinite;
-    }
-
-    :global(.dark) .loading-dots .dot {
-        background: #8b5cf6;
     }
 
     .loading-dots .dot:nth-child(1) {
@@ -906,7 +1301,7 @@
         animation-delay: 0.4s;
     }
 
-    /* Animations */
+    /* ===== ANIMATIONS ===== */
     @keyframes spin {
         0% {
             transform: rotate(0deg);
@@ -936,6 +1331,31 @@
         }
         40% {
             transform: translateY(-12px);
+        }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .grades-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-container {
+            max-width: 100%;
+        }
+
+        .toolbar-actions {
+            justify-content: center;
+        }
+
+        .save-status {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .btn-text {
+            display: none;
         }
     }
 </style>
