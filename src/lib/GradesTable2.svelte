@@ -83,7 +83,7 @@
     $: asignatura = $selectedAsignatura;
     $: nivel = $payload.nivel;
     $: numero = $payload.numero;
-    $: asignation = $payload.Asignacion;
+    $: asignacion = $payload.Asignacion;
     $: year = $payload.year;
 
     // ========== COMPONENT STATE ==========
@@ -541,7 +541,7 @@
                 numero,
                 asignatura,
                 periodo: Elperiodo,
-                asignation,
+                asignacion,
                 year,
             },
             ajaxConfig: {
