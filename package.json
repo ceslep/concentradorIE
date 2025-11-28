@@ -23,6 +23,7 @@
     "@popperjs/core": "^2.11.8",
     "@tailwindcss/vite": "^4.1.17",
     "chart.js": "^4.5.1",
+    "flowbite": "^4.0.1",
     "flowbite-svelte": "^1.28.3",
     "tabulator-tables": "^6.3.1",
     "tailwind-merge": "^3.4.0",
