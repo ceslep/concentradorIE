@@ -5,7 +5,7 @@
  * used in the GradesTable2 component with Tabulator.
  */
 
-import type { CellComponent } from "tabulator-tables";
+// import type { CellComponent } from "tabulator-tables";
 
 /**
  * Grade data structure for a student row
@@ -194,7 +194,7 @@ export const calculateRowVal = (data: GradeData): string => {
  * @param cell - Tabulator cell component
  * @returns Formatted grade string or empty string
  */
-export const gradeFormatter = (cell: CellComponent): string => {
+export const gradeFormatter = (cell: any): string => {
     const val = cell.getValue();
     const element = cell.getElement();
 

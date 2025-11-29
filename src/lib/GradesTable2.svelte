@@ -18,12 +18,7 @@
      */
     import { onMount, onDestroy, tick } from "svelte";
     import { fade, scale } from "svelte/transition";
-    import {
-        TabulatorFull as Tabulator,
-        type ColumnDefinition,
-        type CellComponent,
-        type RowComponent,
-    } from "tabulator-tables";
+    import Tabulator from "tabulator-tables";
     import "tabulator-tables/dist/css/tabulator.min.css";
     import {
         GET_NOTAS_ENDPOINT,
@@ -57,7 +52,7 @@
     export let enableExport: boolean = true;
 
     /** Enable column filters */
-    export let enableFilters: boolean = true;
+    // export let enableFilters: boolean = true;
 
     /** Enable global search */
     export let enableSearch: boolean = true;
@@ -369,29 +364,29 @@
     /**
      * Creates a grade column definition
      */
-    function createGradeColumn(title: string, field: string): ColumnDefinition {
+    function createGradeColumn(title: string, field: string): any {
         return {
             title: title,
             field: field,
-            editor: "input",
+            editor: "number",
             editorParams: {
-                selectContents: true,
+                verticalNavigation: "table",
             },
             hozAlign: "right",
             validator: [
                 { type: validateGrade, parameters: { min: 1, max: 5 } },
             ],
             formatter: gradeFormatter,
-            headerFilter: enableFilters ? "input" : undefined,
-            headerFilterPlaceholder: "Filtrar...",
+            // headerFilter: enableFilters ? "input" : undefined, // Removed as per user request
+            // headerFilterPlaceholder: "Filtrar...",
             headerClick: (e: any, column: any) => {
-                handleHeaderClick(column.getField());
+                // Usamos la variable 'field' del closure directamente para evitar errores
+                handleHeaderClick(field);
             },
             headerTooltip: (column: any) => {
-                const field = column.getField();
                 return `Click para ver detalles de ${field}`;
             },
-            cellEdited: (cell: CellComponent) => {
+            cellEdited: (cell: any) => {
                 const row = cell.getRow();
                 const data = row.getData();
                 const oldValue = data[field];
@@ -487,30 +482,28 @@
         tableInstance = new Tabulator(element, {
             height: "100%",
             layout: "fitDataTable",
-            renderVertical: "virtual",
+            virtualDom: true, // Replaced renderVertical: "virtual" for v4
             placeholder: "No hay datos disponibles",
-            reactiveData: true,
+            // reactiveData: true, // Removed to match loadNotas.js
             ajaxContentType: "json",
             responsiveLayout: false,
-            editTriggerEvent: "click",
+            // editTriggerEvent: "click", // Removed to use default behavior
             keybindings: {
                 navUp: "up",
                 navDown: "down",
                 navLeft: "left",
                 navRight: "right",
             },
-            columnDefaults: {
-                headerSort: false,
-                headerHozAlign: "center",
-            },
+            // columnDefaults removed as it's v5+ feature, moved to columns or defaults
+            headerSort: false, // Moved from columnDefaults
             columns: [
                 {
                     title: "Nombres",
                     field: "Nombres",
                     width: isMobile ? 200 : 300,
                     frozen: !isMobile,
-                    headerFilter: enableFilters ? "input" : undefined,
-                    headerFilterPlaceholder: "Buscar...",
+                    // headerFilter: enableFilters ? "input" : undefined,
+                    // headerFilterPlaceholder: "Buscar...",
                 },
                 {
                     title: "Val",
@@ -548,7 +541,7 @@
                 method: "POST",
                 headers: { "Content-type": "application/json; charset=utf-8" },
             },
-            ajaxResponse: (_url, _params, response: any[]) => {
+            ajaxResponse: (_url: any, _params: any, response: any[]) => {
                 // Pre-calculate Val
                 const processedData = response
                     .map((item, index) => {

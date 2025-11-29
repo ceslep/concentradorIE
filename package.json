@@ -13,7 +13,6 @@
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@tsconfig/svelte": "^5.0.5",
     "@types/node": "^24.10.0",
-    "@types/tabulator-tables": "^6.3.0",
     "svelte": "^5.0.0",
     "svelte-check": "^4.3.3",
     "typescript": "~5.9.3",
@@ -25,7 +24,7 @@
     "chart.js": "^4.5.1",
     "flowbite": "^4.0.1",
     "flowbite-svelte": "^1.28.3",
-    "tabulator-tables": "^6.3.1",
+    "tabulator-tables": "4.9.3",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17"
   }
