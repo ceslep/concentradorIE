@@ -2,10 +2,8 @@
  * Grade Table Utilities
  * 
  * Utility functions for grade calculations, formatting, and validation
- * used in the GradesTable2 component with Tabulator.
+ * compatible with native Svelte tables (no Tabulator dependency).
  */
-
-// import type { CellComponent } from "tabulator-tables";
 
 /**
  * Grade data structure for a student row
@@ -97,9 +95,6 @@ export interface HistoryEntry {
 
 /**
  * Converts a Date object to YYYY-MM-DD format for date inputs
- * 
- * @param date - Date object to convert
- * @returns Date string in YYYY-MM-DD format
  */
 export const toDateInputValue = (date: Date): string => {
     const local = new Date(date);
@@ -109,54 +104,28 @@ export const toDateInputValue = (date: Date): string => {
 
 /**
  * Counts non-empty values in predefined grade groups
- * Groups: N1-N3 (Saber), N4-N6 (Hacer), N7-N9 (Ser), N10 (Autoe), N11 (Coev)
- * 
- * @param array - Array of grade values
- * @returns Array of counts for each group
  */
 export const countNonEmptyGroups = (array: any[]): number[] => {
     const groups = [
-        array.slice(0, 3),   // N1-N3 (Saber 35%)
-        array.slice(3, 6),   // N4-N6 (Hacer 35%)
-        array.slice(6, 9),   // N7-N9 (Ser 20%)
-        array.slice(9, 10),  // N10 (Autoevaluación 5%)
-        array.slice(10, 11), // N11 (Coevaluación 5%)
+        array.slice(0, 3),
+        array.slice(3, 6),
+        array.slice(6, 9),
+        array.slice(9, 10),
+        array.slice(10, 11),
     ];
-
     const isEmpty = (val: any) => !val || String(val).trim() === "";
-
-    return groups.map(
-        (group) => group.filter((val) => !isEmpty(val)).length,
-    );
+    return groups.map(group => group.filter(val => !isEmpty(val)).length);
 };
 
 /**
  * Calculates the final grade (Val) for a student based on weighted averages
- * 
- * Weights:
- * - Saber (N1-N3): 35%
- * - Hacer (N4-N6): 35%
- * - Ser (N7-N9): 20%
- * - Autoevaluación (N10): 5%
- * - Coevaluación (N11): 5%
- * 
- * @param data - Student grade data
- * @returns Calculated final grade as string with 2 decimals
  */
 export const calculateRowVal = (data: GradeData): string => {
-    const noteFields = [
-        "N1", "N2", "N3", "N4", "N5", "N6",
-        "N7", "N8", "N9", "N10", "N11",
-    ];
-
-    const noteValues = noteFields.map((f) => data[f] || " ");
+    const noteFields = ["N1", "N2", "N3", "N4", "N5", "N6", "N7", "N8", "N9", "N10", "N11"];
+    const noteValues = noteFields.map(f => data[f] || " ");
     const counts = countNonEmptyGroups(noteValues);
 
-    let Saber35 = 0,
-        Hacer35 = 0,
-        Ser20 = 0,
-        Autoe5 = 0,
-        Coev5 = 0;
+    let Saber35 = 0, Hacer35 = 0, Ser20 = 0, Autoe5 = 0, Coev5 = 0;
 
     noteFields.forEach((field, idx) => {
         const val = data[field];
@@ -177,91 +146,43 @@ export const calculateRowVal = (data: GradeData): string => {
     const hacerAvg = counts[1] ? Hacer35 / counts[1] : 0;
     const serAvg = counts[2] ? Ser20 / counts[2] : 0;
 
-    const finalVal =
-        saberAvg * 0.35 +
-        hacerAvg * 0.35 +
-        serAvg * 0.2 +
-        Autoe5 * 0.05 +
-        Coev5 * 0.05;
-
+    const finalVal = saberAvg * 0.35 + hacerAvg * 0.35 + serAvg * 0.2 + Autoe5 * 0.05 + Coev5 * 0.05;
     return finalVal.toFixed(2);
 };
 
 /**
- * Formats a grade value for display in the table
- * Applies color coding: red for grades < 3.0
- * 
- * @param cell - Tabulator cell component
- * @returns Formatted grade string or empty string
+ * Formats a grade value for display (native table compatible)
+ * @param value - The grade value (string or number)
+ * @returns Formatted string with 1 decimal, or empty string
  */
-export const gradeFormatter = (cell: any): string => {
-    const val = cell.getValue();
-    const element = cell.getElement();
-
-    if (val === " " || val === "" || val === null || val === undefined) {
-        element.style.color = ""; // Reset color
+export const gradeFormatter = (value: any): string => {
+    if (value === null || value === undefined || value === "" || value === " ") {
         return "";
     }
-
-    const num = parseFloat(val);
-
-    // Paint red if less than 3.0
-    if (!isNaN(num) && num < 3.0) {
-        element.style.color = "#ef4444"; // red-500
-        element.style.fontWeight = "bold";
-    } else {
-        element.style.color = ""; // Reset color
-        element.style.fontWeight = "";
-    }
-
-    return isNaN(num) ? val : num.toFixed(1);
+    const num = parseFloat(value);
+    return isNaN(num) ? String(value) : num.toFixed(1);
 };
 
 /**
  * Validates a grade value against min/max constraints
- * Allows empty values (space, empty string, null, undefined)
- * 
- * @param value - Value to validate
- * @param parameters - Validation parameters (min, max)
- * @returns true if valid, false otherwise
  */
-export const validateGrade = (
-    value: any,
-    parameters: ValidationParams
-): boolean => {
-    // Allow empty values
-    if (
-        value === "" ||
-        value === " " ||
-        value === null ||
-        value === undefined
-    ) {
+export const validateGrade = (value: any, parameters: ValidationParams): boolean => {
+    if (value === "" || value === " " || value === null || value === undefined) {
         return true;
     }
-
-    // Convert to number and validate range
     const numValue = parseFloat(value);
-
-    if (isNaN(numValue)) {
-        return false;
-    }
-
+    if (isNaN(numValue)) return false;
     return numValue >= parameters.min && numValue <= parameters.max;
 };
 
 /**
  * Debounces a function call
- * 
- * @param func - Function to debounce
- * @param wait - Wait time in milliseconds
- * @returns Debounced function
  */
 export const debounce = <T extends (...args: any[]) => any>(
     func: T,
     wait: number
 ): ((...args: Parameters<T>) => void) => {
     let timeout: ReturnType<typeof setTimeout> | null = null;
-
     return (...args: Parameters<T>) => {
         if (timeout) clearTimeout(timeout);
         timeout = setTimeout(() => func(...args), wait);
@@ -269,49 +190,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 };
 
 /**
- * Formats a number to a specific decimal precision
- * 
- * @param value - Value to format
- * @param decimals - Number of decimal places
- * @returns Formatted string
- */
-export const formatNumber = (value: any, decimals: number = 1): string => {
-    const num = parseFloat(value);
-    if (isNaN(num)) return "";
-    return num.toFixed(decimals);
-};
-
-/**
- * Checks if a value is empty (null, undefined, empty string, or whitespace)
- * 
- * @param value - Value to check
- * @returns true if empty, false otherwise
- */
-export const isEmpty = (value: any): boolean => {
-    return value === null ||
-        value === undefined ||
-        value === "" ||
-        (typeof value === "string" && value.trim() === "");
-};
-
-/**
- * Gets the grade category based on the numeric value
- * 
- * @param grade - Numeric grade value
- * @returns Category string: "excellent", "good", "acceptable", or "low"
- */
-export const getGradeCategory = (grade: number): string => {
-    if (grade >= 4.5) return "excellent";
-    if (grade >= 4.0) return "good";
-    if (grade >= 3.0) return "acceptable";
-    return "low";
-};
-
-/**
  * Extracts the column number from a field name (e.g., "N1" -> "1")
- * 
- * @param fieldName - Field name (e.g., "N1", "aspecto1")
- * @returns Column number as string
  */
 export const extractColumnNumber = (fieldName: string): string => {
     return fieldName.replace(/[^\d]/g, "");
