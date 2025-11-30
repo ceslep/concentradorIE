@@ -11,6 +11,8 @@
   let loading = false;
   let error = "";
 
+  let showPassword = false;
+
   async function handleLogin() {
     loading = true;
     error = "";
@@ -54,81 +56,107 @@
       : 'rgba(203, 213, 225, 0.3)'} 1px, transparent 1px); background-size: 40px 40px;"
   ></div>
 
-  <div class="w-full max-w-md relative z-10 animate-fade-in-up">
-    <Card size="xl" class="shadow-premium-xl p-8">
-      <div class="text-center mb-8">
-        <div
-          class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg"
-        >
-          <span class="material-symbols-rounded text-white text-3xl"
-            >school</span
-          >
-        </div>
-        <h1
-          class="text-2xl font-bold mb-2 {$theme === 'dark'
-            ? 'text-white'
-            : 'text-gray-900'}"
-          style="font-family: var(--font-heading);"
-        >
-          Bienvenido
-        </h1>
-        <p
-          class="text-sm {$theme === 'dark'
-            ? 'text-gray-400'
-            : 'text-gray-500'}"
-        >
-          Ingresa tus credenciales para continuar
-        </p>
-      </div>
-
-      <form on:submit|preventDefault={handleLogin} class="space-y-6">
-        <div>
-          <Label for="identificacion" class="mb-2">Identificación</Label>
-          <Input
-            id="identificacion"
-            type="text"
-            bind:value={identificacion}
-            placeholder="Tu número de identificación"
-            size="lg"
-            required
+  <!-- Unified Login Card with Logo -->
+  <div
+    class="w-full max-w-5xl relative z-10 animate-fade-in-up flex items-center justify-center"
+  >
+    <Card
+      size="xl"
+      class="shadow-premium-xl p-6 lg:p-8 backdrop-blur-xl bg-white/30 dark:bg-gray-900/40 border border-white/40 dark:border-gray-700/50 shadow-2xl w-full"
+    >
+      <div class="flex flex-col lg:flex-row items-center gap-6 lg:gap-12">
+        <!-- Institution Logo -->
+        <div class="flex flex-col items-center flex-shrink-0">
+          <img
+            src="/src/assets/uescudo.png"
+            alt="Escudo Institución Educativa"
+            class="w-52 h-52 lg:w-72 lg:h-72 object-contain drop-shadow-2xl"
           />
         </div>
 
-        <div>
-          <Label for="clave" class="mb-2">Contraseña</Label>
-          <Input
-            id="clave"
-            type="password"
-            bind:value={clave_acceso}
-            placeholder="••••••••"
-            size="lg"
-            required
-          />
-        </div>
-
-        {#if error}
-          <Alert color="red" class="text-center">
-            <span class="font-medium">{error}</span>
-          </Alert>
-        {/if}
-
-        <Button
-          type="submit"
-          disabled={loading}
-          size="lg"
-          class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600"
-        >
-          {#if loading}
-            <Spinner class="mr-3 text-white" size="4" />
-            <span>Ingresando...</span>
-          {:else}
-            <span>Iniciar Sesión</span>
-            <span class="material-symbols-rounded text-lg ml-2"
-              >arrow_forward</span
+        <!-- Login Form -->
+        <div class="flex-1 w-full lg:max-w-md">
+          <div class="text-center lg:text-left mb-6 lg:mb-8">
+            <h1
+              class="text-xl lg:text-2xl font-bold mb-2 {$theme === 'dark'
+                ? 'text-white'
+                : 'text-gray-900'}"
+              style="font-family: var(--font-heading);"
             >
-          {/if}
-        </Button>
-      </form>
+              Bienvenido
+            </h1>
+            <p
+              class="text-sm {$theme === 'dark'
+                ? 'text-gray-400'
+                : 'text-gray-500'}"
+            >
+              Ingresa tus credenciales para continuar
+            </p>
+          </div>
+
+          <form on:submit|preventDefault={handleLogin} class="space-y-6">
+            <div>
+              <Label for="identificacion" class="mb-2">Identificación</Label>
+              <Input
+                id="identificacion"
+                type="text"
+                bind:value={identificacion}
+                placeholder="Tu número de identificación"
+                size="lg"
+                required
+                class="bg-white/50 dark:bg-gray-800/50"
+              />
+            </div>
+
+            <div>
+              <Label for="clave" class="mb-2">Contraseña</Label>
+              <div class="relative">
+                <Input
+                  id="clave"
+                  type={showPassword ? "text" : "password"}
+                  bind:value={clave_acceso}
+                  placeholder="••••••••"
+                  size="lg"
+                  required
+                  class="pr-10 bg-white/50 dark:bg-gray-800/50"
+                />
+                <button
+                  type="button"
+                  class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
+                  on:click={() => (showPassword = !showPassword)}
+                >
+                  <span class="material-symbols-rounded">
+                    {showPassword ? "visibility_off" : "visibility"}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {#if error}
+              <Alert color="red" class="text-center">
+                <span class="font-medium">{error}</span>
+              </Alert>
+            {/if}
+
+            <Button
+              type="submit"
+              disabled={loading}
+              size="lg"
+              class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 shadow-lg shadow-indigo-500/30"
+            >
+              {#if loading}
+                <Spinner class="mr-3 text-white" size="4" />
+                <span>Ingresando...</span>
+              {:else}
+                <span>Iniciar Sesión</span>
+                <span class="material-symbols-rounded text-lg ml-2"
+                  >arrow_forward</span
+                >
+              {/if}
+            </Button>
+          </form>
+        </div>
+      </div>
     </Card>
   </div>
 </div>
