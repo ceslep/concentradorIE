@@ -21,7 +21,7 @@
     // ========== PROPS ==========
     export let tableNotasId: string = "nativeGradesTable";
     export let docenteId: string;
-    export let initialPeriodo: string | undefined = undefined;
+    export let periodo: string = "";
     export let enableExport: boolean = true;
     export let enableSearch: boolean = true;
     export let enableAutoSave: boolean = false;
@@ -46,8 +46,7 @@
     let currentPeriodo = "";
 
     // Edición
-    let editingCell: { rowId: string; field: string } | null = null;
-    let editValue = "";
+    let editValue = ""; // Solo para validación temporal
 
     // Cambios
     let pendingChanges: Map<string, any> = new Map();
@@ -95,27 +94,12 @@
 
     // ========== HELPER FUNCTIONS ==========
 
-    const getCurrentPeriodo = async (): Promise<string> => {
-        try {
-            const res = await fetch(GET_PERIODOS_NOTAS_ENDPOINT);
-            const periodos = await res.json();
-            return (
-                periodos.find((p: any) => p.selected === "selected")?.nombre ||
-                "DefaultPeriod"
-            );
-        } catch (error) {
-            console.error("Error fetching periods:", error);
-            return "DefaultPeriod";
-        }
-    };
-
     const loadTableData = async () => {
         if (!docente || !asignatura) return;
         isLoading = true;
 
         try {
-            const per = await getCurrentPeriodo();
-            currentPeriodo = initialPeriodo || per;
+            currentPeriodo = periodo;
 
             const res = await fetch(GET_NOTAS_ENDPOINT, {
                 method: "POST",
@@ -163,33 +147,56 @@
         }
     };
 
-    const startEdit = (rowId: string, field: string, value: any) => {
-        editingCell = { rowId, field };
-        editValue = value ?? "";
-    };
+    const navigateCell = (
+        direction: "up" | "down" | "left" | "right",
+        originElement?: HTMLElement,
+    ) => {
+        // Encontrar la celda actualmente enfocada o usar la pasada
+        const activeElement =
+            originElement || (document.activeElement as HTMLElement);
+        if (!activeElement) return;
 
-    const saveEdit = () => {
-        if (!editingCell) return;
-        const { rowId, field } = editingCell;
-        let newValue = editValue.trim();
+        const currentCell = activeElement.closest("td.editable-cell");
+        if (!currentCell) return;
 
-        if (newValue === "") {
-            updateCellValue(rowId, field, "");
-        } else {
-            const clean = newValue.replace(/[^\d.]/g, "");
-            const num = parseFloat(clean);
-            if (isNaN(num)) {
-                updateCellValue(rowId, field, "");
-            } else {
-                const clamped = Math.max(1, Math.min(5, num));
-                updateCellValue(rowId, field, clamped.toFixed(1));
+        const currentRow = currentCell.closest("tr");
+        if (!currentRow) return;
+
+        const cells = Array.from(
+            currentRow.querySelectorAll("td.editable-cell"),
+        );
+        const currentCellIndex = cells.indexOf(currentCell as Element);
+
+        let targetCell: Element | null = null;
+
+        if (direction === "left") {
+            // Mover a la celda anterior en la misma fila
+            targetCell = cells[currentCellIndex - 1] || null;
+        } else if (direction === "right") {
+            // Mover a la siguiente celda en la misma fila
+            targetCell = cells[currentCellIndex + 1] || null;
+        } else if (direction === "up" || direction === "down") {
+            // Mover a la fila anterior o siguiente
+            const allRows = Array.from(
+                currentRow.parentElement?.querySelectorAll("tr") || [],
+            );
+            const currentRowIndex = allRows.indexOf(currentRow);
+
+            const targetRowIndex =
+                direction === "up" ? currentRowIndex - 1 : currentRowIndex + 1;
+            const targetRow = allRows[targetRowIndex];
+
+            if (targetRow) {
+                const targetRowCells = Array.from(
+                    targetRow.querySelectorAll("td.editable-cell"),
+                );
+                targetCell = targetRowCells[currentCellIndex] || null;
             }
         }
-        editingCell = null;
-    };
 
-    const cancelEdit = () => {
-        editingCell = null;
+        if (targetCell) {
+            (targetCell as HTMLElement).focus();
+        }
     };
 
     const updateCellValue = (
@@ -370,21 +377,8 @@
         }
     };
 
-    const handleTableClick = (e: MouseEvent) => {
-        if (editingCell) {
-            const target = e.target as HTMLElement;
-            if (
-                !target.closest(".editable-cell") &&
-                !target.closest(".edit-input")
-            ) {
-                saveEdit();
-            }
-        }
-    };
-
     onMount(() => {
         window.addEventListener("keydown", handleGlobalKeyDown);
-        document.addEventListener("click", handleTableClick);
         loadTableData();
 
         let interval: any = null;
@@ -396,7 +390,6 @@
 
         return () => {
             window.removeEventListener("keydown", handleGlobalKeyDown);
-            document.removeEventListener("click", handleTableClick);
             if (interval) clearInterval(interval);
         };
     });
@@ -414,90 +407,101 @@
 
 <!-- ========== TOOLBAR ========== -->
 <div class="grades-toolbar">
-    {#if enableSearch}
-        <div class="search-container">
-            <span class="material-symbols-rounded search-icon">search</span>
-            <input
-                type="text"
-                id="{tableNotasId}-search"
-                bind:value={searchQuery}
-                placeholder="Buscar estudiante..."
-                class="search-input"
-            />
-            {#if searchQuery}
-                <button
-                    class="clear-search-btn"
-                    on:click={() => (searchQuery = "")}
-                >
-                    <span class="material-symbols-rounded">close</span>
-                </button>
-            {/if}
-        </div>
-    {/if}
+    <div class="toolbar-left">
+        {#if enableSearch}
+            <div class="search-container">
+                <span class="material-symbols-rounded search-icon">search</span>
+                <input
+                    type="text"
+                    id="{tableNotasId}-search"
+                    bind:value={searchQuery}
+                    placeholder="Buscar estudiante..."
+                    class="search-input"
+                />
+                {#if searchQuery}
+                    <button
+                        class="clear-search-btn"
+                        on:click={() => (searchQuery = "")}
+                        title="Limpiar búsqueda"
+                    >
+                        <span class="material-symbols-rounded">close</span>
+                    </button>
+                {/if}
+            </div>
+        {/if}
+    </div>
 
-    <div class="toolbar-actions">
+    <div class="toolbar-right">
         {#if enableUndoRedo}
-            <button
-                class="toolbar-btn"
-                on:click={performUndo}
-                disabled={!canUndo}
-                title="Deshacer (Ctrl+Z)"
-            >
-                <span class="material-symbols-rounded">undo</span>
-            </button>
-            <button
-                class="toolbar-btn"
-                on:click={performRedo}
-                disabled={!canRedo}
-                title="Rehacer (Ctrl+Y)"
-            >
-                <span class="material-symbols-rounded">redo</span>
-            </button>
-            <div class="toolbar-separator"></div>
+            <div class="toolbar-group">
+                <button
+                    class="toolbar-btn"
+                    on:click={performUndo}
+                    disabled={!canUndo}
+                    title="Deshacer (Ctrl+Z)"
+                >
+                    <span class="material-symbols-rounded">undo</span>
+                </button>
+                <button
+                    class="toolbar-btn"
+                    on:click={performRedo}
+                    disabled={!canRedo}
+                    title="Rehacer (Ctrl+Y)"
+                >
+                    <span class="material-symbols-rounded">redo</span>
+                </button>
+            </div>
         {/if}
 
         {#if enableExport}
-            <button
-                class="toolbar-btn"
-                on:click={exportToExcel}
-                title="Exportar a Excel"
-            >
-                <span class="material-symbols-rounded">download</span>
-                <span class="btn-text">Excel</span>
-            </button>
-            <button
-                class="toolbar-btn"
-                on:click={exportToCSV}
-                title="Exportar a CSV"
-            >
-                <span class="material-symbols-rounded">description</span>
-                <span class="btn-text">CSV</span>
-            </button>
-            <div class="toolbar-separator"></div>
+            <div class="toolbar-group">
+                <button
+                    class="toolbar-btn"
+                    on:click={exportToExcel}
+                    title="Exportar a Excel"
+                >
+                    <span class="material-symbols-rounded">download</span>
+                    <span class="btn-text">Excel</span>
+                </button>
+                <button
+                    class="toolbar-btn"
+                    on:click={exportToCSV}
+                    title="Exportar a CSV"
+                >
+                    <span class="material-symbols-rounded">description</span>
+                    <span class="btn-text">CSV</span>
+                </button>
+            </div>
         {/if}
 
         {#if enableAutoSave}
-            <div
-                class="save-status"
-                class:has-changes={hasChanges}
-                class:saving={isSaving}
-                class:error={saveError}
-            >
-                {#if isSaving}
-                    <span class="material-symbols-rounded spinning">sync</span>
-                {:else if saveError}
-                    <span class="material-symbols-rounded">error</span>
-                {:else if hasChanges}
-                    <span class="material-symbols-rounded">edit</span>
-                {:else}
-                    <span class="material-symbols-rounded">check_circle</span>
-                {/if}
-                <span class="save-status-text">{saveStatusText}</span>
-                {#if hasChanges && !isSaving}
-                    <button class="save-now-btn" on:click={saveChanges}
-                        >Guardar ahora</button
-                    >
-                {/if}
+            <div class="toolbar-group">
+                <div
+                    class="save-status"
+                    class:has-changes={hasChanges}
+                    class:saving={isSaving}
+                    class:error={saveError}
+                >
+                    {#if isSaving}
+                        <span class="material-symbols-rounded spinning"
+                            >sync</span
+                        >
+                    {:else if saveError}
+                        <span class="material-symbols-rounded">error</span>
+                    {:else if hasChanges}
+                        <span class="material-symbols-rounded">edit</span>
+                    {:else}
+                        <span class="material-symbols-rounded"
+                            >check_circle</span
+                        >
+                    {/if}
+                    <span class="save-status-text">{saveStatusText}</span>
+                    {#if hasChanges && !isSaving}
+                        <button class="save-now-btn" on:click={saveChanges}
+                            >Guardar</button
+                        >
+                    {/if}
+                </div>
             </div>
         {/if}
     </div>
@@ -545,54 +549,119 @@
                             {gradeFormatter(row.Val)}
                         </td>
                         {#each Array(12) as _, i}
-                            {#if editingCell && editingCell.rowId === row.id && editingCell.field === `N${i + 1}`}
-                                <td class="editable-cell">
-                                    <input
-                                        type="text"
-                                        class="edit-input"
-                                        bind:value={editValue}
-                                        on:focus={(e) => {
-                                            if (e.target)
-                                                (
-                                                    e.target as HTMLInputElement
-                                                ).select();
-                                        }}
-                                        on:keydown={(e) => {
-                                            if (e.key === "Enter") saveEdit();
-                                            if (e.key === "Escape")
-                                                cancelEdit();
-                                        }}
-                                        on:blur={saveEdit}
-                                    />
-                                </td>
-                            {:else}
-                                <td
-                                    class="editable-cell {parseFloat(
-                                        row[`N${i + 1}`],
-                                    ) < 3.0
-                                        ? 'low-grade'
-                                        : ''}"
-                                    on:dblclick={() =>
-                                        startEdit(
-                                            row.id,
-                                            `N${i + 1}`,
-                                            row[`N${i + 1}`],
-                                        )}
-                                    on:keydown={(e) => {
-                                        if (e.key === "Enter") {
-                                            e.preventDefault();
-                                            startEdit(
-                                                row.id,
-                                                `N${i + 1}`,
-                                                row[`N${i + 1}`],
+                            <td
+                                class="editable-cell {parseFloat(
+                                    row[`N${i + 1}`],
+                                ) < 3.0
+                                    ? 'low-grade'
+                                    : ''}"
+                                contenteditable="true"
+                                data-row-id={row.id}
+                                data-field={`N${i + 1}`}
+                                on:focus={(e) => {
+                                    const target = e.target as HTMLElement;
+                                    editValue = target.textContent || "";
+                                    // Seleccionar todo el texto al enfocar
+                                    const selection = window.getSelection();
+                                    const range = document.createRange();
+                                    range.selectNodeContents(target);
+                                    selection?.removeAllRanges();
+                                    selection?.addRange(range);
+                                }}
+                                on:blur={(e) => {
+                                    const target = e.target as HTMLElement;
+                                    const newValue =
+                                        target.textContent?.trim() || "";
+                                    const rowId = target.dataset.rowId || "";
+                                    const field = target.dataset.field || "";
+
+                                    if (newValue === "") {
+                                        updateCellValue(rowId, field, "");
+                                        target.textContent = gradeFormatter("");
+                                    } else {
+                                        const clean = newValue.replace(
+                                            /[^\d.]/g,
+                                            "",
+                                        );
+                                        const num = parseFloat(clean);
+                                        if (isNaN(num)) {
+                                            updateCellValue(rowId, field, "");
+                                            target.textContent =
+                                                gradeFormatter("");
+                                        } else {
+                                            const clamped = Math.max(
+                                                1,
+                                                Math.min(5, num),
                                             );
+                                            const formattedValue =
+                                                clamped.toFixed(1);
+                                            updateCellValue(
+                                                rowId,
+                                                field,
+                                                formattedValue,
+                                            );
+                                            target.textContent =
+                                                gradeFormatter(formattedValue);
                                         }
-                                    }}
-                                    tabindex="0"
-                                >
-                                    {gradeFormatter(row[`N${i + 1}`])}
-                                </td>
-                            {/if}
+                                    }
+                                }}
+                                on:keydown={(e) => {
+                                    const target = e.target as HTMLElement;
+
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        navigateCell("down", target);
+                                    } else if (e.key === "Escape") {
+                                        e.preventDefault();
+                                        // Restaurar el valor original
+                                        target.textContent = gradeFormatter(
+                                            row[`N${i + 1}`],
+                                        );
+                                        target.blur();
+                                    } else if (e.key === "ArrowUp") {
+                                        e.preventDefault();
+                                        navigateCell("up", target);
+                                    } else if (e.key === "ArrowDown") {
+                                        e.preventDefault();
+                                        e.preventDefault();
+                                        target.blur();
+                                        setTimeout(
+                                            () => navigateCell("left"),
+                                            10,
+                                        );
+                                    } else if (
+                                        e.key === "ArrowRight" &&
+                                        (e.target as HTMLElement).innerText
+                                            .length === 0
+                                    ) {
+                                        e.preventDefault();
+                                        target.blur();
+                                        setTimeout(
+                                            () => navigateCell("right"),
+                                            10,
+                                        );
+                                    }
+                                }}
+                                on:input={(e) => {
+                                    // Limitar la entrada solo a números y punto decimal
+                                    const target = e.target as HTMLElement;
+                                    const text = target.textContent || "";
+                                    const cleaned = text.replace(/[^\d.]/g, "");
+                                    if (text !== cleaned) {
+                                        target.textContent = cleaned;
+                                        // Mover el cursor al final
+                                        const selection = window.getSelection();
+                                        const range = document.createRange();
+                                        range.selectNodeContents(target);
+                                        range.collapse(false);
+                                        selection?.removeAllRanges();
+                                        selection?.addRange(range);
+                                    }
+                                }}
+                                tabindex="0"
+                            >
+                                {gradeFormatter(row[`N${i + 1}`])}
+                            </td>
                         {/each}
                     </tr>
                 {/each}
@@ -620,7 +689,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
+        gap: 20px;
         padding: 16px 20px;
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         border-radius: 12px 12px 0 0;
@@ -633,10 +702,38 @@
         border-bottom-color: #334155;
     }
 
-    .search-container {
-        position: relative;
+    .toolbar-left {
         flex: 1;
         min-width: 250px;
+        display: flex;
+        align-items: center;
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 10px;
+        border: 1px solid rgba(226, 232, 240, 0.5);
+    }
+
+    :global(.dark) .toolbar-group {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: rgba(51, 65, 85, 0.5);
+    }
+
+    .search-container {
+        position: relative;
+        width: 100%;
         max-width: 400px;
     }
 
@@ -647,6 +744,7 @@
         transform: translateY(-50%);
         color: #64748b;
         font-size: 20px;
+        pointer-events: none;
     }
 
     .search-input {
@@ -655,14 +753,27 @@
         border: 2px solid #e2e8f0;
         border-radius: 10px;
         font-family: "Inter", sans-serif;
+        font-size: 14px;
         background: white;
         color: #1e293b;
+        transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
     :global(.dark) .search-input {
         background: #1e293b;
         border-color: #334155;
         color: #e2e8f0;
+    }
+
+    :global(.dark) .search-input:focus {
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
     }
 
     .clear-search-btn {
@@ -674,19 +785,48 @@
         border: none;
         color: #64748b;
         cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .clear-search-btn:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+    }
+
+    :global(.dark) .clear-search-btn:hover {
+        background: #334155;
+        color: #e2e8f0;
     }
 
     .toolbar-btn {
         display: flex;
         align-items: center;
         gap: 6px;
-        padding: 8px 14px;
+        padding: 8px 12px;
         background: white;
         border: 2px solid #e2e8f0;
         border-radius: 8px;
         color: #475569;
         font-family: "Inter", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
         cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .toolbar-btn:hover:not(:disabled) {
+        background: #f8fafc;
+        border-color: #6366f1;
+        color: #6366f1;
+        transform: translateY(-1px);
+    }
+
+    .toolbar-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 
     :global(.dark) .toolbar-btn {
@@ -695,14 +835,20 @@
         color: #cbd5e1;
     }
 
-    .toolbar-separator {
-        width: 1px;
-        height: 24px;
-        background: #e2e8f0;
+    :global(.dark) .toolbar-btn:hover:not(:disabled) {
+        background: #334155;
+        border-color: #8b5cf6;
+        color: #a78bfa;
     }
 
-    :global(.dark) .toolbar-separator {
-        background: #334155;
+    .btn-text {
+        font-size: 13px;
+    }
+
+    @media (max-width: 640px) {
+        .btn-text {
+            display: none;
+        }
     }
 
     .save-status {
@@ -782,6 +928,18 @@
         padding: 10px 12px;
         text-align: left;
         border-bottom: 1px solid #e2e8f0;
+        max-width: 80px;
+        overflow: hidden;
+    }
+
+    .native-table th:first-child,
+    .native-table td:first-child {
+        max-width: 250px;
+    }
+
+    .native-table th:nth-child(2),
+    .native-table td:nth-child(2) {
+        max-width: 60px;
     }
 
     :global(.dark) .native-table th,
@@ -804,36 +962,35 @@
     }
 
     .editable-cell {
-        cursor: pointer;
+        cursor: text;
         outline: none;
-        transition: background 0.2s;
+        transition:
+            background 0.2s ease,
+            box-shadow 0.2s ease;
+        padding: 10px 12px !important;
+        vertical-align: middle;
+        min-width: 60px;
+        max-width: 80px;
+        text-align: right;
     }
 
     .editable-cell:hover {
         background: #f1f5f9;
     }
 
+    .editable-cell:focus {
+        background: #eff6ff;
+        box-shadow: inset 0 0 0 2px #3b82f6;
+        outline: none;
+    }
+
     :global(.dark) .editable-cell:hover {
         background: #334155;
     }
 
-    .edit-input {
-        width: 100%;
-        padding: 4px 8px;
-        border: 2px solid #3b82f6;
-        border-radius: 4px;
-        text-align: right;
-        font-family: "Inter", sans-serif;
-        font-size: 14px;
-        outline: none;
-        background: white;
-        color: #1e293b;
-    }
-
-    :global(.dark) .edit-input {
-        background: #1e293b;
-        color: #e2e8f0;
-        border-color: #60a5fa;
+    :global(.dark) .editable-cell:focus {
+        background: #1e3a5f;
+        box-shadow: inset 0 0 0 2px #60a5fa;
     }
 
     .grade-header {
@@ -846,7 +1003,12 @@
     }
 
     .low-grade {
-        color: #ef4444;
+        color: #ef4444 !important;
+        font-weight: bold;
+    }
+
+    :global(.dark) .native-table .low-grade {
+        color: #f87171 !important;
         font-weight: bold;
     }
 
@@ -901,15 +1063,20 @@
         .grades-toolbar {
             flex-direction: column;
             align-items: stretch;
+            gap: 12px;
+        }
+        .toolbar-left {
+            min-width: 100%;
         }
         .search-container {
             max-width: 100%;
         }
-        .toolbar-actions {
+        .toolbar-right {
             justify-content: center;
         }
-        .btn-text {
-            display: none;
+        .toolbar-group {
+            flex: 1;
+            justify-content: center;
         }
     }
 </style>

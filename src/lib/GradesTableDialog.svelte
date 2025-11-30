@@ -5,6 +5,7 @@
 
     export let showDialog: boolean;
     export let docenteId: string; // New prop
+    export let periodo: string;
 
     function closeDialog() {
         showDialog = false;
@@ -53,7 +54,11 @@
 
             <div class="p-4 overflow-y-auto flex-grow">
                 <!-- GradesTable.svelte will automatically read from Svelte stores -->
-                <GradesTable2 tableNotasId="gradesTableInDialog" {docenteId} />
+                <GradesTable2
+                    tableNotasId="gradesTableInDialog"
+                    {docenteId}
+                    {periodo}
+                />
             </div>
 
             <div

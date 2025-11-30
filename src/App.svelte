@@ -210,6 +210,7 @@
       {notasDetalleLoading}
       {notasDetalleError}
       payloadYear={$payload.year}
+      payloadPeriodo={$payload.periodo}
       {selectedPeriodoForDialog}
       {selectedEstudianteId}
       {selectedAsignaturaNombre}

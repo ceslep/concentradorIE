@@ -36,6 +36,7 @@
     // GradesTableDialog props
     export let showGradesTableDialog: boolean;
     export let selectedDocenteId: string;
+    export let payloadPeriodo: string;
 </script>
 
 <!-- === DIALOGO DE NOTAS DETALLADAS === -->
@@ -71,4 +72,5 @@
 <GradesTableDialog
     bind:showDialog={showGradesTableDialog}
     docenteId={selectedDocenteId}
+    periodo={payloadPeriodo}
 />
