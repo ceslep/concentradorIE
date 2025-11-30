@@ -39,7 +39,7 @@
     $: year = $payload.year;
 
     // ========== COMPONENT STATE ==========
-    let tableData: GradeData[] = [];
+    export let tableData: GradeData[] = [];
     let filteredData: GradeData[] = [];
     let isLoading = false;
     let searchQuery = "";
@@ -610,7 +610,13 @@
 
                                     if (e.key === "Enter") {
                                         e.preventDefault();
-                                        navigateCell("down", target);
+                                        if (e.altKey) {
+                                            navigateCell("left", target);
+                                        } else if (e.shiftKey) {
+                                            navigateCell("right", target);
+                                        } else {
+                                            navigateCell("down", target);
+                                        }
                                     } else if (e.key === "Escape") {
                                         e.preventDefault();
                                         // Restaurar el valor original
@@ -940,6 +946,7 @@
     .native-table th:nth-child(2),
     .native-table td:nth-child(2) {
         max-width: 60px;
+        text-align: center;
     }
 
     :global(.dark) .native-table th,
@@ -956,12 +963,11 @@
         top: 0;
     }
 
-    .val-cell,
-    .editable-cell {
-        text-align: right;
+    .native-table .val-cell {
+        text-align: center;
     }
 
-    .editable-cell {
+    .native-table .editable-cell {
         cursor: text;
         outline: none;
         transition:
@@ -971,7 +977,7 @@
         vertical-align: middle;
         min-width: 60px;
         max-width: 80px;
-        text-align: right;
+        text-align: center;
     }
 
     .editable-cell:hover {
@@ -993,7 +999,7 @@
         box-shadow: inset 0 0 0 2px #60a5fa;
     }
 
-    .grade-header {
+    .native-table .grade-header {
         cursor: pointer;
         text-align: center;
     }

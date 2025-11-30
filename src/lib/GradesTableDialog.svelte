@@ -1,5 +1,6 @@
 <script lang="ts">
     import GradesTable2 from "./GradesTable2.svelte";
+    import GradesStatistics from "./GradesStatistics.svelte";
     import { theme } from "./themeStore";
     import { selectedAsignatura } from "./storeConcentrador";
 
@@ -10,6 +11,9 @@
     function closeDialog() {
         showDialog = false;
     }
+
+    let tableData: any[] = [];
+    let showStats = false;
 </script>
 
 {#if showDialog}
@@ -52,13 +56,56 @@
                 </button>
             </div>
 
+            <!-- Toolbar for View Toggle -->
+            <div
+                class="px-4 py-2 border-b flex justify-end gap-2
+                    {$theme === 'dark'
+                    ? 'border-gray-700 bg-gray-800/50'
+                    : 'border-gray-200 bg-gray-50/50'}"
+            >
+                <button
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                        {!showStats
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}"
+                    on:click={() => (showStats = false)}
+                >
+                    <span class="material-symbols-rounded text-lg"
+                        >table_chart</span
+                    >
+                    Tabla
+                </button>
+                <button
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                        {showStats
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}"
+                    on:click={() => (showStats = true)}
+                >
+                    <span class="material-symbols-rounded text-lg"
+                        >bar_chart</span
+                    >
+                    Estadísticas
+                </button>
+            </div>
+
             <div class="p-4 overflow-y-auto flex-grow">
                 <!-- GradesTable.svelte will automatically read from Svelte stores -->
-                <GradesTable2
-                    tableNotasId="gradesTableInDialog"
-                    {docenteId}
-                    {periodo}
-                />
+                <div
+                    style="display: {showStats
+                        ? 'none'
+                        : 'block'}; height: 100%;"
+                >
+                    <GradesTable2
+                        tableNotasId="gradesTableInDialog"
+                        {docenteId}
+                        {periodo}
+                        bind:tableData
+                    />
+                </div>
+                {#if showStats}
+                    <GradesStatistics data={tableData} />
+                {/if}
             </div>
 
             <div
