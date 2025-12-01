@@ -1,46 +1,36 @@
 <script lang="ts">
-  import {
-    loadConcentradorData,
-    loading,
-    error,
-    parsed,
-    showPeriodos,
-    selectedPeriodos,
-    currentOrden,
-    lastDuration,
-    exportCSV,
-    exportExcel,
-    payload,
-    concentradorType,
-    selectedAsignatura,
-  } from "./lib/storeConcentrador";
-  import type {
-    EstudianteRow,
-    NotasDetalladoPayload,
-    NotaDetalle,
-    ConcentradorParsed,
-    ConcentradorAreasParsed,
-    EstudianteRowArea,
-  } from "./lib/types";
   import { onMount } from "svelte";
   import { get } from "svelte/store";
-  import { theme } from "./lib/themeStore";
-  import { fetchNotasDetallado, fetchNotasDetalladoAreas } from "./lib/api";
   import ConcentradorAsignaturasTable from "./lib/ConcentradorAsignaturasTable.svelte";
   import ConcentradorAreasTable from "./lib/ConcentradorAreasTable.svelte";
-  import AppHeader from "./lib/AppHeader.svelte";
-  import Login from "./lib/Login.svelte";
-  // New modular components
-  import BackgroundDecorations from "./lib/BackgroundDecorations.svelte";
-  import PayloadFormSection from "./lib/PayloadFormSection.svelte";
   import ControlsSection from "./lib/ControlsSection.svelte";
+  import DialogsContainer from "./lib/DialogsContainer.svelte";
   import ErrorAlert from "./lib/ErrorAlert.svelte";
   import LoadingSkeleton from "./lib/LoadingSkeleton.svelte";
-  import DialogsContainer from "./lib/DialogsContainer.svelte";
+  import PayloadFormSection from "./lib/PayloadFormSection.svelte";
+  import AppHeader from "./lib/AppHeader.svelte";
+  import BackgroundDecorations from "./lib/BackgroundDecorations.svelte";
+  import Login from "./lib/Login.svelte";
+  import {
+    parsed,
+    loading,
+    error,
+    payload,
+    showPeriodos,
+    concentradorType,
+    selectedAsignatura,
+    currentOrden,
+  } from "./lib/storeConcentrador";
+  import { fetchNotasDetallado, fetchNotasDetalladoAreas } from "./lib/api";
+  import type {
+    NotaDetalle,
+    EstudianteRow,
+    EstudianteRowArea,
+    ConcentradorParsed,
+    ConcentradorAreasParsed,
+    NotasDetalladoPayload,
+  } from "./lib/types";
 
-  let showNotasDetalleDialog = false;
-  let showInfoCantDialog = false;
-  let showGradesTableDialog = false; // New state variable
   let selectedDocenteId: string = ""; // New state variable for docenteId
   let showInasistenciasDetallado = false; // New state variable for InasistenciasDetallado
   let showConvivenciaDialog = false; // New state variable for ConvivenciaDialog
@@ -56,6 +46,9 @@
   let inasistenciasAsignatura = "";
   let inasistenciasPeriodo = "";
   let showPayloadForm = true; // Controla visibilidad del formulario
+  let showGradesTableDialog = false;
+  let showNotasDetalleDialog = false;
+  let showInfoCantDialog = false;
 
   // Authentication State
   let isAuthenticated = false;
@@ -65,7 +58,7 @@
     estudianteId: string,
     nombres: string,
     asignatura: string,
-    periodo: string,
+    periodo: string
   ) {
     inasistenciasEstudianteId = estudianteId;
     inasistenciasNombres = nombres;
@@ -105,7 +98,7 @@
     est: EstudianteRow | EstudianteRowArea,
     itemAbrev: string,
     periodo: string,
-    valoracion: string,
+    valoracion: string
   ) {
     if (!valoracion || valoracion === "-") return;
 
@@ -121,7 +114,7 @@
       if (currentConcentradorType === "asignaturas") {
         const p = $parsed as ConcentradorParsed;
         const selectedAsignatura = p.asignaturas?.find(
-          (a) => a.abreviatura === itemAbrev,
+          (a) => a.abreviatura === itemAbrev
         );
         selectedItemName = selectedAsignatura?.nombre || itemAbrev;
       } else {

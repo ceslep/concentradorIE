@@ -58,27 +58,30 @@
 
   <!-- Unified Login Card with Logo -->
   <div
-    class="w-full max-w-5xl relative z-10 animate-fade-in-up flex items-center justify-center"
+    class="w-full max-w-5xl relative z-10 animate-fade-in-up flex items-center justify-center px-2"
   >
     <Card
       size="xl"
-      class="shadow-premium-xl p-6 lg:p-8 backdrop-blur-xl bg-white/30 dark:bg-gray-900/40 border border-white/40 dark:border-gray-700/50 shadow-2xl w-full"
+      class="shadow-premium-xl p-4 sm:p-6 lg:p-8 backdrop-blur-xl bg-white/30 dark:bg-gray-900/40 border border-white/40 dark:border-gray-700/50 shadow-2xl w-full"
     >
-      <div class="flex flex-col lg:flex-row items-center gap-6 lg:gap-12">
+      <div
+        class="flex flex-col lg:flex-row items-center gap-4 sm:gap-6 lg:gap-12"
+      >
         <!-- Institution Logo -->
         <div class="flex flex-col items-center flex-shrink-0">
           <img
             src="/src/assets/uescudo.png"
             alt="Escudo Institución Educativa"
-            class="w-52 h-52 lg:w-72 lg:h-72 object-contain drop-shadow-2xl"
+            class="w-32 h-32 sm:w-40 sm:h-40 md:w-52 md:h-52 lg:w-72 lg:h-72 object-contain drop-shadow-2xl"
           />
         </div>
 
         <!-- Login Form -->
         <div class="flex-1 w-full lg:max-w-md">
-          <div class="text-center lg:text-left mb-6 lg:mb-8">
+          <div class="text-center lg:text-left mb-4 sm:mb-6 lg:mb-8">
             <h1
-              class="text-xl lg:text-2xl font-bold mb-2 {$theme === 'dark'
+              class="text-lg sm:text-xl lg:text-2xl font-bold mb-2 {$theme ===
+              'dark'
                 ? 'text-white'
                 : 'text-gray-900'}"
               style="font-family: var(--font-heading);"
@@ -86,7 +89,7 @@
               Bienvenido
             </h1>
             <p
-              class="text-sm {$theme === 'dark'
+              class="text-xs sm:text-sm {$theme === 'dark'
                 ? 'text-gray-400'
                 : 'text-gray-500'}"
             >
@@ -94,9 +97,14 @@
             </p>
           </div>
 
-          <form on:submit|preventDefault={handleLogin} class="space-y-6">
+          <form
+            on:submit|preventDefault={handleLogin}
+            class="space-y-4 sm:space-y-6"
+          >
             <div>
-              <Label for="identificacion" class="mb-2">Identificación</Label>
+              <Label for="identificacion" class="mb-2 text-sm"
+                >Identificación</Label
+              >
               <Input
                 id="identificacion"
                 type="text"
@@ -104,12 +112,12 @@
                 placeholder="Tu número de identificación"
                 size="lg"
                 required
-                class="bg-white/50 dark:bg-gray-800/50"
+                class="bg-white/50 dark:bg-gray-800/50 text-base"
               />
             </div>
 
             <div>
-              <Label for="clave" class="mb-2">Contraseña</Label>
+              <Label for="clave" class="mb-2 text-sm">Contraseña</Label>
               <div class="relative">
                 <Input
                   id="clave"
@@ -118,14 +126,14 @@
                   placeholder="••••••••"
                   size="lg"
                   required
-                  class="pr-10 bg-white/50 dark:bg-gray-800/50"
+                  class="pr-10 bg-white/50 dark:bg-gray-800/50 text-base"
                 />
                 <button
                   type="button"
-                  class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
+                  class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none min-h-[44px]"
                   on:click={() => (showPassword = !showPassword)}
                 >
-                  <span class="material-symbols-rounded">
+                  <span class="material-symbols-rounded text-xl">
                     {showPassword ? "visibility_off" : "visibility"}
                   </span>
                 </button>
@@ -133,7 +141,7 @@
             </div>
 
             {#if error}
-              <Alert color="red" class="text-center">
+              <Alert color="red" class="text-center text-sm">
                 <span class="font-medium">{error}</span>
               </Alert>
             {/if}
@@ -142,7 +150,7 @@
               type="submit"
               disabled={loading}
               size="lg"
-              class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 shadow-lg shadow-indigo-500/30"
+              class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 shadow-lg shadow-indigo-500/30 text-base min-h-[44px]"
             >
               {#if loading}
                 <Spinner class="mr-3 text-white" size="4" />

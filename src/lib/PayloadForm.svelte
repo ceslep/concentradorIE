@@ -4,6 +4,7 @@
     showPeriodos,
     selectedPeriodos,
     loadConcentradorData,
+    toggleShowPeriodos,
   } from "./storeConcentrador";
   import type { Sede } from "./api";
   import { fetchAsignaciones, fetchPeriodos, fetchYears } from "./api";
@@ -14,6 +15,7 @@
 
   export let disabled: boolean = false;
 
+  const STORAGE_KEY = "concentradorIE_lastPayload";
   const allPeriods = ["UNO", "DOS", "TRES", "CUATRO", "DEF"];
   const periodOrder = { UNO: 1, DOS: 2, TRES: 3, CUATRO: 4, DEF: 5 };
 
@@ -22,6 +24,7 @@
   let years: Year[] = [];
   let niveles: string[] = [];
   let numeros: string[] = [];
+  let isInitialized = false;
 
   // ✅ Derivamos un string para el valor del select de "Activos"
   $: activosString = $payload.activos ? "true" : "false";
@@ -31,12 +34,65 @@
     $payload.activos = value === "true";
   }
 
+  // Función para guardar el payload en localStorage
+  function savePayloadToStorage() {
+    if (!isInitialized) return;
+    try {
+      const dataToSave = {
+        Asignacion: $payload.Asignacion,
+        nivel: $payload.nivel,
+        numero: $payload.numero,
+        periodo: $payload.periodo,
+        year: $payload.year,
+        activos: $payload.activos,
+        selectedPeriodos: $selectedPeriodos,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch (error) {
+      console.error("Error guardando payload en localStorage:", error);
+    }
+  }
+
+  // Función para cargar el payload desde localStorage
+  function loadPayloadFromStorage() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return null;
+      return JSON.parse(saved);
+    } catch (error) {
+      console.error("Error cargando payload desde localStorage:", error);
+      return null;
+    }
+  }
+
+  // Guardar automáticamente cuando cambian los valores
+  $: if (isInitialized) {
+    // Trigger save when any payload value changes
+    $payload.Asignacion;
+    $payload.nivel;
+    $payload.numero;
+    $payload.periodo;
+    $payload.year;
+    $payload.activos;
+    $selectedPeriodos;
+    savePayloadToStorage();
+  }
+
   onMount(async () => {
     const run = async () => {
       try {
+        // Cargar valores guardados antes de fetch
+        const savedPayload = loadPayloadFromStorage();
+
         sedes = await fetchAsignaciones();
         if (sedes.length > 0) {
-          if (!$payload.Asignacion) {
+          // Intentar usar el valor guardado si es válido
+          if (
+            savedPayload?.Asignacion &&
+            sedes.some((s) => s.ind === savedPayload.Asignacion)
+          ) {
+            $payload.Asignacion = savedPayload.Asignacion;
+          } else if (!$payload.Asignacion) {
             $payload.Asignacion = sedes[0].ind;
           }
           updateNiveles(false);
@@ -44,35 +100,81 @@
 
         periods = await fetchPeriodos();
         if (periods.length > 0) {
-          const selectedPeriod = periods.find((p) => p.selected === "selected");
-          if (selectedPeriod) {
-            $payload.periodo = selectedPeriod.nombre;
-          } else if (!$payload.periodo) {
-            $payload.periodo = periods[0].nombre;
+          // Intentar usar el valor guardado si es válido
+          if (
+            savedPayload?.periodo &&
+            periods.some((p) => p.nombre === savedPayload.periodo)
+          ) {
+            $payload.periodo = savedPayload.periodo;
+          } else {
+            const selectedPeriod = periods.find(
+              (p) => p.selected === "selected"
+            );
+            if (selectedPeriod) {
+              $payload.periodo = selectedPeriod.nombre;
+            } else if (!$payload.periodo) {
+              $payload.periodo = periods[0].nombre;
+            }
           }
         }
 
         years = await fetchYears();
         if (years.length > 0) {
-          const currentYear = new Date().getFullYear().toString();
-          const currentYearExists = years.some((y) => y.year === currentYear);
+          // Intentar usar el valor guardado si es válido
+          if (
+            savedPayload?.year &&
+            years.some((y) => y.year === savedPayload.year)
+          ) {
+            $payload.year = savedPayload.year;
+          } else {
+            const currentYear = new Date().getFullYear().toString();
+            const currentYearExists = years.some((y) => y.year === currentYear);
 
-          if (currentYearExists) {
-            $payload.year = currentYear;
-          } else if (!$payload.year) {
-            // If current year doesn't exist in fetched data and payload.year is not set,
-            // default to the first year from fetched data (assuming it's the latest/most relevant)
-            $payload.year = years[0].year;
+            if (currentYearExists) {
+              $payload.year = currentYear;
+            } else if (!$payload.year) {
+              // If current year doesn't exist in fetched data and payload.year is not set,
+              // default to the first year from fetched data (assuming it's the latest/most relevant)
+              $payload.year = years[0].year;
+            }
           }
         } else if (!$payload.year) {
           // If no years are fetched and payload.year is not set, default to current year
           $payload.year = new Date().getFullYear().toString();
         }
 
+        // Restaurar nivel y número si son válidos
+        if (savedPayload?.nivel && niveles.includes(savedPayload.nivel)) {
+          $payload.nivel = savedPayload.nivel;
+          updateNumeros(false);
+          if (savedPayload?.numero && numeros.includes(savedPayload.numero)) {
+            $payload.numero = savedPayload.numero;
+          }
+        }
+
+        // Restaurar el valor de activos
+        if (savedPayload?.activos !== undefined) {
+          $payload.activos = savedPayload.activos;
+        }
+
+        // Restaurar periodos seleccionados
+        if (
+          savedPayload?.selectedPeriodos &&
+          Array.isArray(savedPayload.selectedPeriodos)
+        ) {
+          $selectedPeriodos = savedPayload.selectedPeriodos.filter(
+            (p: string) => allPeriods.includes(p)
+          );
+        }
+
+        // Marcar como inicializado para comenzar a guardar cambios
+        isInitialized = true;
+
         // After all payload values are set, load the concentrador data
         loadConcentradorData();
       } catch (error) {
         // Error loading initial data
+        isInitialized = true;
       }
     };
 
@@ -90,8 +192,8 @@
       const uniqueNiveles = [
         ...new Set(
           selectedSede.grados.map(
-            (g: { nivel: string; numero: string }) => g.nivel,
-          ),
+            (g: { nivel: string; numero: string }) => g.nivel
+          )
         ),
       ];
       niveles = uniqueNiveles;
@@ -109,7 +211,7 @@
     if (selectedSede) {
       const filteredNumeros = selectedSede.grados
         .filter(
-          (g: { nivel: string; numero: string }) => g.nivel === $payload.nivel,
+          (g: { nivel: string; numero: string }) => g.nivel === $payload.nivel
         )
         .map((g: { nivel: string; numero: string }) => g.numero);
       numeros = filteredNumeros;
@@ -143,23 +245,23 @@
   <div
     class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300"
   >
-    <div class="p-6">
+    <div class="p-3">
       <div
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"
       >
         <!-- Sede -->
         <div class="flex flex-col gap-1.5 group">
           <label
             for="fld-asignacion"
-            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
           >
-            <span class="material-symbols-rounded text-lg">business</span>
+            <span class="material-symbols-rounded text-base">business</span>
             Sede
           </label>
           <div class="relative">
             <select
               id="fld-asignacion"
-              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
               bind:value={$payload.Asignacion}
               on:change={() => {
                 updateNiveles();
@@ -183,15 +285,15 @@
         <div class="flex flex-col gap-1.5 group">
           <label
             for="fld-nivel"
-            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
           >
-            <span class="material-symbols-rounded text-lg">school</span>
+            <span class="material-symbols-rounded text-base">school</span>
             Nivel
           </label>
           <div class="relative">
             <select
               id="fld-nivel"
-              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
               bind:value={$payload.nivel}
               on:change={() => {
                 updateNumeros();
@@ -215,15 +317,15 @@
         <div class="flex flex-col gap-1.5 group">
           <label
             for="fld-numero"
-            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
           >
-            <span class="material-symbols-rounded text-lg">numbers</span>
+            <span class="material-symbols-rounded text-base">numbers</span>
             Número
           </label>
           <div class="relative">
             <select
               id="fld-numero"
-              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
               bind:value={$payload.numero}
               on:change={() => loadConcentradorData()}
               {disabled}
@@ -244,15 +346,17 @@
         <div class="flex flex-col gap-1.5 group">
           <label
             for="fld-periodo"
-            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
           >
-            <span class="material-symbols-rounded text-lg">calendar_month</span>
+            <span class="material-symbols-rounded text-base"
+              >calendar_month</span
+            >
             Periodo
           </label>
           <div class="relative">
             <select
               id="fld-periodo"
-              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
               bind:value={$payload.periodo}
               on:change={() => loadConcentradorData()}
               {disabled}
@@ -273,15 +377,17 @@
         <div class="flex flex-col gap-1.5 group">
           <label
             for="fld-year"
-            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
           >
-            <span class="material-symbols-rounded text-lg">calendar_today</span>
+            <span class="material-symbols-rounded text-base"
+              >calendar_today</span
+            >
             Año
           </label>
           <div class="relative">
             <select
               id="fld-year"
-              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
               bind:value={$payload.year}
               on:change={() => loadConcentradorData()}
               {disabled}
@@ -302,9 +408,9 @@
         <div class="flex flex-col gap-1.5 group">
           <label
             for="fld-activos"
-            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
           >
-            <span class="material-symbols-rounded text-lg">
+            <span class="material-symbols-rounded text-base">
               {activosString === "true" ? "toggle_on" : "toggle_off"}
             </span>
             Activos
@@ -312,7 +418,7 @@
           <div class="relative">
             <select
               id="fld-activos"
-              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
               value={activosString}
               on:change={(e) => {
                 const target = e.target as HTMLSelectElement;
@@ -331,12 +437,39 @@
             </div>
           </div>
         </div>
+
+        <!-- Toggle Periodos Button -->
+        <div class="flex flex-col gap-1.5 group">
+          <label
+            for="btn-toggle-periodos"
+            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-colors"
+          >
+            <span class="material-symbols-rounded text-base">tune</span>
+            Periodos
+          </label>
+          <button
+            id="btn-toggle-periodos"
+            type="button"
+            on:click={toggleShowPeriodos}
+            class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-between gap-2"
+            {disabled}
+          >
+            <span>{$showPeriodos ? "Ocultar" : "Mostrar"}</span>
+            <span
+              class="material-symbols-rounded text-base transition-transform duration-200 {$showPeriodos
+                ? 'rotate-180'
+                : ''}"
+            >
+              expand_more
+            </span>
+          </button>
+        </div>
       </div>
 
       <!-- Sección de selección de periodos -->
       {#if $showPeriodos}
         <div
-          class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700"
+          class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700"
           transition:slide={{ duration: 200 }}
         >
           <h3
@@ -357,7 +490,7 @@
                   class="peer sr-only"
                 />
                 <div
-                  class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium transition-all duration-200
+                  class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium transition-all duration-200
                             peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:text-indigo-600
                             dark:peer-checked:bg-indigo-900/20 dark:peer-checked:border-indigo-500 dark:peer-checked:text-indigo-400
                             group-hover:border-indigo-300 dark:group-hover:border-indigo-700"

@@ -13,21 +13,21 @@
   --gradient-success: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
   --gradient-bg-light: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
   --gradient-bg-dark: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-  
+
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(255, 255, 255, 0.3);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  
+
   /* Premium Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
   --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.16);
-  
+
   /* Typography */
-  --font-heading: 'Outfit', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: "Outfit", sans-serif;
+  --font-body: "Inter", sans-serif;
 }
 
 .dark {
@@ -65,43 +65,92 @@
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* ==========================================
    MICRO-ANIMATIONS & TRANSITIONS
    ========================================== */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes slideInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
-  50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.8);
+  }
 }
 
 .animate-fade-in {
@@ -138,7 +187,11 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(118, 75, 162, 0.5));
+  background: linear-gradient(
+    180deg,
+    rgba(102, 126, 234, 0.5),
+    rgba(118, 75, 162, 0.5)
+  );
   border-radius: 10px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -146,18 +199,30 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+  background: linear-gradient(
+    180deg,
+    rgba(102, 126, 234, 0.8),
+    rgba(118, 75, 162, 0.8)
+  );
   background-clip: padding-box;
 }
 
 @media (prefers-color-scheme: dark) {
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(148, 163, 184, 0.3), rgba(100, 116, 139, 0.3));
+    background: linear-gradient(
+      180deg,
+      rgba(148, 163, 184, 0.3),
+      rgba(100, 116, 139, 0.3)
+    );
     background-clip: padding-box;
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(148, 163, 184, 0.6), rgba(100, 116, 139, 0.6));
+    background: linear-gradient(
+      180deg,
+      rgba(148, 163, 184, 0.6),
+      rgba(100, 116, 139, 0.6)
+    );
     background-clip: padding-box;
   }
 }
@@ -172,7 +237,7 @@
 }
 
 .btn-premium::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -209,4 +274,89 @@
 
 .shadow-premium-xl {
   box-shadow: var(--shadow-xl);
+}
+
+/* ==========================================
+   MOBILE OPTIMIZATIONS
+   ========================================== */
+
+/* Reduce blur effects on mobile for better performance */
+@media (max-width: 768px) {
+  .glass-effect {
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+  }
+
+  .glass-effect-strong {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  /* Reduce animation complexity on mobile */
+  .animated-gradient-bg {
+    animation-duration: 20s; /* Slower for less CPU usage */
+  }
+
+  /* Optimize shadows for mobile */
+  .shadow-premium {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-premium-xl {
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Ensure touch targets are at least 44px */
+  button,
+  a,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Reduce padding on mobile */
+  .glass-effect-strong {
+    padding: 1rem;
+  }
+
+  /* Smaller fonts for mobile */
+  :root {
+    font-size: 14px;
+  }
+}
+
+/* Extra small devices (phones in portrait) */
+@media (max-width: 480px) {
+  /* Further reduce blur for very small devices */
+  .glass-effect,
+  .glass-effect-strong {
+    backdrop-filter: blur(8px) saturate(130%);
+    -webkit-backdrop-filter: blur(8px) saturate(130%);
+  }
+
+  /* Disable complex animations on very small screens */
+  .animated-gradient-bg {
+    animation: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  /* Optimize button ripple effect */
+  .btn-premium::before {
+    transition: width 0.3s, height 0.3s; /* Faster transition */
+  }
+
+  .btn-premium:hover::before {
+    width: 200px; /* Smaller ripple */
+    height: 200px;
+  }
+}
+
+/* Medium devices and up - restore defaults */
+@media (min-width: 769px) {
+  button,
+  a {
+    min-height: auto;
+    min-width: auto;
+  }
 }
