@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { fetchInasistenciasDetallado } from "./api";
-  import type { Inasistencia, InasistenciasDetalladoPayload } from "./types";
-  import { theme } from "./themeStore";
+  import { fetchInasistenciasDetallado } from "../../../../api";
+  import type { Inasistencia, InasistenciasDetalladoPayload } from "../../../../types";
+  import { theme } from "../../../../themeStore";
   import { fade, scale } from "svelte/transition";
 
   export let showDialog: boolean;

@@ -1,7 +1,7 @@
 <script lang="ts">
     import Skeleton from "./Skeleton.svelte";
-    import { theme } from "./themeStore";
-    import type { AsignaturaOrdenItem } from "./types";
+    import { theme } from "../../themeStore";
+    import type { AsignaturaOrdenItem } from "../../types";
 
     export let loading: boolean;
     export let parsed: any;

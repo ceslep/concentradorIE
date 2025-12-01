@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { theme } from "./themeStore";
+    import { theme } from "../../themeStore";
 
     export let error: string | null = null;
 </script>

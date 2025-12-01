@@ -1,10 +1,10 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    import { GET_NOTAS_HISTORY_ENDPOINT } from "../../constants";
-    import type { NotaHistory } from "./types";
-    import Skeleton from "./Skeleton.svelte";
-    import { theme } from "./themeStore";
-    import Tooltip from "./Tooltip.svelte";
+    import { GET_NOTAS_HISTORY_ENDPOINT } from "../../../../../constants";
+    import type { NotaHistory } from "../../../../types";
+    import Skeleton from "../../../shared/Skeleton.svelte";
+    import { theme } from "../../../../themeStore";
+    import Tooltip from "../../../shared/Tooltip.svelte";
 
     export let showDialog: boolean = false;
     export let studentId: string;

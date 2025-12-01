@@ -1,8 +1,8 @@
 <script lang="ts">
   import GradesTable2 from "./GradesTable2.svelte";
   import GradesStatistics from "./GradesStatistics.svelte";
-  import { theme } from "./themeStore";
-  import { selectedAsignatura } from "./storeConcentrador";
+  import { theme } from "../../../../themeStore";
+  import { selectedAsignatura } from "../../../../storeConcentrador";
 
   export let showDialog: boolean;
   export let docenteId: string; // New prop

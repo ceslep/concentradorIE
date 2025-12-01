@@ -1,9 +1,9 @@
 <script lang="ts">
     import { fade, scale } from "svelte/transition";
-    import type { NotaDetalle } from "./types";
-    import { theme } from "./themeStore";
+    import type { NotaDetalle } from "../../../../types";
+    import { theme } from "../../../../themeStore";
     import NotasHistoryDialog from "./NotasHistoryDialog.svelte";
-    import ConvivenciaDialog from "./ConvivenciaDialog.svelte";
+    import ConvivenciaDialog from "../convivencia/ConvivenciaDialog.svelte";
 
     export let showDialog: boolean;
     export let notasDetalle: NotaDetalle[] = [];

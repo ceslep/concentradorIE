@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { GradeData } from "./utils/gradeTableUtils";
-  import { theme } from "./themeStore";
+  import type { GradeData } from "../../../../utils/gradeTableUtils";
+  import { theme } from "../../../../themeStore";
 
   export let data: GradeData[] = [];
   export let loading: boolean = false;

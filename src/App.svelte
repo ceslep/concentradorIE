@@ -1,16 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { get } from "svelte/store";
-  import ConcentradorAsignaturasTable from "./lib/ConcentradorAsignaturasTable.svelte";
-  import ConcentradorAreasTable from "./lib/ConcentradorAreasTable.svelte";
-  import ControlsSection from "./lib/ControlsSection.svelte";
-  import DialogsContainer from "./lib/DialogsContainer.svelte";
-  import ErrorAlert from "./lib/ErrorAlert.svelte";
-  import LoadingSkeleton from "./lib/LoadingSkeleton.svelte";
-  import PayloadFormSection from "./lib/PayloadFormSection.svelte";
-  import AppHeader from "./lib/AppHeader.svelte";
-  import BackgroundDecorations from "./lib/BackgroundDecorations.svelte";
-  import Login from "./lib/Login.svelte";
+  import ConcentradorAsignaturasTable from "./lib/components/features/concentrador/ConcentradorAsignaturasTable.svelte";
+  import ConcentradorAreasTable from "./lib/components/features/concentrador/ConcentradorAreasTable.svelte";
+  import ControlsSection from "./lib/components/features/concentrador/ControlsSection.svelte";
+  import DialogsContainer from "./lib/components/features/dialogs/DialogsContainer.svelte";
+  import ErrorAlert from "./lib/components/shared/ErrorAlert.svelte";
+  import LoadingSkeleton from "./lib/components/shared/LoadingSkeleton.svelte";
+  import PayloadFormSection from "./lib/components/features/concentrador/PayloadFormSection.svelte";
+  import AppHeader from "./lib/components/layout/AppHeader.svelte";
+  import BackgroundDecorations from "./lib/components/layout/BackgroundDecorations.svelte";
+  import Login from "./lib/components/features/auth/Login.svelte";
   import {
     parsed,
     loading,

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { theme } from './themeStore';
+    import { theme } from '../../themeStore';
     import { fade } from 'svelte/transition';
     import { onMount, onDestroy, tick } from 'svelte';
 

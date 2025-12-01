@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { ConcentradorAreasParsed, EstudianteRowArea } from "./types";
-  import { theme } from "./themeStore";
+  import type { ConcentradorAreasParsed, EstudianteRowArea } from "../../../types";
+  import { theme } from "../../../themeStore";
   import {
     parsed,
     loading,
@@ -8,7 +8,7 @@
     showPeriodos,
     selectedPeriodos,
     currentOrden,
-  } from "./storeConcentrador";
+  } from "../../../storeConcentrador";
   import { fade } from "svelte/transition";
 
   export let handleValoracionClick: (

@@ -1,6 +1,6 @@
 <script lang="ts">
   import PayloadForm from "./PayloadForm.svelte";
-  import { theme } from "./themeStore";
+  import { theme } from "../../../themeStore";
 
   export let show: boolean = true;
   export let loading: boolean = false;

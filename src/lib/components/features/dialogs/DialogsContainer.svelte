@@ -1,9 +1,9 @@
 <script lang="ts">
-    import NotasDetalleDialog from "./NotasDetalleDialog.svelte";
-    import InfoCantDialog from "./InfoCantDialog.svelte";
-    import InasistenciasDetallado from "./InasistenciasDetallado.svelte";
-    import GradesTableDialog from "./GradesTableDialog.svelte";
-    import type { NotaDetalle } from "./types";
+    import NotasDetalleDialog from "./notas/NotasDetalleDialog.svelte";
+    import InfoCantDialog from "./info/InfoCantDialog.svelte";
+    import InasistenciasDetallado from "./inasistencias/InasistenciasDetallado.svelte";
+    import GradesTableDialog from "./grades/GradesTableDialog.svelte";
+    import type { NotaDetalle } from "../../../types";
 
     // NotasDetalleDialog props
     export let showNotasDetalleDialog: boolean;

@@ -1,11 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
   import { fade, scale } from "svelte/transition";
-  import { GET_INFOCANT_ENDPOINT } from "../../constants";
-  import { theme } from "./themeStore";
-  import Skeleton from "./Skeleton.svelte";
-  import type { InfoCantData } from "./types";
-  import { payload } from "./storeConcentrador";
+  import { GET_INFOCANT_ENDPOINT } from "../../../../../constants";
+  import { theme } from "../../../../themeStore";
+  import Skeleton from "../../../shared/Skeleton.svelte";
+  import type { InfoCantData } from "../../../../types";
+  import { payload } from "../../../../storeConcentrador";
   import InfoCantCharts from "./InfoCantCharts.svelte";
 
   export let showDialog: boolean = false;

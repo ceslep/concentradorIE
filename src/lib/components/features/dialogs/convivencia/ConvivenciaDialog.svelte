@@ -4,12 +4,12 @@
   import {
     fetchConsolidadoConvivencia,
     fetchConvivenciaDetallado,
-  } from "./api"; // Import fetchConvivenciaDetallado
+  } from "../../../../api"; // Import fetchConvivenciaDetallado
   import type {
     ConvivenciaRecord,
     ConsolidadoConvivenciaPayload,
     ConvivenciaDetallado,
-  } from "./types"; // Import ConvivenciaDetallado
+  } from "../../../../types"; // Import ConvivenciaDetallado
 
   export let showDialog: boolean;
   export let estudianteId: string;

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { theme } from "./themeStore";
+  import { theme } from "../../themeStore";
   import {
     loadConcentradorData,
     loading,
@@ -8,7 +8,7 @@
     exportCSV,
     exportExcel,
     concentradorType,
-  } from "./storeConcentrador";
+  } from "../../storeConcentrador";
 
   export let showPayloadForm: boolean;
   export let showInfoCantDialog: boolean;

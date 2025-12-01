@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { theme } from "./themeStore";
-  import { LOGIN_ENDPOINT } from "../../constants";
+  import { theme } from "../../../themeStore";
+  import { LOGIN_ENDPOINT } from "../../../../constants";
   import { Card, Button, Label, Input, Alert, Spinner } from "flowbite-svelte";
 
   const dispatch = createEventDispatcher();
@@ -62,23 +62,26 @@
   >
     <Card
       size="xl"
-      class="shadow-premium-xl p-4 sm:p-6 lg:p-8 backdrop-blur-xl bg-white/30 dark:bg-gray-900/40 border border-white/40 dark:border-gray-700/50 shadow-2xl w-full"
+      class="glass-card-custom p-4 sm:p-6 lg:p-8 w-full"
     >
-      <div
-        class="flex flex-col lg:flex-row items-center gap-4 sm:gap-6 lg:gap-12"
-      >
-        <!-- Institution Logo -->
-        <div class="flex flex-col items-center flex-shrink-0">
-          <img
-            src="/src/assets/uescudo.png"
-            alt="Escudo Institución Educativa"
-            class="w-32 h-32 sm:w-40 sm:h-40 md:w-52 md:h-52 lg:w-72 lg:h-72 object-contain drop-shadow-2xl"
-          />
-        </div>
-
-        <!-- Login Form -->
-        <div class="flex-1 w-full lg:max-w-md">
-          <div class="text-center lg:text-left mb-4 sm:mb-6 lg:mb-8">
+              <div
+              class="flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-4 sm:gap-6 lg:gap-12 w-full h-full"
+              >
+              <!-- Institution Logo -->
+              <div class="flex flex-col items-center justify-center flex-shrink-0 h-full">
+                <div
+                  class="relative logo-sheen w-32 h-32 sm:w-40 sm:h-40 md:w-52 md:h-52 lg:w-72 lg:h-72 overflow-hidden"
+                >
+                  <img
+                    src="/src/assets/uescudo.png"
+                    alt="Escudo Institución Educativa"
+                    class="w-full h-full object-contain drop-shadow-2xl"
+                  />
+                </div>
+              </div>
+      
+              <!-- Login Form -->
+              <div class="flex-1 w-full lg:max-w-md h-full flex flex-col justify-center">          <div class="text-center lg:text-left mb-4 sm:mb-6 lg:mb-8">
             <h1
               class="text-lg sm:text-xl lg:text-2xl font-bold mb-2 {$theme ===
               'dark'
@@ -150,7 +153,7 @@
               type="submit"
               disabled={loading}
               size="lg"
-              class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 shadow-lg shadow-indigo-500/30 text-base min-h-[44px]"
+              class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-base min-h-[44px] glass-button"
             >
               {#if loading}
                 <Spinner class="mr-3 text-white" size="4" />

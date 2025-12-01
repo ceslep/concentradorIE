@@ -4,8 +4,8 @@
   import {
     GET_NOTAS_ENDPOINT,
     GET_PERIODOS_NOTAS_ENDPOINT,
-  } from "../../constants";
-  import { payload, selectedAsignatura } from "./storeConcentrador";
+  } from "../../../../../constants";
+  import { payload, selectedAsignatura } from "../../../../storeConcentrador";
   import GradeDetailsDialog from "./GradeDetailsDialog.svelte";
   import {
     calculateRowVal,
@@ -16,7 +16,7 @@
     extractColumnNumber,
     type GradeData,
     type HistoryEntry,
-  } from "./utils/gradeTableUtils";
+  } from "../../../../utils/gradeTableUtils";
 
   // ========== PROPS ==========
   export let tableNotasId: string = "nativeGradesTable";

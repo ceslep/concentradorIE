@@ -5,12 +5,12 @@
     selectedPeriodos,
     loadConcentradorData,
     toggleShowPeriodos,
-  } from "./storeConcentrador";
-  import type { Sede } from "./api";
-  import { fetchAsignaciones, fetchPeriodos, fetchYears } from "./api";
-  import type { Periodo, Year } from "./types";
+  } from "../../../storeConcentrador";
+  import type { Sede } from "../../../api";
+  import { fetchAsignaciones, fetchPeriodos, fetchYears } from "../../../api";
+  import type { Periodo, Year } from "../../../types";
   import { onMount } from "svelte";
-  import { theme } from "./themeStore";
+  import { theme } from "../../../themeStore";
   import { slide } from "svelte/transition";
 
   export let disabled: boolean = false;

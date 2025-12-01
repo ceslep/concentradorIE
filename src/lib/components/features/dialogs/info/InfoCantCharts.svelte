@@ -1,8 +1,8 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import Chart from "chart.js/auto";
-    import type { InfoCantData } from "./types";
-    import { theme } from "./themeStore";
+    import type { InfoCantData } from "../../../../types";
+    import { theme } from "../../../../themeStore";
 
     export let data: InfoCantData[] = [];
 

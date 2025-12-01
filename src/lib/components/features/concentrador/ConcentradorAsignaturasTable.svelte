@@ -3,8 +3,8 @@
     EstudianteRow,
     ConcentradorParsed,
     AsignaturaOrdenItem,
-  } from "./types";
-  import { theme } from "./themeStore";
+  } from "../../../types";
+  import { theme } from "../../../themeStore";
   import {
     parsed,
     loading,
@@ -14,7 +14,7 @@
     currentOrden,
     concentradorType,
     selectedAsignatura,
-  } from "./storeConcentrador";
+  } from "../../../storeConcentrador";
   import { fade } from "svelte/transition";
 
   export let handleValoracionClick: (
