@@ -174,7 +174,7 @@
     <PayloadFormSection show={showPayloadForm} loading={$loading} />
 
     <!-- === CONTROLES === -->
-    <ControlsSection {showPeriodos} />
+    <ControlsSection />
 
     <!-- === MENSAJE DE ERROR === -->
     <ErrorAlert error={$error} />
