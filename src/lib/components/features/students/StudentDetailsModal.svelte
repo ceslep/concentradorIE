@@ -944,7 +944,7 @@
                     >
                     <select
                       id="ediscapacidad"
-                      bind:value={ediscapacidad}
+                      bind:value={$eDiscapacidad}
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-200"
                     >
                       <option value="" disabled>Seleccione una opción</option>
@@ -982,7 +982,7 @@
                     <input
                       type="text"
                       id="eHED"
-                      bind:value={eHED}
+                      bind:value={$eHED}
                       placeholder="Ingrese HED"
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-200"
                     />
@@ -1005,11 +1005,11 @@
                   >
                   <select
                     id="eetnia"
-                    bind:value={eetnia}
+                    bind:value={$eEtnia}
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-200"
                   >
                     <option value="" disabled>Seleccione una opción</option>
-                    {#each etnias as group}
+                    {#each $etnias as group}
                       <optgroup label={group.label}>
                         {#each group.options as option}
                           <option value={option}>{option}</option>

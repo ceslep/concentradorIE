@@ -3,6 +3,62 @@ import type { ConcentradorParsed, ConcentradorAreasParsed, Periodo, AsignaturaOr
 import { defaultConcentradorPayload, fetchConcentrador, fetchConcentradorAreas } from './api';
 import type { ConcentradorPayload } from './api';
 
+// Student Detail Writable Stores
+export const eNombres = writable<string>('');
+export const eInstitucion_externa = writable<string>('');
+export const eGenero = writable<string>('');
+export const eFecnac = writable<string>('');
+export const eEdad = writable<string>('');
+export const eNivel = writable<string>('');
+export const eGrado = writable<string>('');
+export const eNumero = writable<string>('');
+export const eAnio = writable<string>('');
+export const ePass = writable<string>('');
+export const eActivo = writable<string>('');
+export const eBanda = writable<string>('');
+export const eHED = writable<string>('');
+export const eIdacudiente = writable<string>('');
+export const eAcudiente = writable<string>('');
+export const eTelefono1 = writable<string>('');
+export const eTelefono2 = writable<string>('');
+export const eDireccion = writable<string>('');
+export const eEmail_estudiante = writable<string>('');
+export const eEmail_acudiente = writable<string>('');
+export const eDesertor = writable<string>('');
+export const eOtraInformacion = writable<string>('');
+export const eEstado = writable<string>('');
+export const eYear = writable<string>('');
+export const eLugar = writable<string>('');
+export const eSisben = writable<string>('');
+export const eEstrato = writable<string>('');
+export const eLugarNacimiento = writable<string>('');
+export const eLugarExpedicion = writable<string>('');
+export const eFechaExpedicion = writable<string>('');
+export const eTdei = writable<string>('');
+export const eVictimaConflicto = writable<string>('');
+export const eLugarDesplazamiento = writable<string>('');
+export const eFechaDesplazamiento = writable<string>('');
+export const eEtnia = writable<string>(''); // Assuming this will store the selected etnia
+export const eTipoSangre = writable<string>('');
+export const eEps = writable<string>('');
+export const ePadre = writable<string>('');
+export const ePadreid = writable<string>('');
+export const eTelefonopadre = writable<string>('');
+export const eOcupacionpadre = writable<string>('');
+export const eMadre = writable<string>('');
+export const eMadreid = writable<string>('');
+export const eTelefonomadre = writable<string>('');
+export const eOcupacionmadre = writable<string>('');
+export const eParentesco = writable<string>('');
+export const eDiscapacidad = writable<string>(''); // Assuming this will store the selected discapacidad
+export const eTelefono_acudiente = writable<string>('');
+export const eEanterior = writable<string>('');
+export const eSede = writable<string>('');
+
+export const etnias = writable<Array<{ label: string; options: string[] }>>([
+    { label: "Grupos Étnicos", options: ["Indígena", "Afrocolombiano", "Raizal", "Palenquero", "Gitano (Rom)", "Ninguno"] }
+]);
+
 // Writable Stores
 export const parsed = writable<ConcentradorParsed | ConcentradorAreasParsed | null>(null);
 export const loading = writable<boolean>(false);

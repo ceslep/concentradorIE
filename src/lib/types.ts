@@ -289,6 +289,32 @@ export interface Valoracion {
   fecha10: string | null;
   fecha11: string | null;
   fecha12: string | null;
+  anotacion1: string | null;
+  anotacion2: string | null;
+  anotacion3: string | null;
+  anotacion4: string | null;
+  anotacion5: string | null;
+  anotacion6: string | null;
+  anotacion7: string | null;
+  anotacion8: string | null;
+  anotacion9: string | null;
+  anotacion10: string | null;
+  anotacion11: string | null;
+  anotacion12: string | null;
+  fechaa1: string | null;
+  fechaa2: string | null;
+  fechaa3: string | null;
+  fechaa4: string | null;
+  fechaa5: string | null;
+  fechaa6: string | null;
+  fechaa7: string | null;
+  fechaa8: string | null;
+  fechaa9: string | null;
+  fechaa10: string | null;
+  fechaa11: string | null;
+  fechaa12: string | null;
+    fechahora: string;
+    year: string;
 }
 
 export interface ConvivenciaDetallado {
@@ -326,3 +352,59 @@ export interface ConsolidadoConvivenciaPayload {
   year: string;
 }
 
+export interface EstudianteDetalle {
+  ind: string;
+  codigo: string;
+  estudiante: string; // ID del estudiante
+  nombres: string;
+  asignacion: string;
+  institucion_externa: string;
+  genero: string;
+  fecnac: string; // Fecha de nacimiento (YYYY-MM-DD)
+  edad: string;
+  nivel: string;
+  grado: string;
+  numero: string;
+  anio: string;
+  pass: string; // Contraseña
+  activo: string; // 'S' o 'N'
+  banda: string;
+  HED: string; // Historial Educativo Detallado?
+  idacudiente: string;
+  acudiente: string;
+  telefono1: string;
+  telefono2: string;
+  direccion: string;
+  email_estudiante: string;
+  email_acudiente: string;
+  desertor: string; // 'S' o 'N'
+  otraInformacion: string;
+  estado: string;
+  year: string;
+  lugar: string; // Lugar de residencia (barrio/vereda)
+  sisben: string;
+  estrato: string;
+  lugarNacimiento: string;
+  lugarExpedicion: string;
+  fechaExpedicion: string;
+  tdei: string; // Tipo de documento de identidad
+  victimaConflicto: string; // 'si', 'no', 'indefinido'
+  lugarDesplazamiento: string;
+  fechaDesplazamiento: string;
+  etnia: string;
+  tipoSangre: string;
+  eps: string;
+  padre: string;
+  padreid: string;
+  telefonopadre: string;
+  ocupacionpadre: string;
+  madre: string;
+  madreid: string;
+  telefonomadre: string;
+  ocupacionmadre: string;
+  parentesco: string;
+  discapacidad: string;
+  telefono_acudiente: string;
+  eanterior: string;
+  sede: string;
+}
