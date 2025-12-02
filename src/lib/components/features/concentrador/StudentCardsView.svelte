@@ -9,6 +9,7 @@
     ConcentradorAreasParsed,
     Asignatura,
     Area,
+    NotaDetalle, // Import NotaDetalle
   } from "$lib/types";
   import {
     parsed,
@@ -19,24 +20,48 @@
     selectedPeriodos,
     concentradorType, // Import concentradorType
   } from "$lib/storeConcentrador";
-  import { fetchStudentDetails } from "$lib/api";
+  import {
+    fetchStudentDetails,
+    fetchNotasDetallado, // Import API
+    fetchNotasDetalladoAreas, // Import API
+  } from "$lib/api";
   import { onMount, createEventDispatcher } from "svelte";
   import { fade, fly } from "svelte/transition";
+  import NotasDetalleDialog from "../dialogs/notas/NotasDetalleDialog.svelte"; // Import Dialog
 
   export let selectedStudent: EstudianteRow | null = null;
   let selectedStudentDetails: EstudianteDetalle | null = null;
   let loadingStudentDetails = false;
   let studentDetailsError: string | null = null;
 
+  // Notas Dialog State
+  let showNotasDialog = false;
+  let notasDetalle: NotaDetalle[] = [];
+  let loadingNotas = false;
+  let notasError: string | null = null;
+
+  // Context for Dialog
+  let dialogStudentName = "";
+  let dialogAsignatura = "";
+  let dialogPeriodo = ""; // We might not need a specific period if showing all
+  let dialogEstudianteId = "";
+  let dialogYear = "";
+
+  // Convivencia Dialog State (required by NotasDetalleDialog prop)
+  let showConvivenciaDialog = false;
+
   const dispatch = createEventDispatcher();
 
-  function handleOpenNotasDetalle(student: EstudianteRow, asignatura: AsignaturaNota) {
+  async function handleOpenNotasDetalle(
+    student: EstudianteRow,
+    asignatura: AsignaturaNota
+  ) {
     const p = get(parsed);
     const currentConcentradorType = get(concentradorType);
     let itemNombre = asignatura.asignatura; // Default to abreviatura
 
     if (p) {
-      if (currentConcentradorType === 'asignaturas') {
+      if (currentConcentradorType === "asignaturas") {
         const parsedAsignaturas = p as ConcentradorParsed;
         if (parsedAsignaturas.asignaturas) {
           const foundItem = parsedAsignaturas.asignaturas.find(
@@ -46,7 +71,7 @@
             itemNombre = foundItem.nombre;
           }
         }
-      } else if (currentConcentradorType === 'areas') {
+      } else if (currentConcentradorType === "areas") {
         const parsedAreas = p as ConcentradorAreasParsed;
         if (parsedAreas.areas) {
           const foundItem = parsedAreas.areas.find(
@@ -59,12 +84,65 @@
       }
     }
 
-    dispatch('openNotasDetalle', {
-      student,
-      itemAbrev: asignatura.asignatura,
-      periodo: '', // No specific period chosen from here
-      valoracion: '', // No specific valoracion chosen from here
-      itemNombre: itemNombre,
+    // Prepare Dialog State
+    dialogStudentName = student.nombres;
+    dialogAsignatura = itemNombre;
+    dialogEstudianteId = student.id;
+    dialogYear = get(payload).year;
+    dialogPeriodo = ""; // Optional: if you want to filter by a specific period, set it here.
+
+    showNotasDialog = true;
+    loadingNotas = true;
+    notasError = null;
+    notasDetalle = [];
+
+    try {
+      const currentPayload = get(payload);
+      // Construct payload for details
+      // Note: The API expects specific fields. We use the store payload as base but might need adjustment.
+      // Based on api.ts, fetchNotasDetallado takes NotasDetalladoPayload.
+      // We need to check what NotasDetalladoPayload looks like in types.ts, but assuming standard structure:
+
+      const detailPayload = {
+        estudiante: student.id,
+        nombres: student.nombres,
+        asignatura: asignatura.asignatura,
+        asignat: asignatura.asignatura,
+        valoracion: "",
+        periodo: currentPayload.periodo,
+        year: currentPayload.year,
+        asignacion: currentPayload.Asignacion,
+        nivel: currentPayload.nivel,
+        numero: currentPayload.numero,
+      };
+
+      if (currentConcentradorType === "areas") {
+        notasDetalle = await fetchNotasDetalladoAreas(detailPayload);
+      } else {
+        notasDetalle = await fetchNotasDetallado(detailPayload);
+      }
+    } catch (err: any) {
+      console.error("Error fetching notes details:", err);
+      notasError = err.message || "Error al cargar detalles de notas";
+    } finally {
+      loadingNotas = false;
+    }
+  }
+
+  // Dummy handler for onShowInasistencias as we are handling it locally or it might be another dialog
+  // If you have an Inasistencias dialog, you should import and use it here too,
+  // or dispatch to parent if that's still the preferred way for that specific dialog.
+  function handleShowInasistencias(
+    estId: string,
+    nom: string,
+    asig: string,
+    per: string
+  ) {
+    dispatch("openInasistencias", {
+      estudianteId: estId,
+      nombres: nom,
+      asignatura: asig,
+      periodo: per,
     });
   }
 
@@ -113,15 +191,42 @@
     return period ? period.valoracion.toFixed(2) : "-";
   }
 
-  function getGradeStyles(grade: number | string): string {
-    if (typeof grade === "string")
-      return "bg-gray-100 text-gray-500 border-gray-200";
-    const num = Number(grade);
-    if (num >= 4.0)
-      return "bg-emerald-100 text-emerald-700 border-emerald-200 shadow-emerald-500/10";
-    if (num >= 3.0)
-      return "bg-blue-100 text-blue-700 border-blue-200 shadow-blue-500/10";
-    return "bg-rose-100 text-rose-700 border-rose-200 shadow-rose-500/10";
+  function getGradeStyles(grade: number | string): {
+    containerClasses: string;
+    gradeTextClasses: string;
+  } {
+    let containerClasses = "";
+    let gradeTextClasses = "";
+
+    if (typeof grade === "string") {
+      containerClasses = "bg-gray-100 text-gray-500 border-gray-200";
+    } else {
+      const num = Number(grade);
+      if (num >= 4.0) {
+        containerClasses = "bg-emerald-100 text-emerald-700 border-emerald-200 shadow-emerald-500/10";
+      } else if (num >= 3.0) {
+        containerClasses = "bg-blue-100 text-blue-700 border-blue-200 shadow-blue-500/10";
+      } else {
+        containerClasses = "bg-rose-100 text-rose-700 border-rose-200 shadow-rose-500/10";
+        gradeTextClasses = "text-rose-700"; // Explicitly red for grades < 3
+      }
+    }
+    return { containerClasses, gradeTextClasses };
+  }
+
+  function getPeriodoNameClasses(periodoName: string): string {
+    switch (periodoName.toUpperCase()) {
+      case "UNO":
+        return "text-purple-600";
+      case "DOS":
+        return "text-teal-600";
+      case "TRES":
+        return "text-orange-600";
+      case "CUATRO":
+        return "text-red-600";
+      default:
+        return "text-slate-500"; // Default color
+    }
   }
 
   function calculateDefinitiva(asignatura: AsignaturaNota): number {
@@ -413,11 +518,20 @@
                   ></div>
                   <button
                     class="absolute top-2 right-2 p-1 bg-white/80 backdrop-blur-sm rounded-full shadow-md text-slate-500 hover:bg-white hover:text-indigo-600 transition-all duration-200 z-20"
-                    on:click|stopPropagation={() => selectedStudent && handleOpenNotasDetalle(selectedStudent, asignatura)}
+                    on:click|stopPropagation={() =>
+                      selectedStudent &&
+                      handleOpenNotasDetalle(selectedStudent, asignatura)}
                     aria-label="Ver notas detalladas de asignatura"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"
-                      ><path d="M12 4.5C7.5 4.5 3.73 7.61 3 12c.73 4.39 4.5 7.5 9 7.5s8.27-3.11 9-7.5c-.73-4.39-4.5-7.5-9-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      ><path
+                        d="M12 4.5C7.5 4.5 3.73 7.61 3 12c.73 4.39 4.5 7.5 9 7.5s8.27-3.11 9-7.5c-.73-4.39-4.5-7.5-9-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                      /></svg
+                    >
                   </button>
                   <h5
                     class="font-bold text-slate-700 mb-4 pb-3 border-b border-slate-100 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]"
@@ -427,16 +541,15 @@
                   <div class="flex flex-wrap gap-2">
                     {#each $selectedPeriodos as periodo}
                       {@const grade = getGradeForPeriod(asignatura, periodo)}
+                      {@const { containerClasses, gradeTextClasses } = getGradeStyles(grade)}
                       <div
-                        class="flex flex-col items-center {getGradeStyles(
-                          grade
-                        )} backdrop-blur-sm rounded-xl p-2 flex-1 min-w-[60px] border shadow-sm transition-transform hover:scale-105"
+                        class="flex flex-col items-center {containerClasses} backdrop-blur-sm rounded-xl p-2 flex-1 min-w-[60px] border shadow-sm transition-transform hover:scale-105"
                       >
                         <span
-                          class="text-[10px] font-bold opacity-70 uppercase tracking-wider mb-1"
+                          class="text-[10px] font-bold opacity-70 uppercase tracking-wider mb-1 {getPeriodoNameClasses(periodo)}"
                           >{periodo}</span
                         >
-                        <span class="font-bold text-lg">
+                        <span class="font-bold text-lg {gradeTextClasses}">
                           {grade}
                         </span>
                       </div>
@@ -471,6 +584,20 @@
     {/if}
   </div>
 </div>
+
+<NotasDetalleDialog
+  bind:showDialog={showNotasDialog}
+  {notasDetalle}
+  loading={loadingNotas}
+  error={notasError}
+  year={dialogYear}
+  periodo={dialogPeriodo}
+  estudianteId={dialogEstudianteId}
+  asignatura={dialogAsignatura}
+  studentName={dialogStudentName}
+  onShowInasistencias={handleShowInasistencias}
+  bind:showConvivenciaDialog
+/>
 
 <style>
   /* Custom Scrollbar for Webkit */
