@@ -11,6 +11,7 @@
   import AppHeader from "./lib/components/layout/AppHeader.svelte";
   import BackgroundDecorations from "./lib/components/layout/BackgroundDecorations.svelte";
   import Login from "./lib/components/features/auth/Login.svelte";
+  import StudentCardsView from "./lib/components/features/concentrador/StudentCardsView.svelte"; // Re-added import
   import {
     parsed,
     loading,
@@ -20,6 +21,7 @@
     concentradorType,
     selectedAsignatura,
     currentOrden,
+    viewMode, // Re-added import
   } from "./lib/storeConcentrador";
   import { fetchNotasDetallado, fetchNotasDetalladoAreas } from "./lib/api";
   import type {
@@ -100,7 +102,14 @@
     periodo: string,
     valoracion: string
   ) {
-    if (!valoracion || valoracion === "-") return;
+    // If no valoracion or it's a '-', and we are not explicitly asking for student-wide notes
+    // from the StudentCardsView, then return.
+    // If StudentCardsView button triggers this, itemAbrev, periodo, and valoracion will be empty strings.
+    if (!valoracion && itemAbrev === '' && periodo === '') {
+        // This is a request from StudentCardsView for overall student notes, proceed.
+    } else if (!valoracion || valoracion === "-") {
+        return; // For specific subject/period clicks, if no valoracion, do nothing.
+    }
 
     showNotasDetalleDialog = true;
     currentNotasDetalle = [];
@@ -157,6 +166,12 @@
       notasDetalleLoading = false;
     }
   }
+
+  // Function to handle the custom event from StudentCardsView
+  function handleOpenNotasDetalleEvent(event: CustomEvent) {
+    const { student, itemAbrev, periodo, valoracion } = event.detail;
+    handleValoracionClick(student, itemAbrev, periodo, valoracion);
+  }
 </script>
 
 {#if !isAuthenticated}
@@ -179,8 +194,10 @@
     <!-- === MENSAJE DE ERROR === -->
     <ErrorAlert error={$error} />
 
-    <!-- === TABLA DE ESTUDIANTES === -->
-    {#if $concentradorType === "asignaturas"}
+    <!-- === TABLA DE ESTUDIANTES / VISTA DE TARJETAS === -->
+    {#if $viewMode === 'cards-view'}
+      <StudentCardsView on:openNotasDetalle={handleOpenNotasDetalleEvent} />
+    {:else if $concentradorType === "asignaturas"}
       <ConcentradorAsignaturasTable
         {handleValoracionClick}
         onHeaderClick={handleHeaderClick}
@@ -188,7 +205,6 @@
     {:else}
       <ConcentradorAreasTable {handleValoracionClick} />
     {/if}
-
     <!-- === SKELETON (cargando) === -->
     <LoadingSkeleton
       loading={$loading}

@@ -16,13 +16,24 @@
     selectedPeriodos,
   } from "$lib/storeConcentrador";
   import { fetchStudentDetails } from "$lib/api";
-  import { onMount } from "svelte";
+  import { onMount, createEventDispatcher } from "svelte";
   import { fade, fly } from "svelte/transition";
 
   export let selectedStudent: EstudianteRow | null = null;
   let selectedStudentDetails: EstudianteDetalle | null = null;
   let loadingStudentDetails = false;
   let studentDetailsError: string | null = null;
+
+  const dispatch = createEventDispatcher();
+
+  function handleOpenNotasDetalle(student: EstudianteRow) {
+    dispatch('openNotasDetalle', {
+      student,
+      itemAbrev: '', // No specific subject for overall student notes
+      periodo: '', // No specific period for overall student notes
+      valoracion: '' // No specific valoracion for overall student notes
+    });
+  }
 
   // Fetch initial concentrador data on mount
   onMount(() => {
@@ -138,6 +149,14 @@
         <ul class="space-y-1">
           {#each ($parsed as ConcentradorParsed).estudiantes as student (student.id)}
             <li>
+              <button
+                class="absolute top-2 left-2 p-1 bg-white/80 backdrop-blur-sm rounded-full shadow-md text-slate-500 hover:bg-white hover:text-indigo-600 transition-all duration-200 z-20"
+                on:click|stopPropagation={() => handleOpenNotasDetalle(student)}
+                aria-label="Ver notas detalladas"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"
+                  ><path d="M12 4.5C7.5 4.5 3.73 7.61 3 12c.73 4.39 4.5 7.5 9 7.5s8.27-3.11 9-7.5c-.73-4.39-4.5-7.5-9-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /></svg>
+              </button>
               <button
                 class="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden
                 {selectedStudent?.id === student.id

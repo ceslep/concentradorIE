@@ -69,6 +69,7 @@ export const selectedPeriodos = writable<string[]>(['UNO', 'DOS', 'TRES', 'CUATR
 export const lastDuration = writable<number>(0);
 export const concentradorType = writable<'asignaturas' | 'areas'>('asignaturas'); // Default to asignaturas
 export const selectedAsignatura = writable<string | null>(null); // For GradesTableDialog
+export const viewMode = writable<'cards-view' | 'table-view'>('table-view'); // New store to control view mode
 
 // Derived Stores
 export const currentOrden = derived([parsed, concentradorType], ([$parsed, $concentradorType]) => {
