@@ -135,11 +135,9 @@
 </script>
 
 {#if showDialog}
-  <div
+  <button
     class="dialog-backdrop"
     on:click={closeDialog}
-    role="button"
-    tabindex="0"
     on:keydown={(e) => {
       if (e.key === "Escape") closeDialog();
     }}

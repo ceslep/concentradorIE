@@ -511,12 +511,14 @@
           <th style="width: 250px;">Nombres</th>
           <th style="width: 60px;">Val</th>
           {#each Array(12) as _, i}
-            <th
-              class="grade-header"
-              on:click={() => handleHeaderClick(`N${i + 1}`)}
-              title="Click para ver detalles"
-            >
-              N{i + 1}
+            <th class="grade-header">
+              <button
+                class="grade-header-button"
+                on:click={() => handleHeaderClick(`N${i + 1}`)}
+                title="Click para ver detalles"
+              >
+                N{i + 1}
+              </button>
             </th>
           {/each}
         </tr>
@@ -955,13 +957,35 @@
   }
 
   .native-table .grade-header {
-    cursor: pointer;
+    /* Existing styles for th */
     text-align: center;
   }
 
-  .grade-header:hover {
-    background: rgba(255, 255, 255, 0.2);
+  .grade-header-button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    display: block; /* Make the button fill the th */
+    width: 100%;
+    height: 100%;
+    text-align: center; /* Center the text inside the button */
+    transition: color 0.2s ease;
   }
+
+  .grade-header-button:hover {
+    color: rgba(255, 255, 255, 0.8); /* Example hover color, adjust as needed */
+  }
+
+  .grade-header-button:focus {
+    outline: 2px solid #eff6ff; /* Example focus style */
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
 
   .low-grade {
     color: #ef4444 !important;

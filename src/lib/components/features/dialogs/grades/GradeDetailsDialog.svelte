@@ -19,13 +19,12 @@
 </script>
 
 {#if show}
-    <div
+    <button
         class="dialog-overlay"
-        role="button"
-        tabindex="0"
         on:click={onClose}
         on:keydown={handleKeydown}
         transition:fade={{ duration: 200 }}
+        aria-label="Close dialog"
     >
         <div
             class="dialog-content"
