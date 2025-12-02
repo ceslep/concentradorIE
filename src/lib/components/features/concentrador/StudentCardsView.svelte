@@ -6,6 +6,9 @@
     PeriodoValoracion,
     EstudianteDetalle,
     ConcentradorParsed,
+    ConcentradorAreasParsed,
+    Asignatura,
+    Area,
   } from "$lib/types";
   import {
     parsed,
@@ -14,6 +17,7 @@
     payload,
     loadConcentradorData,
     selectedPeriodos,
+    concentradorType, // Import concentradorType
   } from "$lib/storeConcentrador";
   import { fetchStudentDetails } from "$lib/api";
   import { onMount, createEventDispatcher } from "svelte";
@@ -26,12 +30,41 @@
 
   const dispatch = createEventDispatcher();
 
-  function handleOpenNotasDetalle(student: EstudianteRow) {
+  function handleOpenNotasDetalle(student: EstudianteRow, asignatura: AsignaturaNota) {
+    const p = get(parsed);
+    const currentConcentradorType = get(concentradorType);
+    let itemNombre = asignatura.asignatura; // Default to abreviatura
+
+    if (p) {
+      if (currentConcentradorType === 'asignaturas') {
+        const parsedAsignaturas = p as ConcentradorParsed;
+        if (parsedAsignaturas.asignaturas) {
+          const foundItem = parsedAsignaturas.asignaturas.find(
+            (item: Asignatura) => item.abreviatura === asignatura.asignatura
+          );
+          if (foundItem) {
+            itemNombre = foundItem.nombre;
+          }
+        }
+      } else if (currentConcentradorType === 'areas') {
+        const parsedAreas = p as ConcentradorAreasParsed;
+        if (parsedAreas.areas) {
+          const foundItem = parsedAreas.areas.find(
+            (item: Area) => item.abreviatura === asignatura.asignatura
+          );
+          if (foundItem) {
+            itemNombre = foundItem.nombre;
+          }
+        }
+      }
+    }
+
     dispatch('openNotasDetalle', {
       student,
-      itemAbrev: '', // No specific subject for overall student notes
-      periodo: '', // No specific period for overall student notes
-      valoracion: '' // No specific valoracion for overall student notes
+      itemAbrev: asignatura.asignatura,
+      periodo: '', // No specific period chosen from here
+      valoracion: '', // No specific valoracion chosen from here
+      itemNombre: itemNombre,
     });
   }
 
@@ -149,14 +182,6 @@
         <ul class="space-y-1">
           {#each ($parsed as ConcentradorParsed).estudiantes as student (student.id)}
             <li>
-              <button
-                class="absolute top-2 left-2 p-1 bg-white/80 backdrop-blur-sm rounded-full shadow-md text-slate-500 hover:bg-white hover:text-indigo-600 transition-all duration-200 z-20"
-                on:click|stopPropagation={() => handleOpenNotasDetalle(student)}
-                aria-label="Ver notas detalladas"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"
-                  ><path d="M12 4.5C7.5 4.5 3.73 7.61 3 12c.73 4.39 4.5 7.5 9 7.5s8.27-3.11 9-7.5c-.73-4.39-4.5-7.5-9-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /></svg>
-              </button>
               <button
                 class="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden
                 {selectedStudent?.id === student.id
@@ -386,6 +411,14 @@
                   <div
                     class="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                   ></div>
+                  <button
+                    class="absolute top-2 right-2 p-1 bg-white/80 backdrop-blur-sm rounded-full shadow-md text-slate-500 hover:bg-white hover:text-indigo-600 transition-all duration-200 z-20"
+                    on:click|stopPropagation={() => selectedStudent && handleOpenNotasDetalle(selectedStudent, asignatura)}
+                    aria-label="Ver notas detalladas de asignatura"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"
+                      ><path d="M12 4.5C7.5 4.5 3.73 7.61 3 12c.73 4.39 4.5 7.5 9 7.5s8.27-3.11 9-7.5c-.73-4.39-4.5-7.5-9-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /></svg>
+                  </button>
                   <h5
                     class="font-bold text-slate-700 mb-4 pb-3 border-b border-slate-100 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]"
                   >

@@ -8,6 +8,7 @@
     exportCSV,
     exportExcel,
     concentradorType,
+    viewMode,
   } from "../../storeConcentrador";
 
   export let showPayloadForm: boolean;
@@ -153,16 +154,45 @@
             ? 'text-gray-300'
             : 'text-gray-600'} hidden sm:inline"
           style="font-family: var(--font-heading);"
-        >
-          Áreas
-        </span>
-      </div>
-
-      <!-- Divider - Hidden on mobile -->
-      <div
-        class="h-6 w-px {$theme === 'dark'
-          ? 'bg-gray-700'
-          : 'bg-gray-200'} hidden sm:block"
+                  >
+                    Áreas
+                  </span>
+              </div>
+        
+              <!-- View Mode Toggle -->
+              <div
+                class="flex items-center gap-1 px-2 py-1 rounded-lg {$theme === 'dark'
+                  ? 'bg-gray-800/50'
+                  : 'bg-gray-100/80'} shadow-sm"
+              >
+                <button
+                  on:click={() => viewMode.set('table-view')}
+                  class="p-1.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500
+                    {$viewMode === 'table-view'
+                      ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-md'
+                      : 'text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'}"
+                  title="Vista de Tabla"
+                  aria-label="Cambiar a vista de tabla"
+                >
+                  <span class="material-symbols-rounded text-base sm:text-lg">table_rows</span>
+                </button>
+                <button
+                  on:click={() => viewMode.set('cards-view')}
+                  class="p-1.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500
+                    {$viewMode === 'cards-view'
+                      ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-md'
+                      : 'text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'}"
+                  title="Vista de Tarjetas"
+                  aria-label="Cambiar a vista de tarjetas"
+                >
+                  <span class="material-symbols-rounded text-base sm:text-lg">grid_view</span>
+                </button>
+              </div>
+        
+              <!-- Divider - Hidden on mobile -->
+              <div
+                class="h-6 w-px {$theme === 'dark'
+                  ? 'bg-gray-700'          : 'bg-gray-200'} hidden sm:block"
       ></div>
 
       <!-- Action Buttons Group -->

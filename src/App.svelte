@@ -100,7 +100,8 @@
     est: EstudianteRow | EstudianteRowArea,
     itemAbrev: string,
     periodo: string,
-    valoracion: string
+    valoracion: string,
+    itemNombre: string = itemAbrev // Add itemNombre with default
   ) {
     // If no valoracion or it's a '-', and we are not explicitly asking for student-wide notes
     // from the StudentCardsView, then return.
@@ -116,7 +117,7 @@
     notasDetalleLoading = true;
     notasDetalleError = null;
 
-    let selectedItemName = itemAbrev;
+    let selectedItemName = itemNombre; // Use itemNombre if provided
     const currentConcentradorType = get(concentradorType);
 
     if ($parsed) {
@@ -169,8 +170,8 @@
 
   // Function to handle the custom event from StudentCardsView
   function handleOpenNotasDetalleEvent(event: CustomEvent) {
-    const { student, itemAbrev, periodo, valoracion } = event.detail;
-    handleValoracionClick(student, itemAbrev, periodo, valoracion);
+    const { student, itemAbrev, periodo, valoracion, itemNombre } = event.detail;
+    handleValoracionClick(student, itemAbrev, periodo, valoracion, itemNombre);
   }
 </script>
 
@@ -204,8 +205,7 @@
       />
     {:else}
       <ConcentradorAreasTable {handleValoracionClick} />
-    {/if}
-    <!-- === SKELETON (cargando) === -->
+    {/if}    <!-- === SKELETON (cargando) === -->
     <LoadingSkeleton
       loading={$loading}
       parsed={$parsed}
