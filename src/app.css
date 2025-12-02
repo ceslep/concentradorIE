@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -62,7 +65,8 @@
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease; /* Ensure smooth transitions */
+  transition: all 0.3s ease;
+  /* Ensure smooth transitions */
 }
 
 .dark .glass-button {
@@ -85,9 +89,11 @@
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -101,6 +107,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -112,6 +119,7 @@
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -123,6 +131,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -134,6 +143,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -141,10 +151,12 @@
 }
 
 @keyframes shake {
+
   0%,
   100% {
     transform: translateX(0);
   }
+
   10%,
   30%,
   50%,
@@ -152,6 +164,7 @@
   90% {
     transform: translateX(-5px);
   }
+
   20%,
   40%,
   60%,
@@ -161,10 +174,12 @@
 }
 
 @keyframes pulse-glow {
+
   0%,
   100% {
     box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
   }
+
   50% {
     box-shadow: 0 0 40px rgba(102, 126, 234, 0.8);
   }
@@ -175,6 +190,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -219,11 +235,9 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    rgba(102, 126, 234, 0.5),
-    rgba(118, 75, 162, 0.5)
-  );
+  background: linear-gradient(180deg,
+      rgba(102, 126, 234, 0.5),
+      rgba(118, 75, 162, 0.5));
   border-radius: 10px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -231,30 +245,24 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    180deg,
-    rgba(102, 126, 234, 0.8),
-    rgba(118, 75, 162, 0.8)
-  );
+  background: linear-gradient(180deg,
+      rgba(102, 126, 234, 0.8),
+      rgba(118, 75, 162, 0.8));
   background-clip: padding-box;
 }
 
 @media (prefers-color-scheme: dark) {
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-      180deg,
-      rgba(148, 163, 184, 0.3),
-      rgba(100, 116, 139, 0.3)
-    );
+    background: linear-gradient(180deg,
+        rgba(148, 163, 184, 0.3),
+        rgba(100, 116, 139, 0.3));
     background-clip: padding-box;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(148, 163, 184, 0.6),
-      rgba(100, 116, 139, 0.6)
-    );
+    background: linear-gradient(180deg,
+        rgba(148, 163, 184, 0.6),
+        rgba(100, 116, 139, 0.6));
     background-clip: padding-box;
   }
 }
@@ -326,7 +334,8 @@
 
   /* Reduce animation complexity on mobile */
   .animated-gradient-bg {
-    animation-duration: 20s; /* Slower for less CPU usage */
+    animation-duration: 20s;
+    /* Slower for less CPU usage */
   }
 
   /* Optimize shadows for mobile */
@@ -360,6 +369,7 @@
 
 /* Extra small devices (phones in portrait) */
 @media (max-width: 480px) {
+
   /* Further reduce blur for very small devices */
   .glass-effect,
   .glass-effect-strong {
@@ -375,17 +385,20 @@
 
   /* Optimize button ripple effect */
   .btn-premium::before {
-    transition: width 0.3s, height 0.3s; /* Faster transition */
+    transition: width 0.3s, height 0.3s;
+    /* Faster transition */
   }
 
   .btn-premium:hover::before {
-    width: 200px; /* Smaller ripple */
+    width: 200px;
+    /* Smaller ripple */
     height: 200px;
   }
 }
 
 /* Medium devices and up - restore defaults */
 @media (min-width: 769px) {
+
   button,
   a {
     min-height: auto;
@@ -400,9 +413,11 @@
   0% {
     transform: skewX(-25deg) translateX(-150%);
   }
+
   20% {
     transform: skewX(-25deg) translateX(150%);
   }
+
   100% {
     transform: skewX(-25deg) translateX(150%);
   }
@@ -415,26 +430,23 @@
   left: 0;
   width: 50%;
   height: 100%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0) 100%);
   opacity: 0.8;
   filter: blur(10px);
   animation: sheen 3s infinite;
-  z-index: 1; /* Make sure it's above the image */
+  z-index: 1;
+  /* Make sure it's above the image */
 }
 
 /* Dark mode adjustment for the sheen */
 .dark .logo-sheen::after {
-    background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%);
   opacity: 0.6;
 }
 
@@ -463,12 +475,10 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.8),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.8),
+      transparent);
 }
 
 .glass-card-custom::after {
@@ -478,16 +488,15 @@
   left: 0;
   width: 1px;
   height: 100%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.8),
-    transparent,
-    rgba(255, 255, 255, 0.3)
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.8),
+      transparent,
+      rgba(255, 255, 255, 0.3));
 }
 
 .dark .glass-card-custom {
-  background: rgba(15, 23, 42, 0.37); /* Darker background for dark mode */
+  background: rgba(15, 23, 42, 0.37);
+  /* Darker background for dark mode */
   border: 1px solid rgba(148, 163, 184, 0.1);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
@@ -506,7 +515,8 @@
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease; /* Ensure smooth transitions */
+  transition: all 0.3s ease;
+  /* Ensure smooth transitions */
 }
 
 .dark .glass-button {
