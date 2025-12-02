@@ -171,7 +171,7 @@
       <div
         class="flex-none border-b border-white/30 dark:border-gray-700/50 bg-white/40 dark:bg-gray-800/40 px-8"
       >
-        <nav class="-mb-px flex space-x-6 sm:space-x-8" aria-label="Tabs">
+        <nav class="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto pb-2" aria-label="Tabs">
           <button
             on:click={() => (activeTab = "personal")}
             class="whitespace-nowrap py-3 px-3 border-b-4 rounded-t-lg font-bold text-sm transition-all duration-300 transform hover:scale-105 {activeTab ===
@@ -181,7 +181,7 @@
           >
             <span class="material-symbols-rounded text-xl align-middle mr-1"
               >person</span
-            >Personal
+            ><span class="hidden sm:inline">Personal</span>
           </button>
           <button
             on:click={() => (activeTab = "academic")}
@@ -192,7 +192,7 @@
           >
             <span class="material-symbols-rounded text-xl align-middle mr-1"
               >school</span
-            >Académico
+            ><span class="hidden sm:inline">Académico</span>
           </button>
           <button
             on:click={() => (activeTab = "contact")}
@@ -203,7 +203,7 @@
           >
             <span class="material-symbols-rounded text-xl align-middle mr-1"
               >contact_mail</span
-            >Contacto
+            ><span class="hidden sm:inline">Contacto</span>
           </button>
           <button
             on:click={() => (activeTab = "family")}
@@ -214,7 +214,7 @@
           >
             <span class="material-symbols-rounded text-xl align-middle mr-1"
               >family_restroom</span
-            >Familiar
+            ><span class="hidden sm:inline">Familiar</span>
           </button>
           <button
             on:click={() => (activeTab = "medical")}
@@ -225,7 +225,7 @@
           >
             <span class="material-symbols-rounded text-xl align-middle mr-1"
               >health_and_safety</span
-            >Médico
+            ><span class="hidden sm:inline">Médico</span>
           </button>
         </nav>
       </div>
@@ -711,7 +711,7 @@
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2"
                       ><span
                         class="material-symbols-rounded text-base text-green-500"
-                        >location_alt</span
+                        >location_on</span
                       >Sede</label
                     >
                     <input
