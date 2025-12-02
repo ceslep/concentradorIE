@@ -103,13 +103,11 @@
     valoracion: string,
     itemNombre: string = itemAbrev // Add itemNombre with default
   ) {
-    // If no valoracion or it's a '-', and we are not explicitly asking for student-wide notes
-    // from the StudentCardsView, then return.
-    // If StudentCardsView button triggers this, itemAbrev, periodo, and valoracion will be empty strings.
-    if (!valoracion && itemAbrev === '' && periodo === '') {
-        // This is a request from StudentCardsView for overall student notes, proceed.
+    // If valoracion is empty or '-', check if it's a specific request from a subject card button
+    if ((!valoracion || valoracion === "-") && itemNombre) {
+        // This is a request from a subject card button, proceed to fetch notes for this subject
     } else if (!valoracion || valoracion === "-") {
-        return; // For specific subject/period clicks, if no valoracion, do nothing.
+        return; // For other specific grade clicks, if no valoracion, do nothing.
     }
 
     showNotasDetalleDialog = true;
