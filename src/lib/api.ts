@@ -1,5 +1,5 @@
-import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT, GET_CONCENTRADOR_AREAS_ENDPOINT, GET_VALORACIONES_AREAS_ENDPOINT, GET_NOTAS_DETALLADO_AREAS_ENDPOINT, GET_ORDERS_ENDPOINT, GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT, GET_CONVIVENCIA_DETALLADO_ENDPOINT } from '../constants'
-import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion, ValoracionAreasResponseItem, AreaOrder, AreaOrderPayload, ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado, AsignaturaOrdenItem, EstudianteRow, Asignatura, Area } from './types' // Import EstudianteRow, Asignatura, Area
+import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT, GET_CONCENTRADOR_AREAS_ENDPOINT, GET_VALORACIONES_AREAS_ENDPOINT, GET_NOTAS_DETALLADO_AREAS_ENDPOINT, GET_ORDERS_ENDPOINT, GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT, GET_CONVIVENCIA_DETALLADO_ENDPOINT, GET_ESTUDIANTE_DETAILS_ENDPOINT } from '../constants'
+import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion, ValoracionAreasResponseItem, AreaOrder, AreaOrderPayload, ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado, AsignaturaOrdenItem, EstudianteRow, Asignatura, Area, EstudianteDetalle } from './types' // Import EstudianteRow, Asignatura, Area
 
 export interface Sede {
   ind: string;
@@ -274,4 +274,26 @@ export async function fetchConvivenciaDetallado(payload: { ind: string, year: st
   } else {
     throw new Error('No se encontraron detalles de convivencia.');
   }
+}
+
+export async function fetchStudentDetails(estudianteId: string, year: string): Promise<EstudianteDetalle> {
+  const res = await fetch(GET_ESTUDIANTE_DETAILS_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ estudianteId, year }) // Added year to the body
+  });
+  if (!res.ok) {
+    throw new Error('Error al obtener detalles del estudiante: ' + res.status);
+  }
+  const data = await res.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  // If the API unexpectedly returns an array with a single element, extract it
+  if (Array.isArray(data) && data.length > 0) {
+    return data[0];
+  }
+  return data;
 }

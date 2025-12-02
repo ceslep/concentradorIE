@@ -1,9 +1,11 @@
 <script lang="ts">
     import { fade, scale } from "svelte/transition";
-    import type { NotaDetalle } from "../../../../types";
+    import type { NotaDetalle, EstudianteDetalle } from "../../../../types";
     import { theme } from "../../../../themeStore";
     import NotasHistoryDialog from "./NotasHistoryDialog.svelte";
     import ConvivenciaDialog from "../convivencia/ConvivenciaDialog.svelte";
+    import StudentDetailsModal from "../../students/StudentDetailsModal.svelte";
+    import { fetchStudentDetails } from "$lib/api";
 
     export let showDialog: boolean;
     export let notasDetalle: NotaDetalle[] = [];
@@ -27,19 +29,22 @@
     let hasConvivenciaRecords: boolean = false;
 
     let docenteName: string = "";
+    let showStudentDetailsModal: boolean = false;
+    let estudianteDetalle: EstudianteDetalle | null = null;
+    let loadingStudentDetails: boolean = false; // Added this line
 
     $: if (notasDetalle.length > 0) {
         docenteName = notasDetalle[0].Docente;
+    }
+
+    function openNotasHistoryDialog() {
+        showNotasHistoryDialog = true;
     }
 
     function closeDialog() {
         showDialog = false;
         notasDetalle = [];
         error = null;
-    }
-
-    function openNotasHistoryDialog() {
-        showNotasHistoryDialog = true;
     }
 
     // Función auxiliar para convertir "Mes Día" a un objeto Date
@@ -210,6 +215,32 @@
                             <span
                                 class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"
                             ></span>
+                        {/if}
+                    </button>
+
+                    <button
+                        on:click={async () => {
+                            loadingStudentDetails = true;
+                            try {
+                                estudianteDetalle = await fetchStudentDetails(estudianteId, year);
+                                showStudentDetailsModal = true;
+                            } catch (err) {
+                                console.error('Failed to fetch student details:', err);
+                                // Optionally set an error message to display
+                            } finally {
+                                loadingStudentDetails = false;
+                            }
+                        }}
+                        class="p-2 rounded-lg transition-all duration-200 text-gray-500 hover:text-green-600 hover:bg-green-50 dark:text-gray-400 dark:hover:text-green-400 dark:hover:bg-green-900/30"
+                        title="Ver Detalles del Estudiante"
+                        disabled={loadingStudentDetails}
+                    >
+                        {#if loadingStudentDetails}
+                            <span class="material-symbols-rounded text-xl animate-spin">progress_activity</span>
+                        {:else}
+                            <span class="material-symbols-rounded text-xl"
+                                >person_search</span
+                            >
                         {/if}
                     </button>
 
@@ -411,3 +442,22 @@
     {estudianteId}
     {year}
 />
+
+{#if estudianteDetalle}
+<StudentDetailsModal
+    bind:showModal={showStudentDetailsModal}
+    estudiante={estudianteDetalle}
+/>
+{/if}
+
+{#if loadingStudentDetails}
+<div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 font-sans bg-gray-900/60 backdrop-blur-sm"
+    transition:fade={{ duration: 200 }}
+>
+    <div class="flex flex-col items-center justify-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+        <span class="material-symbols-rounded text-6xl text-indigo-500 animate-spin">progress_activity</span>
+        <p class="mt-4 text-lg font-medium text-gray-700 dark:text-gray-300">Cargando detalles del estudiante...</p>
+    </div>
+</div>
+{/if}
