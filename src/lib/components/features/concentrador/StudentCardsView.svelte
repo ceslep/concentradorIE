@@ -28,6 +28,7 @@
   import { onMount, createEventDispatcher } from "svelte";
   import { fade, fly, scale } from "svelte/transition";
   import NotasDetalleDialog from "../dialogs/notas/NotasDetalleDialog.svelte";
+  import { theme } from "$lib/themeStore";
 
   export let selectedStudent: EstudianteRow | null = null;
   let selectedStudentDetails: EstudianteDetalle | null = null;
@@ -80,7 +81,7 @@
 
   async function handleOpenNotasDetalle(
     student: EstudianteRow,
-    asignatura: AsignaturaNota,
+    asignatura: AsignaturaNota
   ) {
     const p = get(parsed);
     const currentConcentradorType = get(concentradorType);
@@ -91,7 +92,7 @@
         const parsedAsignaturas = p as ConcentradorParsed;
         if (parsedAsignaturas.asignaturas) {
           const foundItem = parsedAsignaturas.asignaturas.find(
-            (item: Asignatura) => item.abreviatura === asignatura.asignatura,
+            (item: Asignatura) => item.abreviatura === asignatura.asignatura
           );
           if (foundItem) {
             itemNombre = foundItem.nombre;
@@ -101,7 +102,7 @@
         const parsedAreas = p as ConcentradorAreasParsed;
         if (parsedAreas.areas) {
           const foundItem = parsedAreas.areas.find(
-            (item: Area) => item.abreviatura === asignatura.asignatura,
+            (item: Area) => item.abreviatura === asignatura.asignatura
           );
           if (foundItem) {
             itemNombre = foundItem.nombre;
@@ -154,7 +155,7 @@
     estId: string,
     nom: string,
     asig: string,
-    per: string,
+    per: string
   ) {
     dispatch("openInasistencias", {
       estudianteId: estId,
@@ -179,7 +180,7 @@
 
   async function fetchDetailsForSelectedStudent(
     studentId: string,
-    year: string,
+    year: string
   ) {
     loadingStudentDetails = true;
     studentDetailsError = null;
@@ -199,7 +200,7 @@
 
   function getGradeForPeriod(
     asignatura: AsignaturaNota,
-    periodoName: string,
+    periodoName: string
   ): number | string {
     const period = asignatura.periodos.find((p) => p.periodo === periodoName);
     return period ? period.valoracion.toFixed(2) : "-";
@@ -291,40 +292,60 @@
 </script>
 
 <div
-  class="h-screen w-full bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-6 flex gap-6 overflow-hidden font-sans relative"
+  class="h-screen w-full p-6 flex gap-6 overflow-hidden font-sans relative {$theme ===
+  'dark'
+    ? 'bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950'
+    : 'bg-gradient-to-br from-gray-50 via-gray-100 to-indigo-50'}"
 >
   <!-- Background Effects -->
   <div class="absolute inset-0 overflow-hidden pointer-events-none">
     <div
-      class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"
+      class="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl {$theme ===
+      'dark'
+        ? 'bg-purple-500/10'
+        : 'bg-purple-500/20'}"
     ></div>
     <div
-      class="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl"
+      class="absolute -bottom-40 -left-40 w-80 h-80 rounded-full blur-3xl {$theme ===
+      'dark'
+        ? 'bg-indigo-500/10'
+        : 'bg-indigo-500/20'}"
     ></div>
     <div
-      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-sky-500/5 rounded-full blur-3xl"
+      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl {$theme ===
+      'dark'
+        ? 'bg-sky-500/5'
+        : 'bg-sky-500/15'}"
     ></div>
   </div>
 
   <!-- Student List Panel - Glass Morphism -->
   <div
-    class="flex-shrink-0 w-96 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 hover:shadow-purple-500/10 relative {isSidebarCollapsed
+    class="flex-shrink-0 w-96 flex flex-col backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 hover:shadow-purple-500/10 relative {isSidebarCollapsed
       ? 'collapsed'
-      : ''}"
+      : ''} {$theme === 'dark'
+      ? 'bg-white/5 border border-white/10'
+      : 'bg-white/80 border border-gray-200'}"
     style="--tw-backdrop-blur: blur(24px)"
   >
     <!-- Animated Background -->
     <div
-      class="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-purple-500/5"
+      class="absolute inset-0 {$theme === 'dark'
+        ? 'bg-gradient-to-br from-white/5 via-transparent to-purple-500/5'
+        : 'bg-gradient-to-br from-purple-50/30 via-transparent to-indigo-50/30'}"
     ></div>
 
     <div
-      class="relative p-6 border-b border-white/10 bg-gradient-to-r from-white/10 to-transparent"
+      class="relative p-6 {$theme === 'dark'
+        ? 'border-b border-white/10 bg-gradient-to-r from-white/10 to-transparent'
+        : 'border-b border-gray-200 bg-gradient-to-r from-purple-50/50 to-transparent'}"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div
-            class="p-2 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 backdrop-blur-sm"
+            class="p-2 rounded-2xl backdrop-blur-sm {$theme === 'dark'
+              ? 'bg-gradient-to-br from-purple-500/20 to-indigo-500/20'
+              : 'bg-gradient-to-br from-purple-500/30 to-indigo-500/30'}"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -342,18 +363,35 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-xl font-bold text-white">Estudiantes</h2>
-            <p class="text-sm text-white/60">Selecciona para ver detalles</p>
+            <h2
+              class="text-xl font-bold {$theme === 'dark'
+                ? 'text-white'
+                : 'text-gray-900'}"
+            >
+              Estudiantes
+            </h2>
+            <p
+              class="text-sm {$theme === 'dark'
+                ? 'text-white/60'
+                : 'text-gray-600'}"
+            >
+              Selecciona para ver detalles
+            </p>
           </div>
         </div>
         <!-- svelte-ignore a11y_consider_explicit_label -->
         <button
           on:click={() => (isSidebarCollapsed = !isSidebarCollapsed)}
-          class="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 group"
+          class="p-2 rounded-xl transition-all duration-300 group {$theme ===
+          'dark'
+            ? 'bg-white/5 hover:bg-white/10'
+            : 'bg-gray-200/50 hover:bg-gray-300/70'}"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-white/70 group-hover:text-white transition-colors"
+            class="h-5 w-5 transition-colors {$theme === 'dark'
+              ? 'text-white/70 group-hover:text-white'
+              : 'text-gray-600 group-hover:text-gray-900'}"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -373,25 +411,35 @@
 
     <div class="relative flex-1 overflow-hidden">
       <div
-        class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5"
+        class="absolute inset-0 {$theme === 'dark'
+          ? 'bg-gradient-to-b from-transparent to-black/5'
+          : 'bg-gradient-to-b from-transparent to-gray-100/20'}"
       ></div>
       <div class="h-full overflow-y-auto custom-scrollbar p-4 space-y-2">
         {#if $loading}
           <div class="space-y-3 p-4">
             {#each Array(5) as _, i}
               <div
-                class="h-16 bg-white/5 rounded-2xl animate-pulse"
+                class="h-16 rounded-2xl animate-pulse {$theme === 'dark'
+                  ? 'bg-white/5'
+                  : 'bg-gray-200/50'}"
                 style="animation-delay: {i * 100}ms"
               ></div>
             {/each}
           </div>
         {:else if $error}
           <div
-            class="m-4 p-4 bg-gradient-to-r from-rose-500/20 to-pink-500/10 backdrop-blur-sm border border-rose-500/20 rounded-2xl"
+            class="m-4 p-4 backdrop-blur-sm rounded-2xl {$theme === 'dark'
+              ? 'bg-gradient-to-r from-rose-500/20 to-pink-500/10 border border-rose-500/20'
+              : 'bg-gradient-to-r from-rose-100 to-pink-50 border border-rose-300'}"
             in:fly={{ y: 20 }}
           >
             <div class="flex items-center gap-3">
-              <div class="p-2 bg-rose-500/20 rounded-xl">
+              <div
+                class="p-2 rounded-xl {$theme === 'dark'
+                  ? 'bg-rose-500/20'
+                  : 'bg-rose-500/30'}"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-5 w-5 text-rose-400"
@@ -408,8 +456,20 @@
                 </svg>
               </div>
               <div>
-                <p class="font-semibold text-white">Error de carga</p>
-                <p class="text-sm text-white/70">{$error}</p>
+                <p
+                  class="font-semibold {$theme === 'dark'
+                    ? 'text-white'
+                    : 'text-gray-900'}"
+                >
+                  Error de carga
+                </p>
+                <p
+                  class="text-sm {$theme === 'dark'
+                    ? 'text-white/70'
+                    : 'text-gray-700'}"
+                >
+                  {$error}
+                </p>
               </div>
             </div>
           </div>
@@ -425,10 +485,12 @@
               >
                 <!-- Hover Effect Background -->
                 <div
-                  class="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 {hoveredStudent ===
+                  class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 {hoveredStudent ===
                   student.id
                     ? 'animate-slide-in'
-                    : ''}"
+                    : ''} {$theme === 'dark'
+                    ? 'bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0'
+                    : 'bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-purple-500/0'}"
                   style="transform: translateX(-100%); transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);"
                 ></div>
 
@@ -480,11 +542,18 @@
                       </div>
                       <div>
                         <p
-                          class="font-semibold text-white group-hover/btn:text-purple-200 transition-colors"
+                          class="font-semibold transition-colors {$theme ===
+                          'dark'
+                            ? 'text-white group-hover/btn:text-purple-200'
+                            : 'text-gray-900 group-hover/btn:text-purple-700'}"
                         >
                           {student.nombres}
                         </p>
-                        <p class="text-xs text-white/50 mt-0.5">
+                        <p
+                          class="text-xs mt-0.5 {$theme === 'dark'
+                            ? 'text-white/50'
+                            : 'text-gray-500'}"
+                        >
                           ID: {student.id}
                         </p>
                       </div>
@@ -513,7 +582,11 @@
             {/each}
           </div>
         {:else}
-          <div class="p-8 text-center text-white/40">
+          <div
+            class="p-8 text-center {$theme === 'dark'
+              ? 'text-white/40'
+              : 'text-gray-400'}"
+          >
             <div class="w-16 h-16 mx-auto mb-4 opacity-20">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -551,14 +624,19 @@
           <div class="w-48 h-48 mx-auto mb-8 relative">
             <!-- Animated orb -->
             <div
-              class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 rounded-full blur-2xl animate-pulse"
+              class="absolute inset-0 rounded-full blur-2xl animate-pulse {$theme ===
+              'dark'
+                ? 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20'
+                : 'bg-gradient-to-r from-purple-500/30 to-indigo-500/30'}"
             ></div>
             <div
               class="relative w-full h-full flex items-center justify-center"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-32 w-32 text-white/20"
+                class="h-32 w-32 {$theme === 'dark'
+                  ? 'text-white/20'
+                  : 'text-gray-400/40'}"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -573,15 +651,26 @@
             </div>
           </div>
           <h3
-            class="text-3xl font-bold text-white mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-200"
+            class="text-3xl font-bold mb-4 bg-clip-text text-transparent {$theme ===
+            'dark'
+              ? 'bg-gradient-to-r from-white to-purple-200'
+              : 'bg-gradient-to-r from-gray-900 to-purple-700'}"
           >
             Portal Académico
           </h3>
-          <p class="text-white/60 text-lg mb-6">
+          <p
+            class="text-lg mb-6 {$theme === 'dark'
+              ? 'text-white/60'
+              : 'text-gray-600'}"
+          >
             Selecciona un estudiante para visualizar su desempeño académico
             detallado
           </p>
-          <div class="flex items-center justify-center gap-2 text-white/40">
+          <div
+            class="flex items-center justify-center gap-2 {$theme === 'dark'
+              ? 'text-white/40'
+              : 'text-gray-500'}"
+          >
             <div class="w-2 h-2 rounded-full bg-purple-500 animate-ping"></div>
             <p class="text-sm">Listo para explorar</p>
           </div>
@@ -592,7 +681,9 @@
       <div class="flex-1 flex flex-col min-h-0" in:scale={{ duration: 400 }}>
         <!-- Header - Glass Morphism -->
         <div
-          class="bg-white/5 backdrop-blur-xl border-b border-white/10 rounded-t-3xl p-6 mb-6"
+          class="backdrop-blur-xl rounded-t-3xl p-6 mb-6 {$theme === 'dark'
+            ? 'bg-white/5 border-b border-white/10'
+            : 'bg-white/80 border-b border-gray-200'}"
           style="--tw-backdrop-blur: blur(24px)"
         >
           <div class="flex items-start justify-between gap-6">
@@ -604,7 +695,11 @@
                   {selectedStudent.nombres.split(" ")[0][0]}
                 </div>
                 <div>
-                  <h1 class="text-3xl font-bold text-white mb-1">
+                  <h1
+                    class="text-3xl font-bold mb-1 {$theme === 'dark'
+                      ? 'text-white'
+                      : 'text-gray-900'}"
+                  >
                     {selectedStudent.nombres}
                   </h1>
                   <div class="flex items-center gap-3">
@@ -616,7 +711,11 @@
                       ></span>
                       Activo
                     </span>
-                    <span class="text-white/40 text-sm">
+                    <span
+                      class="text-sm {$theme === 'dark'
+                        ? 'text-white/40'
+                        : 'text-gray-500'}"
+                    >
                       ID: {selectedStudent.id}
                     </span>
                   </div>
@@ -626,7 +725,10 @@
 
             <div class="flex items-center gap-3">
               <button
-                class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 border border-white/10 text-white text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-white/5"
+                class="px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg {$theme ===
+                'dark'
+                  ? 'bg-gradient-to-r from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 border-white/10 text-white hover:shadow-white/5'
+                  : 'bg-gradient-to-r from-gray-100 to-gray-50 hover:from-gray-200 hover:to-gray-100 border-gray-300 text-gray-900 hover:shadow-gray-300/20'}"
               >
                 <span class="flex items-center gap-2">
                   <svg
@@ -657,18 +759,32 @@
             <div class="space-y-6 animate-pulse">
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {#each Array(4) as _}
-                  <div class="h-24 bg-white/5 rounded-2xl"></div>
+                  <div
+                    class="h-24 rounded-2xl {$theme === 'dark'
+                      ? 'bg-white/5'
+                      : 'bg-gray-200/50'}"
+                  ></div>
                 {/each}
               </div>
-              <div class="h-64 bg-white/5 rounded-2xl"></div>
+              <div
+                class="h-64 rounded-2xl {$theme === 'dark'
+                  ? 'bg-white/5'
+                  : 'bg-gray-200/50'}"
+              ></div>
             </div>
           {:else if studentDetailsError}
             <div
-              class="p-6 rounded-2xl bg-gradient-to-r from-rose-500/20 to-pink-500/10 backdrop-blur-sm border border-rose-500/20"
+              class="p-6 rounded-2xl backdrop-blur-sm border {$theme === 'dark'
+                ? 'bg-gradient-to-r from-rose-500/20 to-pink-500/10 border-rose-500/20'
+                : 'bg-gradient-to-r from-rose-100 to-pink-50 border-rose-300'}"
               in:fly={{ y: 20 }}
             >
               <div class="flex items-center gap-4">
-                <div class="p-3 bg-rose-500/20 rounded-xl">
+                <div
+                  class="p-3 rounded-xl {$theme === 'dark'
+                    ? 'bg-rose-500/20'
+                    : 'bg-rose-500/30'}"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-6 w-6 text-rose-400"
@@ -685,8 +801,20 @@
                   </svg>
                 </div>
                 <div>
-                  <h3 class="font-bold text-white">Error en los detalles</h3>
-                  <p class="text-white/70">{studentDetailsError}</p>
+                  <h3
+                    class="font-bold {$theme === 'dark'
+                      ? 'text-white'
+                      : 'text-gray-900'}"
+                  >
+                    Error en los detalles
+                  </h3>
+                  <p
+                    class={$theme === "dark"
+                      ? "text-white/70"
+                      : "text-gray-700"}
+                  >
+                    {studentDetailsError}
+                  </p>
                 </div>
               </div>
             </div>
@@ -697,11 +825,17 @@
             >
               {#each [{ label: "Nivel Académico", value: selectedStudentDetails.nivel, icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", color: "from-blue-500 to-cyan-400" }, { label: "Grado", value: selectedStudentDetails.grado, icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2", color: "from-purple-500 to-violet-400" }, { label: "Acudiente", value: selectedStudentDetails.acudiente, icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", color: "from-emerald-500 to-green-400" }, { label: "Contacto", value: selectedStudentDetails.telefono1 || "N/A", icon: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z", color: "from-amber-500 to-yellow-400" }] as item, i}
                 <div
-                  class="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10 group relative overflow-hidden"
+                  class="backdrop-blur-sm rounded-2xl p-5 border hover:border-white/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10 group relative overflow-hidden {$theme ===
+                  'dark'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-white/80 border-gray-200'}"
                   in:fly={{ y: 20, delay: i * 100 }}
                 >
                   <div
-                    class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 {$theme ===
+                    'dark'
+                      ? 'bg-gradient-to-br from-white/5 to-transparent'
+                      : 'bg-gradient-to-br from-purple-100/30 to-transparent'}"
                   ></div>
                   <div class="relative z-10">
                     <div class="flex items-center justify-between mb-3">
@@ -724,10 +858,18 @@
                         </svg>
                       </div>
                     </div>
-                    <p class="text-sm font-medium text-white/60 mb-1">
+                    <p
+                      class="text-sm font-medium mb-1 {$theme === 'dark'
+                        ? 'text-white/60'
+                        : 'text-gray-600'}"
+                    >
                       {item.label}
                     </p>
-                    <p class="text-lg font-bold text-white truncate">
+                    <p
+                      class="text-lg font-bold truncate {$theme === 'dark'
+                        ? 'text-white'
+                        : 'text-gray-900'}"
+                    >
                       {item.value}
                     </p>
                   </div>
@@ -759,16 +901,28 @@
                   </svg>
                 </div>
                 <div>
-                  <h3 class="text-2xl font-bold text-white">
+                  <h3
+                    class="text-2xl font-bold {$theme === 'dark'
+                      ? 'text-white'
+                      : 'text-gray-900'}"
+                  >
                     Rendimiento Académico
                   </h3>
-                  <p class="text-white/60 text-sm">
+                  <p
+                    class="text-sm {$theme === 'dark'
+                      ? 'text-white/60'
+                      : 'text-gray-600'}"
+                  >
                     Notas por período y definitivas
                   </p>
                 </div>
               </div>
 
-              <div class="flex items-center gap-2 bg-white/5 rounded-xl p-1">
+              <div
+                class="flex items-center gap-2 rounded-xl p-1 {$theme === 'dark'
+                  ? 'bg-white/5'
+                  : 'bg-gray-200/70'}"
+              >
                 <button
                   class="px-4 py-2 rounded-lg transition-all duration-300 {activeTab ===
                   'asignaturas'
@@ -778,8 +932,12 @@
                 >
                   <span
                     class="text-sm font-medium {activeTab === 'asignaturas'
-                      ? 'text-white'
-                      : 'text-white/60'}"
+                      ? $theme === 'dark'
+                        ? 'text-white'
+                        : 'text-gray-900'
+                      : $theme === 'dark'
+                        ? 'text-white/60'
+                        : 'text-gray-600'}"
                   >
                     Asignaturas
                   </span>
@@ -793,8 +951,12 @@
                 >
                   <span
                     class="text-sm font-medium {activeTab === 'areas'
-                      ? 'text-white'
-                      : 'text-white/60'}"
+                      ? $theme === 'dark'
+                        ? 'text-white'
+                        : 'text-gray-900'
+                      : $theme === 'dark'
+                        ? 'text-white/60'
+                        : 'text-gray-600'}"
                   >
                     Áreas
                   </span>
@@ -811,34 +973,48 @@
                   {@const statusInfo = getStatusInfo(definitive)}
                   {@const progressColor = getProgressBarColor(definitive)}
                   <div
-                    class="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 group relative overflow-hidden"
+                    class="backdrop-blur-sm rounded-2xl p-5 border hover:border-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 group relative overflow-hidden {$theme ===
+                    'dark'
+                      ? 'bg-white/5 border-white/10'
+                      : 'bg-white/80 border-gray-200'}"
                     in:fly={{ y: 30, duration: 400, delay: i * 80 }}
                   >
                     <!-- Animated background effect -->
                     <div
-                      class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                      class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 {$theme ===
+                      'dark'
+                        ? 'bg-gradient-to-br from-white/5 to-transparent'
+                        : 'bg-gradient-to-br from-purple-100/30 to-transparent'}"
                     ></div>
 
                     <!-- Subject Header -->
                     <div class="relative z-10">
                       <div class="flex items-start justify-between mb-5">
                         <h4
-                          class="text-lg font-bold text-white group-hover:text-purple-200 transition-colors line-clamp-2"
+                          class="text-lg font-bold line-clamp-2 transition-colors {$theme ===
+                          'dark'
+                            ? 'text-white group-hover:text-purple-200'
+                            : 'text-gray-900 group-hover:text-purple-700'}"
                         >
                           {asignatura.asignatura}
                         </h4>
                         <button
-                          class="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-purple-500/20"
+                          class="p-2 rounded-xl transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-purple-500/20 {$theme ===
+                          'dark'
+                            ? 'bg-white/5 hover:bg-white/10'
+                            : 'bg-gray-200/50 hover:bg-gray-300/70'}"
                           on:click={() =>
                             handleOpenNotasDetalle(
                               selectedStudent!,
-                              asignatura,
+                              asignatura
                             )}
                           aria-label="Ver detalles"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="h-4 w-4 text-white/70 group-hover:text-white"
+                            class="h-4 w-4 transition-colors {$theme === 'dark'
+                              ? 'text-white/70 group-hover:text-white'
+                              : 'text-gray-600 group-hover:text-gray-900'}"
                             viewBox="0 0 24 24"
                             fill="currentColor"
                           >
@@ -854,7 +1030,7 @@
                         {#each $selectedPeriodos as periodo, j}
                           {@const grade = getGradeForPeriod(
                             asignatura,
-                            periodo,
+                            periodo
                           )}
                           {@const cardClasses = getPeriodCardClasses(periodo)}
                           {@const textClass = getGradeTextClass(grade)}
@@ -883,7 +1059,7 @@
                       <!-- Definitive Grade -->
                       <div
                         class="{getDefinitiveCardStyles(
-                          definitive,
+                          definitive
                         )} rounded-xl p-4 text-center transition-all duration-500 hover:scale-105"
                       >
                         <div
@@ -923,7 +1099,7 @@
                               class="h-full rounded-full transition-all duration-1000 ease-out {progressColor}"
                               style="width: {Math.min(
                                 (definitive / 5) * 100,
-                                100,
+                                100
                               )}%"
                             ></div>
                           </div>
@@ -934,7 +1110,10 @@
                 {/each}
               {:else}
                 <div
-                  class="col-span-full p-12 text-center bg-white/5 rounded-2xl border border-dashed border-white/10"
+                  class="col-span-full p-12 text-center rounded-2xl border border-dashed {$theme ===
+                  'dark'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-100/50 border-gray-300'}"
                 >
                   <div class="w-20 h-20 mx-auto mb-4 opacity-20">
                     <svg
@@ -951,7 +1130,13 @@
                       />
                     </svg>
                   </div>
-                  <p class="text-white/40">No hay asignaturas registradas</p>
+                  <p
+                    class={$theme === "dark"
+                      ? "text-white/40"
+                      : "text-gray-500"}
+                  >
+                    No hay asignaturas registradas
+                  </p>
                 </div>
               {/if}
             </div>
