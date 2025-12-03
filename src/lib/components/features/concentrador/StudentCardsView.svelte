@@ -9,7 +9,7 @@
     ConcentradorAreasParsed,
     Asignatura,
     Area,
-    NotaDetalle, // Import NotaDetalle
+    NotaDetalle,
   } from "$lib/types";
   import {
     parsed,
@@ -18,16 +18,16 @@
     payload,
     loadConcentradorData,
     selectedPeriodos,
-    concentradorType, // Import concentradorType
+    concentradorType,
   } from "$lib/storeConcentrador";
   import {
     fetchStudentDetails,
-    fetchNotasDetallado, // Import API
-    fetchNotasDetalladoAreas, // Import API
+    fetchNotasDetallado,
+    fetchNotasDetalladoAreas,
   } from "$lib/api";
   import { onMount, createEventDispatcher } from "svelte";
-  import { fade, fly } from "svelte/transition";
-  import NotasDetalleDialog from "../dialogs/notas/NotasDetalleDialog.svelte"; // Import Dialog
+  import { fade, fly, scale } from "svelte/transition";
+  import NotasDetalleDialog from "../dialogs/notas/NotasDetalleDialog.svelte";
 
   export let selectedStudent: EstudianteRow | null = null;
   let selectedStudentDetails: EstudianteDetalle | null = null;
@@ -43,14 +43,40 @@
   // Context for Dialog
   let dialogStudentName = "";
   let dialogAsignatura = "";
-  let dialogPeriodo = ""; // We might not need a specific period if showing all
+  let dialogPeriodo = "";
   let dialogEstudianteId = "";
   let dialogYear = "";
 
-  // Convivencia Dialog State (required by NotasDetalleDialog prop)
+  // Convivencia Dialog State
   let showConvivenciaDialog = false;
 
+  // UI States
+  let isSidebarCollapsed = false;
+  let activeTab = "asignaturas";
+  let hoveredStudent: string | null = null;
+  let rippleElements: Array<{ x: number; y: number; id: number }> = [];
+  let nextRippleId = 0;
+
   const dispatch = createEventDispatcher();
+
+  // Add ripple effect
+  function createRipple(event: MouseEvent) {
+    const button = event.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+
+    rippleElements = [
+      ...rippleElements,
+      {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        id: nextRippleId++,
+      },
+    ];
+
+    setTimeout(() => {
+      rippleElements = rippleElements.slice(1);
+    }, 600);
+  }
 
   async function handleOpenNotasDetalle(
     student: EstudianteRow,
@@ -58,7 +84,7 @@
   ) {
     const p = get(parsed);
     const currentConcentradorType = get(concentradorType);
-    let itemNombre = asignatura.asignatura; // Default to abreviatura
+    let itemNombre = asignatura.asignatura;
 
     if (p) {
       if (currentConcentradorType === "asignaturas") {
@@ -89,7 +115,7 @@
     dialogAsignatura = itemNombre;
     dialogEstudianteId = student.id;
     dialogYear = get(payload).year;
-    dialogPeriodo = ""; // Optional: if you want to filter by a specific period, set it here.
+    dialogPeriodo = "";
 
     showNotasDialog = true;
     loadingNotas = true;
@@ -98,11 +124,6 @@
 
     try {
       const currentPayload = get(payload);
-      // Construct payload for details
-      // Note: The API expects specific fields. We use the store payload as base but might need adjustment.
-      // Based on api.ts, fetchNotasDetallado takes NotasDetalladoPayload.
-      // We need to check what NotasDetalladoPayload looks like in types.ts, but assuming standard structure:
-
       const detailPayload = {
         estudiante: student.id,
         nombres: student.nombres,
@@ -129,9 +150,6 @@
     }
   }
 
-  // Dummy handler for onShowInasistencias as we are handling it locally or it might be another dialog
-  // If you have an Inasistencias dialog, you should import and use it here too,
-  // or dispatch to parent if that's still the preferred way for that specific dialog.
   function handleShowInasistencias(
     estId: string,
     nom: string,
@@ -146,15 +164,12 @@
     });
   }
 
-  // Fetch initial concentrador data on mount
   onMount(() => {
-    // Only load if parsed data isn't already available
     if (!get(parsed)) {
       loadConcentradorData();
     }
   });
 
-  // Reactive statement to fetch student details when selectedStudent changes
   $: if (selectedStudent) {
     fetchDetailsForSelectedStudent(selectedStudent.id, get(payload).year);
   } else {
@@ -182,7 +197,6 @@
     selectedStudent = student;
   }
 
-  // Helper to format grades for display
   function getGradeForPeriod(
     asignatura: AsignaturaNota,
     periodoName: string,
@@ -194,53 +208,55 @@
   function getPeriodCardClasses(periodoName: string): string {
     switch (periodoName.toUpperCase()) {
       case "UNO":
-        return "bg-purple-50 border-purple-200 shadow-purple-500/10";
+        return "bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-200/50 shadow-lg shadow-purple-500/5";
       case "DOS":
-        return "bg-teal-50 border-teal-200 shadow-teal-500/10";
+        return "bg-gradient-to-br from-teal-500/10 to-teal-600/5 border-teal-200/50 shadow-lg shadow-teal-500/5";
       case "TRES":
-        return "bg-orange-50 border-orange-200 shadow-orange-500/10";
+        return "bg-gradient-to-br from-orange-500/10 to-amber-600/5 border-orange-200/50 shadow-lg shadow-orange-500/5";
       case "CUATRO":
-        return "bg-rose-50 border-rose-200 shadow-rose-500/10";
+        return "bg-gradient-to-br from-rose-500/10 to-pink-600/5 border-rose-200/50 shadow-lg shadow-rose-500/5";
       default:
-        return "bg-slate-50 border-slate-200";
+        return "bg-gradient-to-br from-slate-500/10 to-slate-600/5 border-slate-200/50";
     }
   }
 
   function getGradeTextClass(grade: number | string): string {
     if (typeof grade === "string") return "text-slate-400";
     const num = Number(grade);
-    if (num >= 4.0) return "text-emerald-600";
-    if (num >= 3.0) return "text-blue-600";
-    return "text-rose-600";
+    if (num >= 4.0)
+      return "text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-green-400";
+    if (num >= 3.0)
+      return "text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400";
+    return "text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-400";
   }
 
   function getDefinitiveCardStyles(grade: number | string): string {
-    let classes = "border-2 shadow-md";
+    let classes = "border-2 shadow-xl relative overflow-hidden group";
     if (typeof grade === "string") {
-      return `${classes} bg-gray-100 text-gray-500 border-gray-200`;
+      return `${classes} bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 border-gray-300/30`;
     }
     const num = Number(grade);
     if (num >= 4.0) {
-      return `${classes} bg-emerald-100 text-emerald-700 border-emerald-200 shadow-emerald-500/10`;
+      return `${classes} bg-gradient-to-br from-emerald-500/20 to-green-400/10 text-emerald-700 border-emerald-400/30`;
     } else if (num >= 3.0) {
-      return `${classes} bg-blue-100 text-blue-700 border-blue-200 shadow-blue-500/10`;
+      return `${classes} bg-gradient-to-br from-blue-500/20 to-cyan-400/10 text-blue-700 border-blue-400/30`;
     } else {
-      return `${classes} bg-rose-100 text-rose-700 border-rose-200 shadow-rose-500/10`;
+      return `${classes} bg-gradient-to-br from-rose-500/20 to-pink-400/10 text-rose-700 border-rose-400/30`;
     }
   }
 
   function getPeriodoNameClasses(periodoName: string): string {
     switch (periodoName.toUpperCase()) {
       case "UNO":
-        return "text-purple-600";
+        return "text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-400";
       case "DOS":
-        return "text-teal-600";
+        return "text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-400";
       case "TRES":
-        return "text-orange-600";
+        return "text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-400";
       case "CUATRO":
-        return "text-rose-600";
+        return "text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-400";
       default:
-        return "text-slate-500"; // Default color
+        return "text-slate-500";
     }
   }
 
@@ -249,352 +265,694 @@
     const sum = asignatura.periodos.reduce((acc, p) => acc + p.valoracion, 0);
     return sum / asignatura.periodos.length;
   }
+
+  function getGradeColor(grade: number): string {
+    if (grade >= 4.0) return "from-emerald-500 to-green-400";
+    if (grade >= 3.0) return "from-blue-500 to-cyan-400";
+    return "from-rose-500 to-pink-400";
+  }
+
+  // Helper function to get progress bar color
+  function getProgressBarColor(definitive: number): string {
+    if (definitive >= 4.0)
+      return "bg-gradient-to-r from-emerald-500 to-green-400";
+    if (definitive >= 3.0) return "bg-gradient-to-r from-blue-500 to-cyan-400";
+    return "bg-gradient-to-r from-rose-500 to-pink-400";
+  }
+
+  // Helper function to get status text and class
+  function getStatusInfo(definitive: number): { text: string; class: string } {
+    if (definitive >= 4.0)
+      return { text: "Excelente", class: "bg-emerald-500/20 text-emerald-300" };
+    if (definitive >= 3.0)
+      return { text: "Bueno", class: "bg-blue-500/20 text-blue-300" };
+    return { text: "Requiere atención", class: "bg-rose-500/20 text-rose-300" };
+  }
 </script>
 
 <div
-  class="h-[calc(100vh-60px)] w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6 flex flex-col md:flex-row gap-6 overflow-hidden font-sans text-slate-800"
+  class="h-screen w-full bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-6 flex gap-6 overflow-hidden font-sans relative"
 >
-  <!-- Student List Panel -->
-  <div
-    class="flex-1 min-w-[300px] md:max-w-md flex flex-col bg-white/70 backdrop-blur-xl border border-white/40 rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:bg-white/80"
-  >
+  <!-- Background Effects -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
     <div
-      class="p-5 border-b border-slate-100/50 bg-white/50 backdrop-blur-sm sticky top-0 z-10"
-    >
-      <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-        <span class="p-2 rounded-lg bg-indigo-100 text-indigo-600">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            ><path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-            /></svg
-          >
-        </span>
-        Estudiantes
-      </h2>
-    </div>
-
-    <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
-      {#if $loading}
-        <div class="flex flex-col items-center justify-center h-40 space-y-3">
-          <div
-            class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"
-          ></div>
-          <p class="text-slate-500 text-sm font-medium">
-            Cargando estudiantes...
-          </p>
-        </div>
-      {:else if $error}
-        <div
-          class="p-4 m-2 bg-rose-50 border border-rose-100 text-rose-600 rounded-xl text-sm"
-        >
-          <p class="font-semibold">Error</p>
-          <p>{$error}</p>
-        </div>
-      {:else if $parsed && ($parsed as ConcentradorParsed).estudiantes.length > 0}
-        <ul class="space-y-1">
-          {#each ($parsed as ConcentradorParsed).estudiantes as student (student.id)}
-            <li>
-              <button
-                class="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden
-                {selectedStudent?.id === student.id
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-[1.02]'
-                  : 'hover:bg-white hover:shadow-md text-slate-600 hover:text-indigo-600'}"
-                on:click={() => handleStudentClick(student)}
-              >
-                <div class="relative z-10 flex items-center justify-between">
-                  <span class="font-medium truncate">{student.nombres}</span>
-                  {#if selectedStudent?.id === student.id}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5 opacity-80"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      ><path
-                        fill-rule="evenodd"
-                        d="M7.293 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L6 12.586l7.293-7.293a1 1 0 011.414 1.414l-8 8z"
-                        clip-rule="evenodd"
-                      /></svg
-                    >
-                  {/if}
-                </div>
-              </button>
-            </li>
-          {/each}
-        </ul>
-      {:else}
-        <div class="p-8 text-center text-slate-400">
-          <p>No se encontraron estudiantes.</p>
-        </div>
-      {/if}
-    </div>
+      class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"
+    ></div>
+    <div
+      class="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl"
+    ></div>
+    <div
+      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-sky-500/5 rounded-full blur-3xl"
+    ></div>
   </div>
 
-  <!-- Student Details Panel -->
+  <!-- Student List Panel - Glass Morphism -->
   <div
-    class="flex-[2.5] bg-white/70 backdrop-blur-xl border border-white/40 rounded-2xl shadow-xl overflow-hidden flex flex-col transition-all duration-300 relative"
+    class="flex-shrink-0 w-96 flex flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 hover:shadow-purple-500/10 relative {isSidebarCollapsed
+      ? 'collapsed'
+      : ''}"
+    style="--tw-backdrop-blur: blur(24px)"
   >
-    {#if !selectedStudent}
-      <div
-        class="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center"
-      >
-        <div
-          class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-300"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-12 w-12"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            ><path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            /></svg
-          >
-        </div>
-        <p class="text-lg font-medium">Selecciona un estudiante</p>
-        <p class="text-sm opacity-70">
-          Elige un estudiante de la lista para ver sus detalles académicos.
-        </p>
-      </div>
-    {:else}
-      <div
-        class="h-full overflow-y-auto custom-scrollbar p-6 md:p-8"
-        in:fade={{ duration: 300 }}
-      >
-        <!-- Header -->
-        <div
-          class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-slate-200/60"
-        >
-          <div>
-            <h2
-              class="text-3xl font-bold text-slate-800 bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-indigo-600"
-            >
-              {selectedStudent.nombres}
-            </h2>
-            <p class="text-slate-500 mt-1 flex items-center gap-2">
-              <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"
-              ></span>
-              Estudiante Activo
-            </p>
-          </div>
-          <div class="flex gap-2">
-            <button
-              class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-sm"
-            >
-              Exportar
-            </button>
-          </div>
-        </div>
+    <!-- Animated Background -->
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-purple-500/5"
+    ></div>
 
-        {#if loadingStudentDetails}
-          <div class="space-y-4 animate-pulse">
-            <div class="h-32 bg-slate-100 rounded-xl"></div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="h-24 bg-slate-100 rounded-xl"></div>
-              <div class="h-24 bg-slate-100 rounded-xl"></div>
-              <div class="h-24 bg-slate-100 rounded-xl"></div>
-            </div>
-          </div>
-        {:else if studentDetailsError}
+    <div
+      class="relative p-6 border-b border-white/10 bg-gradient-to-r from-white/10 to-transparent"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
           <div
-            class="p-6 bg-rose-50 border border-rose-100 rounded-xl text-rose-700 flex items-center gap-4"
+            class="p-2 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 backdrop-blur-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 text-rose-500"
+              class="h-6 w-6 text-white"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              ><path
+            >
+              <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              /></svg
-            >
-            <div>
-              <h3 class="font-bold">Error al cargar detalles</h3>
-              <p class="text-sm opacity-90">{studentDetailsError}</p>
-            </div>
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
           </div>
-        {:else if selectedStudentDetails}
-          <!-- Info Cards -->
-          <div
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"
+          <div>
+            <h2 class="text-xl font-bold text-white">Estudiantes</h2>
+            <p class="text-sm text-white/60">Selecciona para ver detalles</p>
+          </div>
+        </div>
+        <button
+          on:click={() => (isSidebarCollapsed = !isSidebarCollapsed)}
+          class="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 group"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-white/70 group-hover:text-white transition-colors"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <div
-              class="bg-white/40 backdrop-blur-md p-4 rounded-xl border border-white/60 shadow-lg shadow-indigo-500/5 hover:shadow-indigo-500/10 hover:bg-white/50 hover:scale-[1.02] transition-all duration-300"
-            >
-              <p
-                class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1"
-              >
-                Nivel Académico
-              </p>
-              <p class="text-lg font-semibold text-slate-700">
-                {selectedStudentDetails.nivel}
-              </p>
-            </div>
-            <div
-              class="bg-white/40 backdrop-blur-md p-4 rounded-xl border border-white/60 shadow-lg shadow-indigo-500/5 hover:shadow-indigo-500/10 hover:bg-white/50 hover:scale-[1.02] transition-all duration-300"
-            >
-              <p
-                class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1"
-              >
-                Grado
-              </p>
-              <p class="text-lg font-semibold text-slate-700">
-                {selectedStudentDetails.grado}
-              </p>
-            </div>
-            <div
-              class="bg-white/40 backdrop-blur-md p-4 rounded-xl border border-white/60 shadow-lg shadow-indigo-500/5 hover:shadow-indigo-500/10 hover:bg-white/50 hover:scale-[1.02] transition-all duration-300"
-            >
-              <p
-                class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1"
-              >
-                Acudiente
-              </p>
-              <p
-                class="text-lg font-semibold text-slate-700 truncate"
-                title={selectedStudentDetails.acudiente}
-              >
-                {selectedStudentDetails.acudiente}
-              </p>
-            </div>
-            <div
-              class="bg-white/40 backdrop-blur-md p-4 rounded-xl border border-white/60 shadow-lg shadow-indigo-500/5 hover:shadow-indigo-500/10 hover:bg-white/50 hover:scale-[1.02] transition-all duration-300"
-            >
-              <p
-                class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1"
-              >
-                Contacto
-              </p>
-              <p class="text-lg font-semibold text-slate-700">
-                {selectedStudentDetails.telefono1 || "N/A"}
-              </p>
-            </div>
-            <div
-              class="bg-white/40 backdrop-blur-md p-4 rounded-xl border border-white/60 shadow-lg shadow-indigo-500/5 hover:shadow-indigo-500/10 hover:bg-white/50 hover:scale-[1.02] transition-all duration-300 sm:col-span-2 lg:col-span-2"
-            >
-              <p
-                class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1"
-              >
-                Correo Electrónico
-              </p>
-              <p class="text-lg font-semibold text-slate-700">
-                {selectedStudentDetails.email_estudiante || "N/A"}
-              </p>
-            </div>
-          </div>
-        {/if}
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d={isSidebarCollapsed
+                ? "M13 5l7 7-7 7M5 5l7 7-7 7"
+                : "M11 19l-7-7 7-7m8 14l-7-7 7-7"}
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
 
-        <div class="mt-8">
-          <h4
-            class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"
+    <div class="relative flex-1 overflow-hidden">
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5"
+      ></div>
+      <div class="h-full overflow-y-auto custom-scrollbar p-4 space-y-2">
+        {#if $loading}
+          <div class="space-y-3 p-4">
+            {#each Array(5) as _, i}
+              <div
+                class="h-16 bg-white/5 rounded-2xl animate-pulse"
+                style="animation-delay: {i * 100}ms"
+              ></div>
+            {/each}
+          </div>
+        {:else if $error}
+          <div
+            class="m-4 p-4 bg-gradient-to-r from-rose-500/20 to-pink-500/10 backdrop-blur-sm border border-rose-500/20 rounded-2xl"
+            in:fly={{ y: 20 }}
           >
-            <span class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-rose-500/20 rounded-xl">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-rose-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-white">Error de carga</p>
+                <p class="text-sm text-white/70">{$error}</p>
+              </div>
+            </div>
+          </div>
+        {:else if $parsed && ($parsed as ConcentradorParsed).estudiantes.length > 0}
+          <div class="space-y-2">
+            {#each ($parsed as ConcentradorParsed).estudiantes as student, i (student.id)}
+              <div
+                class="relative overflow-hidden group"
+                on:mouseenter={() => (hoveredStudent = student.id)}
+                on:mouseleave={() => (hoveredStudent = null)}
+                in:fly={{ y: 20, delay: i * 50 }}
+              >
+                <!-- Hover Effect Background -->
+                <div
+                  class="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 {hoveredStudent ===
+                  student.id
+                    ? 'animate-slide-in'
+                    : ''}"
+                  style="transform: translateX(-100%); transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);"
+                ></div>
+
+                <button
+                  class="w-full text-left p-4 rounded-2xl transition-all duration-300 relative overflow-hidden group/btn {selectedStudent?.id ===
+                  student.id
+                    ? 'selected'
+                    : ''}"
+                  style="
+                    background: {selectedStudent?.id === student.id
+                    ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.1))'
+                    : 'rgba(255, 255, 255, 0.03)'};
+                    border: 1px solid {selectedStudent?.id === student.id
+                    ? 'rgba(139, 92, 246, 0.3)'
+                    : 'rgba(255, 255, 255, 0.05)'};
+                    transform: {selectedStudent?.id === student.id
+                    ? 'translateX(8px)'
+                    : 'none'};
+                  "
+                  on:click={(e) => {
+                    createRipple(e);
+                    handleStudentClick(student);
+                  }}
+                >
+                  <!-- Ripple Effect -->
+                  {#each rippleElements as ripple}
+                    {#if ripple.id === i}
+                      <div
+                        class="absolute w-2 h-2 bg-white/30 rounded-full animate-ripple"
+                        style="left: {ripple.x}px; top: {ripple.y}px;"
+                      ></div>
+                    {/if}
+                  {/each}
+
+                  <div class="relative z-10 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold transition-all duration-300 group-hover/btn:scale-110"
+                        style="
+                          background: {selectedStudent?.id === student.id
+                          ? 'linear-gradient(135deg, #8b5cf6, #6366f1)'
+                          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))'};
+                          box-shadow: {selectedStudent?.id === student.id
+                          ? '0 10px 30px -5px rgba(139, 92, 246, 0.4)'
+                          : '0 4px 20px -2px rgba(0, 0, 0, 0.2)'};
+                        "
+                      >
+                        {student.nombres.split(" ")[0][0]}
+                      </div>
+                      <div>
+                        <p
+                          class="font-semibold text-white group-hover/btn:text-purple-200 transition-colors"
+                        >
+                          {student.nombres}
+                        </p>
+                        <p class="text-xs text-white/50 mt-0.5">
+                          ID: {student.id}
+                        </p>
+                      </div>
+                    </div>
+                    {#if selectedStudent?.id === student.id}
+                      <div
+                        class="p-1.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 animate-pulse-glow"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4 w-4 text-white"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    {/if}
+                  </div>
+                </button>
+              </div>
+            {/each}
+          </div>
+        {:else}
+          <div class="p-8 text-center text-white/40">
+            <div class="w-16 h-16 mx-auto mb-4 opacity-20">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                ><path
+              >
+                <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                /></svg
-              >
-            </span>
-            Notas por Asignatura
-          </h4>
+                  stroke-width="1.5"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                />
+              </svg>
+            </div>
+            <p>No hay estudiantes registrados</p>
+          </div>
+        {/if}
+      </div>
+    </div>
+  </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {#if selectedStudent.asignaturas && selectedStudent.asignaturas.length > 0}
-              {#each selectedStudent.asignaturas as asignatura, i (asignatura.asignatura)}
+  <!-- Main Content Panel -->
+  <div class="flex-1 flex flex-col min-w-0">
+    {#if !selectedStudent}
+      <!-- Empty State - Enhanced -->
+      <div
+        class="flex-1 flex flex-col items-center justify-center relative overflow-hidden"
+        in:fade={{ duration: 500 }}
+      >
+        <div
+          class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"
+        ></div>
+        <div class="relative z-10 text-center px-8 max-w-2xl">
+          <div class="w-48 h-48 mx-auto mb-8 relative">
+            <!-- Animated orb -->
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 rounded-full blur-2xl animate-pulse"
+            ></div>
+            <div
+              class="relative w-full h-full flex items-center justify-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-32 w-32 text-white/20"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+          </div>
+          <h3
+            class="text-3xl font-bold text-white mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-200"
+          >
+            Portal Académico
+          </h3>
+          <p class="text-white/60 text-lg mb-6">
+            Selecciona un estudiante para visualizar su desempeño académico
+            detallado
+          </p>
+          <div class="flex items-center justify-center gap-2 text-white/40">
+            <div class="w-2 h-2 rounded-full bg-purple-500 animate-ping"></div>
+            <p class="text-sm">Listo para explorar</p>
+          </div>
+        </div>
+      </div>
+    {:else}
+      <!-- Student Details - Modern UI -->
+      <div class="flex-1 flex flex-col min-h-0" in:scale={{ duration: 400 }}>
+        <!-- Header - Glass Morphism -->
+        <div
+          class="bg-white/5 backdrop-blur-xl border-b border-white/10 rounded-t-3xl p-6 mb-6"
+          style="--tw-backdrop-blur: blur(24px)"
+        >
+          <div class="flex items-start justify-between gap-6">
+            <div class="flex-1">
+              <div class="flex items-center gap-4 mb-4">
                 <div
-                  class="bg-white/40 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-white/50 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 hover:bg-white/60 transition-all duration-300 group relative overflow-hidden"
-                  in:fly={{ y: 20, duration: 300, delay: i * 50 }}
+                  class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white bg-gradient-to-br from-purple-500 to-indigo-500 shadow-lg shadow-purple-500/30 animate-float"
+                >
+                  {selectedStudent.nombres.split(" ")[0][0]}
+                </div>
+                <div>
+                  <h1 class="text-3xl font-bold text-white mb-1">
+                    {selectedStudent.nombres}
+                  </h1>
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500/20 to-green-500/10 border border-emerald-500/30 text-emerald-300 text-sm"
+                    >
+                      <span
+                        class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
+                      ></span>
+                      Activo
+                    </span>
+                    <span class="text-white/40 text-sm">
+                      ID: {selectedStudent.id}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button
+                class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 border border-white/10 text-white text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-white/5"
+              >
+                <span class="flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  Exportar PDF
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+          {#if loadingStudentDetails}
+            <!-- Skeleton Loader -->
+            <div class="space-y-6 animate-pulse">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {#each Array(4) as _}
+                  <div class="h-24 bg-white/5 rounded-2xl"></div>
+                {/each}
+              </div>
+              <div class="h-64 bg-white/5 rounded-2xl"></div>
+            </div>
+          {:else if studentDetailsError}
+            <div
+              class="p-6 rounded-2xl bg-gradient-to-r from-rose-500/20 to-pink-500/10 backdrop-blur-sm border border-rose-500/20"
+              in:fly={{ y: 20 }}
+            >
+              <div class="flex items-center gap-4">
+                <div class="p-3 bg-rose-500/20 rounded-xl">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-rose-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-bold text-white">Error en los detalles</h3>
+                  <p class="text-white/70">{studentDetailsError}</p>
+                </div>
+              </div>
+            </div>
+          {:else if selectedStudentDetails}
+            <!-- Info Cards Grid -->
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+            >
+              {#each [{ label: "Nivel Académico", value: selectedStudentDetails.nivel, icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", color: "from-blue-500 to-cyan-400" }, { label: "Grado", value: selectedStudentDetails.grado, icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2", color: "from-purple-500 to-violet-400" }, { label: "Acudiente", value: selectedStudentDetails.acudiente, icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", color: "from-emerald-500 to-green-400" }, { label: "Contacto", value: selectedStudentDetails.telefono1 || "N/A", icon: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z", color: "from-amber-500 to-yellow-400" }] as item, i}
+                <div
+                  class="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10 group relative overflow-hidden"
+                  in:fly={{ y: 20, delay: i * 100 }}
                 >
                   <div
-                    class="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   ></div>
-                  <button
-                    class="absolute top-2 right-2 p-1 bg-white/80 backdrop-blur-sm rounded-full shadow-md text-slate-500 hover:bg-white hover:text-indigo-600 transition-all duration-200 z-20"
-                    on:click|stopPropagation={() =>
-                      selectedStudent &&
-                      handleOpenNotasDetalle(selectedStudent, asignatura)}
-                    aria-label="Ver notas detalladas de asignatura"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      ><path
-                        d="M12 4.5C7.5 4.5 3.73 7.61 3 12c.73 4.39 4.5 7.5 9 7.5s8.27-3.11 9-7.5c-.73-4.39-4.5-7.5-9-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
-                      /></svg
-                    >
-                  </button>
-                  <h5
-                    class="font-bold text-slate-700 mb-4 pb-3 border-b border-slate-100 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]"
-                  >
-                    {asignatura.asignatura}
-                  </h5>
-                  <div class="flex flex-wrap gap-2">
-                    {#each $selectedPeriodos as periodo}
-                      {@const grade = getGradeForPeriod(asignatura, periodo)}
-                      {@const cardClasses = getPeriodCardClasses(periodo)}
-                      {@const textClass = getGradeTextClass(grade)}
+                  <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-3">
                       <div
-                        class="flex flex-col items-center {cardClasses} backdrop-blur-sm rounded-xl p-2 flex-1 min-w-[60px] border shadow-sm transition-transform hover:scale-105"
+                        class={`p-2 rounded-xl bg-gradient-to-br ${item.color}/20`}
                       >
-                        <span
-                          class="text-[10px] font-bold opacity-70 uppercase tracking-wider mb-1 {getPeriodoNameClasses(
-                            periodo,
-                          )}">{periodo}</span
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-5 w-5 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
                         >
-                        <span class="font-bold text-lg {textClass}">
-                          {grade}
-                        </span>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d={item.icon}
+                          />
+                        </svg>
                       </div>
-                    {/each}
-                    <div
-                      class="flex flex-col items-center {getDefinitiveCardStyles(
-                        calculateDefinitiva(asignatura),
-                      )} backdrop-blur-sm rounded-xl p-2 flex-1 min-w-[60px] transition-transform hover:scale-110 relative overflow-hidden"
-                    >
-                      <div class="absolute inset-0 bg-white/20"></div>
-                      <span
-                        class="text-[10px] font-extrabold opacity-80 uppercase tracking-wider mb-1 z-10"
-                        >DEF</span
-                      >
-                      <span class="font-bold text-lg z-10">
-                        {calculateDefinitiva(asignatura).toFixed(2)}
-                      </span>
                     </div>
+                    <p class="text-sm font-medium text-white/60 mb-1">
+                      {item.label}
+                    </p>
+                    <p class="text-lg font-bold text-white truncate">
+                      {item.value}
+                    </p>
                   </div>
                 </div>
               {/each}
-            {:else}
-              <div
-                class="col-span-full p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300 text-slate-400"
-              >
-                <p>No hay asignaturas registradas para este estudiante.</p>
+            </div>
+          {/if}
+
+          <!-- Academic Performance Section -->
+          <div class="mb-8">
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-3">
+                <div
+                  class="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-2xl font-bold text-white">
+                    Rendimiento Académico
+                  </h3>
+                  <p class="text-white/60 text-sm">
+                    Notas por período y definitivas
+                  </p>
+                </div>
               </div>
-            {/if}
+
+              <div class="flex items-center gap-2 bg-white/5 rounded-xl p-1">
+                <button
+                  class="px-4 py-2 rounded-lg transition-all duration-300 {activeTab ===
+                  'asignaturas'
+                    ? 'active'
+                    : ''}"
+                  on:click={() => (activeTab = "asignaturas")}
+                >
+                  <span
+                    class="text-sm font-medium {activeTab === 'asignaturas'
+                      ? 'text-white'
+                      : 'text-white/60'}"
+                  >
+                    Asignaturas
+                  </span>
+                </button>
+                <button
+                  class="px-4 py-2 rounded-lg transition-all duration-300 {activeTab ===
+                  'areas'
+                    ? 'active'
+                    : ''}"
+                  on:click={() => (activeTab = "areas")}
+                >
+                  <span
+                    class="text-sm font-medium {activeTab === 'areas'
+                      ? 'text-white'
+                      : 'text-white/60'}"
+                  >
+                    Áreas
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Subjects Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {#if selectedStudent.asignaturas && selectedStudent.asignaturas.length > 0}
+                {#each selectedStudent.asignaturas as asignatura, i (asignatura.asignatura)}
+                  <!-- Calculate values once for each asignatura -->
+                  {@const definitive = calculateDefinitiva(asignatura)}
+                  {@const statusInfo = getStatusInfo(definitive)}
+                  {@const progressColor = getProgressBarColor(definitive)}
+                  <div
+                    class="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 group relative overflow-hidden"
+                    in:fly={{ y: 30, duration: 400, delay: i * 80 }}
+                  >
+                    <!-- Animated background effect -->
+                    <div
+                      class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                    ></div>
+
+                    <!-- Subject Header -->
+                    <div class="relative z-10">
+                      <div class="flex items-start justify-between mb-5">
+                        <h4
+                          class="text-lg font-bold text-white group-hover:text-purple-200 transition-colors line-clamp-2"
+                        >
+                          {asignatura.asignatura}
+                        </h4>
+                        <button
+                          class="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-purple-500/20"
+                          on:click={() =>
+                            handleOpenNotasDetalle(
+                              selectedStudent!,
+                              asignatura,
+                            )}
+                          aria-label="Ver detalles"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4 text-white/70 group-hover:text-white"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <path
+                              d="M12 4.5C7.5 4.5 3.73 7.61 3 12c.73 4.39 4.5 7.5 9 7.5s8.27-3.11 9-7.5c-.73-4.39-4.5-7.5-9-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <!-- Period Grades -->
+                      <div class="flex flex-wrap gap-3 mb-4">
+                        {#each $selectedPeriodos as periodo, j}
+                          {@const grade = getGradeForPeriod(
+                            asignatura,
+                            periodo,
+                          )}
+                          {@const cardClasses = getPeriodCardClasses(periodo)}
+                          {@const textClass = getGradeTextClass(grade)}
+                          {@const periodoClasses =
+                            getPeriodoNameClasses(periodo)}
+                          <div
+                            class="flex-1 min-w-[70px]"
+                            in:scale={{ delay: j * 100 }}
+                          >
+                            <div
+                              class="flex flex-col items-center {cardClasses} rounded-xl p-3 border backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                            >
+                              <span
+                                class="text-xs font-bold uppercase tracking-wider mb-1 {periodoClasses}"
+                              >
+                                {periodo}
+                              </span>
+                              <span class="text-xl font-bold {textClass}">
+                                {grade}
+                              </span>
+                            </div>
+                          </div>
+                        {/each}
+                      </div>
+
+                      <!-- Definitive Grade -->
+                      <div
+                        class="{getDefinitiveCardStyles(
+                          definitive,
+                        )} rounded-xl p-4 text-center transition-all duration-500 hover:scale-105"
+                      >
+                        <div
+                          class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                        ></div>
+                        <div class="relative z-10">
+                          <div
+                            class="flex items-center justify-center gap-2 mb-1"
+                          >
+                            <span
+                              class="text-xs font-extrabold uppercase tracking-wider opacity-80"
+                            >
+                              Definitiva
+                            </span>
+                            {#if definitive >= 3.0}
+                              <span
+                                class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+                              ></span>
+                            {/if}
+                          </div>
+                          <div class="flex items-center justify-center gap-2">
+                            <span class="text-2xl font-bold">
+                              {definitive.toFixed(2)}
+                            </span>
+                            <span
+                              class="text-xs px-2 py-1 rounded-full {statusInfo.class}"
+                            >
+                              {statusInfo.text}
+                            </span>
+                          </div>
+
+                          <!-- Progress Bar -->
+                          <div
+                            class="mt-3 h-1.5 bg-white/10 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full transition-all duration-1000 ease-out {progressColor}"
+                              style="width: {Math.min(
+                                (definitive / 5) * 100,
+                                100,
+                              )}%"
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {/each}
+              {:else}
+                <div
+                  class="col-span-full p-12 text-center bg-white/5 rounded-2xl border border-dashed border-white/10"
+                >
+                  <div class="w-20 h-20 mx-auto mb-4 opacity-20">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1"
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                      />
+                    </svg>
+                  </div>
+                  <p class="text-white/40">No hay asignaturas registradas</p>
+                </div>
+              {/if}
+            </div>
           </div>
         </div>
       </div>
@@ -602,6 +960,7 @@
   </div>
 </div>
 
+<!-- Dialog Component -->
 <NotasDetalleDialog
   bind:showDialog={showNotasDialog}
   {notasDetalle}
@@ -617,19 +976,144 @@
 />
 
 <style>
-  /* Custom Scrollbar for Webkit */
+  /* Custom Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(156, 163, 175, 0.3);
-    border-radius: 20px;
+    background: linear-gradient(
+      to bottom,
+      rgba(139, 92, 246, 0.4),
+      rgba(99, 102, 241, 0.4)
+    );
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(156, 163, 175, 0.5);
+    background: linear-gradient(
+      to bottom,
+      rgba(139, 92, 246, 0.6),
+      rgba(99, 102, 241, 0.6)
+    );
+  }
+
+  /* Animations */
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 20px rgba(139, 92, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 30px rgba(139, 92, 246, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  @keyframes ripple {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(40);
+      opacity: 0;
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-ripple {
+    animation: ripple 0.6s linear;
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.6s ease-out;
+  }
+
+  /* Tab active state */
+  button.active {
+    background: linear-gradient(
+      135deg,
+      rgba(139, 92, 246, 0.2),
+      rgba(99, 102, 241, 0.1)
+    );
+    box-shadow: 0 4px 20px -2px rgba(139, 92, 246, 0.3);
+  }
+
+  /* Button selected state */
+  button.selected {
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.25);
+  }
+
+  /* Smooth transitions */
+  * {
+    scroll-behavior: smooth;
+  }
+
+  /* Glass morphism enhancement */
+  .backdrop-blur-xl {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Line clamp */
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Card hover effects */
+  .hover-lift {
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   }
 </style>
