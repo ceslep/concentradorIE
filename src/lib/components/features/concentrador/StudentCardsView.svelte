@@ -346,6 +346,7 @@
             <p class="text-sm text-white/60">Selecciona para ver detalles</p>
           </div>
         </div>
+        <!-- svelte-ignore a11y_consider_explicit_label -->
         <button
           on:click={() => (isSidebarCollapsed = !isSidebarCollapsed)}
           class="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 group"
@@ -415,6 +416,7 @@
         {:else if $parsed && ($parsed as ConcentradorParsed).estudiantes.length > 0}
           <div class="space-y-2">
             {#each ($parsed as ConcentradorParsed).estudiantes as student, i (student.id)}
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
               <div
                 class="relative overflow-hidden group"
                 on:mouseenter={() => (hoveredStudent = student.id)}
