@@ -161,6 +161,7 @@
     role="presentation"
   >
     <!-- Premium modal container -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div
       transition:scale={{
         duration: 300,

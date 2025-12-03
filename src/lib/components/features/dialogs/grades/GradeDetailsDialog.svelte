@@ -19,8 +19,10 @@
 </script>
 
 {#if show}
-    <button
+    <div
         class="dialog-overlay"
+        role="button"
+        tabindex="0"
         on:click={onClose}
         on:keydown={handleKeydown}
         transition:fade={{ duration: 200 }}

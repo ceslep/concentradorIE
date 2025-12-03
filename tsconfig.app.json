@@ -16,6 +16,7 @@
     "allowJs": true,
     "checkJs": true,
     "moduleDetection": "force",
+    "moduleResolution": "Bundler",
     "paths": {
       "$lib": ["./src/lib"],
       "$lib/*": ["./src/lib/*"]

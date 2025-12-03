@@ -17,7 +17,7 @@
     let error: string | null = null;
 
     // Siempre mostrar todas las columnas N1..N12
-    let columnNames: string[] = [
+    let columnNames: (keyof NotaHistory)[] = [
         "nota1",
         "nota2",
         "nota3",
@@ -116,16 +116,18 @@
     }
 
     function getHintText(nota: NotaHistory, colName: string): string {
-        const aspectoKey = colName.replace("nota", "aspecto");
-        const fechaKey = colName.replace("nota", "fecha");
-        // Usamos 'as any' solo si confiamos en la estructura; alternativa: definir tipo completo
-        const aspecto = (nota as any)[aspectoKey] ?? "N/A";
-        const fecha = (nota as any)[fechaKey] ?? "N/A";
+        // Extract the number from "notaX"
+        const num = colName.replace("nota", "");
+        const aspectoKey = `aspecto${num}` as keyof NotaHistory;
+        const fechaKey = `fecha${num}` as keyof NotaHistory;
+
+        const aspecto = nota[aspectoKey] ?? "N/A";
+        const fecha = nota[fechaKey] ?? "N/A";
         return `Aspecto: ${aspecto}\nFecha: ${fecha}`;
     }
 
-    function shouldBlinkRed(value: string | null): boolean {
-        if (value === null || value === "") return false;
+    function shouldBlinkRed(value: string | null | undefined): boolean {
+        if (value === null || value === undefined || value === "") return false;
         const num = parseFloat(value);
         return !isNaN(num) && num < 3;
     }
@@ -136,9 +138,11 @@
 </script>
 
 {#if showDialog}
-    <button
+    <div
         class="dialog-backdrop"
         on:click={closeDialog}
+        role="button"
+        tabindex="0"
         on:keydown={(e) => {
             if (e.key === "Escape") closeDialog();
         }}

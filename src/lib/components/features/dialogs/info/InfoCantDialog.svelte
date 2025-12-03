@@ -135,13 +135,16 @@
 </script>
 
 {#if showDialog}
-  <button
+  <div
     class="dialog-backdrop"
     on:click={closeDialog}
+    role="button"
+    tabindex="0"
     on:keydown={(e) => {
       if (e.key === "Escape") closeDialog();
     }}
     transition:fade={{ duration: 200 }}
+    aria-label="Cerrar diálogo"
   >
     <div
       class="dialog-content glass-panel {$theme === 'dark'

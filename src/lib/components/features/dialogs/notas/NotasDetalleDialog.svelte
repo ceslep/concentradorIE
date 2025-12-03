@@ -106,12 +106,14 @@
         style="font-family: 'Inter', sans-serif;"
     >
         <!-- Backdrop -->
-        <button
+        <div
             class="absolute inset-0 w-full h-full bg-gray-900/60 backdrop-blur-sm transition-opacity cursor-default focus:outline-none"
+            role="button"
+            tabindex="0"
             on:click={closeDialog}
             on:keydown={(e) => e.key === "Escape" && closeDialog()}
             aria-label="Cerrar modal"
-        ></button>
+        ></div>
 
         <!-- Modal Container -->
         <div

@@ -54,7 +54,7 @@
 
   async function handleOpenNotasDetalle(
     student: EstudianteRow,
-    asignatura: AsignaturaNota
+    asignatura: AsignaturaNota,
   ) {
     const p = get(parsed);
     const currentConcentradorType = get(concentradorType);
@@ -65,7 +65,7 @@
         const parsedAsignaturas = p as ConcentradorParsed;
         if (parsedAsignaturas.asignaturas) {
           const foundItem = parsedAsignaturas.asignaturas.find(
-            (item: Asignatura) => item.abreviatura === asignatura.asignatura
+            (item: Asignatura) => item.abreviatura === asignatura.asignatura,
           );
           if (foundItem) {
             itemNombre = foundItem.nombre;
@@ -75,7 +75,7 @@
         const parsedAreas = p as ConcentradorAreasParsed;
         if (parsedAreas.areas) {
           const foundItem = parsedAreas.areas.find(
-            (item: Area) => item.abreviatura === asignatura.asignatura
+            (item: Area) => item.abreviatura === asignatura.asignatura,
           );
           if (foundItem) {
             itemNombre = foundItem.nombre;
@@ -136,7 +136,7 @@
     estId: string,
     nom: string,
     asig: string,
-    per: string
+    per: string,
   ) {
     dispatch("openInasistencias", {
       estudianteId: estId,
@@ -164,7 +164,7 @@
 
   async function fetchDetailsForSelectedStudent(
     studentId: string,
-    year: string
+    year: string,
   ) {
     loadingStudentDetails = true;
     studentDetailsError = null;
@@ -185,33 +185,48 @@
   // Helper to format grades for display
   function getGradeForPeriod(
     asignatura: AsignaturaNota,
-    periodoName: string
+    periodoName: string,
   ): number | string {
     const period = asignatura.periodos.find((p) => p.periodo === periodoName);
     return period ? period.valoracion.toFixed(2) : "-";
   }
 
-  function getGradeStyles(grade: number | string): {
-    containerClasses: string;
-    gradeTextClasses: string;
-  } {
-    let containerClasses = "";
-    let gradeTextClasses = "";
-
-    if (typeof grade === "string") {
-      containerClasses = "bg-gray-100 text-gray-500 border-gray-200";
-    } else {
-      const num = Number(grade);
-      if (num >= 4.0) {
-        containerClasses = "bg-emerald-100 text-emerald-700 border-emerald-200 shadow-emerald-500/10";
-      } else if (num >= 3.0) {
-        containerClasses = "bg-blue-100 text-blue-700 border-blue-200 shadow-blue-500/10";
-      } else {
-        containerClasses = "bg-rose-100 text-rose-700 border-rose-200 shadow-rose-500/10";
-        gradeTextClasses = "text-rose-700"; // Explicitly red for grades < 3
-      }
+  function getPeriodCardClasses(periodoName: string): string {
+    switch (periodoName.toUpperCase()) {
+      case "UNO":
+        return "bg-purple-50 border-purple-200 shadow-purple-500/10";
+      case "DOS":
+        return "bg-teal-50 border-teal-200 shadow-teal-500/10";
+      case "TRES":
+        return "bg-orange-50 border-orange-200 shadow-orange-500/10";
+      case "CUATRO":
+        return "bg-rose-50 border-rose-200 shadow-rose-500/10";
+      default:
+        return "bg-slate-50 border-slate-200";
     }
-    return { containerClasses, gradeTextClasses };
+  }
+
+  function getGradeTextClass(grade: number | string): string {
+    if (typeof grade === "string") return "text-slate-400";
+    const num = Number(grade);
+    if (num >= 4.0) return "text-emerald-600";
+    if (num >= 3.0) return "text-blue-600";
+    return "text-rose-600";
+  }
+
+  function getDefinitiveCardStyles(grade: number | string): string {
+    let classes = "border-2 shadow-md";
+    if (typeof grade === "string") {
+      return `${classes} bg-gray-100 text-gray-500 border-gray-200`;
+    }
+    const num = Number(grade);
+    if (num >= 4.0) {
+      return `${classes} bg-emerald-100 text-emerald-700 border-emerald-200 shadow-emerald-500/10`;
+    } else if (num >= 3.0) {
+      return `${classes} bg-blue-100 text-blue-700 border-blue-200 shadow-blue-500/10`;
+    } else {
+      return `${classes} bg-rose-100 text-rose-700 border-rose-200 shadow-rose-500/10`;
+    }
   }
 
   function getPeriodoNameClasses(periodoName: string): string {
@@ -223,7 +238,7 @@
       case "TRES":
         return "text-orange-600";
       case "CUATRO":
-        return "text-red-600";
+        return "text-rose-600";
       default:
         return "text-slate-500"; // Default color
     }
@@ -541,23 +556,25 @@
                   <div class="flex flex-wrap gap-2">
                     {#each $selectedPeriodos as periodo}
                       {@const grade = getGradeForPeriod(asignatura, periodo)}
-                      {@const { containerClasses, gradeTextClasses } = getGradeStyles(grade)}
+                      {@const cardClasses = getPeriodCardClasses(periodo)}
+                      {@const textClass = getGradeTextClass(grade)}
                       <div
-                        class="flex flex-col items-center {containerClasses} backdrop-blur-sm rounded-xl p-2 flex-1 min-w-[60px] border shadow-sm transition-transform hover:scale-105"
+                        class="flex flex-col items-center {cardClasses} backdrop-blur-sm rounded-xl p-2 flex-1 min-w-[60px] border shadow-sm transition-transform hover:scale-105"
                       >
                         <span
-                          class="text-[10px] font-bold opacity-70 uppercase tracking-wider mb-1 {getPeriodoNameClasses(periodo)}"
-                          >{periodo}</span
+                          class="text-[10px] font-bold opacity-70 uppercase tracking-wider mb-1 {getPeriodoNameClasses(
+                            periodo,
+                          )}">{periodo}</span
                         >
-                        <span class="font-bold text-lg {gradeTextClasses}">
+                        <span class="font-bold text-lg {textClass}">
                           {grade}
                         </span>
                       </div>
                     {/each}
                     <div
-                      class="flex flex-col items-center {getGradeStyles(
-                        calculateDefinitiva(asignatura)
-                      )} backdrop-blur-sm rounded-xl p-2 flex-1 min-w-[60px] border-2 shadow-md transition-transform hover:scale-110 relative overflow-hidden"
+                      class="flex flex-col items-center {getDefinitiveCardStyles(
+                        calculateDefinitiva(asignatura),
+                      )} backdrop-blur-sm rounded-xl p-2 flex-1 min-w-[60px] transition-transform hover:scale-110 relative overflow-hidden"
                     >
                       <div class="absolute inset-0 bg-white/20"></div>
                       <span
