@@ -292,7 +292,7 @@
 </script>
 
 <div
-  class="h-screen w-full p-6 flex gap-6 overflow-hidden font-sans relative {$theme ===
+  class="h-screen w-full p-2 md:p-4 lg:p-6 flex flex-col lg:flex-row gap-4 lg:gap-6 overflow-hidden font-sans relative {$theme ===
   'dark'
     ? 'bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950'
     : 'bg-gradient-to-br from-gray-50 via-gray-100 to-indigo-50'}"
@@ -321,11 +321,13 @@
 
   <!-- Student List Panel - Glass Morphism -->
   <div
-    class="flex-shrink-0 w-96 flex flex-col backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 hover:shadow-purple-500/10 relative {isSidebarCollapsed
+    class="flex-shrink-0 w-full lg:w-96 flex-col backdrop-blur-xl rounded-2xl lg:rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 hover:shadow-purple-500/10 relative {isSidebarCollapsed
       ? 'collapsed'
       : ''} {$theme === 'dark'
       ? 'bg-white/5 border border-white/10'
-      : 'bg-white/80 border border-gray-200'}"
+      : 'bg-white/80 border border-gray-200'} {selectedStudent
+      ? 'hidden lg:flex'
+      : 'flex h-full'}"
     style="--tw-backdrop-blur: blur(24px)"
   >
     <!-- Animated Background -->
@@ -336,7 +338,7 @@
     ></div>
 
     <div
-      class="relative p-6 {$theme === 'dark'
+      class="relative p-4 lg:p-6 {$theme === 'dark'
         ? 'border-b border-white/10 bg-gradient-to-r from-white/10 to-transparent'
         : 'border-b border-gray-200 bg-gradient-to-r from-purple-50/50 to-transparent'}"
     >
@@ -382,7 +384,7 @@
         <!-- svelte-ignore a11y_consider_explicit_label -->
         <button
           on:click={() => (isSidebarCollapsed = !isSidebarCollapsed)}
-          class="p-2 rounded-xl transition-all duration-300 group {$theme ===
+          class="p-2 rounded-xl transition-all duration-300 group hidden lg:block {$theme ===
           'dark'
             ? 'bg-white/5 hover:bg-white/10'
             : 'bg-gray-200/50 hover:bg-gray-300/70'}"
@@ -409,13 +411,13 @@
       </div>
     </div>
 
-    <div class="relative flex-1 overflow-hidden">
+    <div class="relative flex-1 overflow-hidden min-h-0">
       <div
         class="absolute inset-0 {$theme === 'dark'
           ? 'bg-gradient-to-b from-transparent to-black/5'
           : 'bg-gradient-to-b from-transparent to-gray-100/20'}"
       ></div>
-      <div class="h-full overflow-y-auto custom-scrollbar p-4 space-y-2">
+      <div class="h-full overflow-y-auto custom-scrollbar p-3 lg:p-4 space-y-2">
         {#if $loading}
           <div class="space-y-3 p-4">
             {#each Array(5) as _, i}
@@ -610,7 +612,11 @@
   </div>
 
   <!-- Main Content Panel -->
-  <div class="flex-1 flex flex-col min-w-0">
+  <div
+    class="flex-1 flex-col min-w-0 min-h-0 {selectedStudent
+      ? 'flex'
+      : 'hidden lg:flex'}"
+  >
     {#if !selectedStudent}
       <!-- Empty State - Enhanced -->
       <div
@@ -689,6 +695,29 @@
           <div class="flex items-start justify-between gap-6">
             <div class="flex-1">
               <div class="flex items-center gap-4 mb-4">
+                <button
+                  on:click={() => (selectedStudent = null)}
+                  class="lg:hidden p-2 rounded-xl transition-colors {$theme ===
+                  'dark'
+                    ? 'bg-white/5 hover:bg-white/10 text-white'
+                    : 'bg-gray-200/50 hover:bg-gray-300/70 text-gray-700'}"
+                  aria-label="Volver a la lista"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
                 <div
                   class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white bg-gradient-to-br from-purple-500 to-indigo-500 shadow-lg shadow-purple-500/30 animate-float"
                 >
