@@ -2,8 +2,10 @@
 require_once "cors.php";
 
 // Conexi贸n a BD
-require_once "../datos_conexion.php";
-    $mysqli = new mysqli($host,$user,$pass,$database);
+// Conexión a BD
+require_once "Database.php";
+    $db = Database::getInstance();
+    $mysqli = $db->getConnection();
     $datos=(Object)json_decode(file_get_contents("php://input"));
     $sql="select distinct nivel from estugrupos where asignacion='$datos->asignacion'"; 
     if ($datos->year==="")
@@ -16,4 +18,4 @@ require_once "../datos_conexion.php";
     $resultados=$result->fetch_all(MYSQLI_ASSOC);
     echo json_encode($resultados);
    
-    $mysqli->close();
+    // $mysqli->close();

@@ -1,8 +1,7 @@
 <?php
 require_once 'cors.php';
 
-// Conexi贸n a BD
-require_once "../datos_conexion.php";
+
 
 
 
@@ -29,26 +28,27 @@ if ($nivel === null || $numero === null || $asignacion === null || $year === nul
 
 if (!is_numeric($year)) {
     http_response_code(400);
-    echo json_encode(['error' => 'El a�o debe ser num�rico']);
+    echo json_encode(['error' => 'El ao debe ser numrico']);
     exit;
 }
 $year = (int)$year;
 
-// === Conexi�n con MySQLi ===
-require_once "../datos_conexion.php"; // Debe definir: $host, $user, $pass, $db
+// === Conexión con MySQLi ===
+require_once 'Database.php';
 
-$conexion = new mysqli($host, $user, $pass, $database);
+$db = Database::getInstance();
+$conexion = $db->getConnection();
 
 if ($conexion->connect_error) {
-    error_log("Error de conexi�n MySQLi: " . $conexion->connect_error);
+    error_log("Error de conexión MySQLi: " . $conexion->connect_error);
     http_response_code(500);
     echo json_encode(['error' => 'Error al conectar con la base de datos']);
     exit;
 }
 
-$conexion->set_charset("utf8mb4");
 
-// === 1. Consulta de �reas ===
+
+// === 1. Consulta de reas ===
 $sqlAreas = "
     SELECT 
         pac.abreviatura AS asignatura,
@@ -79,7 +79,7 @@ if (!$stmtAreas) {
     error_log("Error en prepare (�reas): " . $conexion->error);
     http_response_code(500);
     echo json_encode(['error' => 'Error al preparar la consulta de �reas']);
-    $conexion->close();
+    // $conexion->close();
     exit;
 }
 
@@ -90,7 +90,7 @@ if (!$stmtAreas->execute()) {
     http_response_code(500);
     echo json_encode(['error' => 'Error al ejecutar la consulta de �reas']);
     $stmtAreas->close();
-    $conexion->close();
+    // $conexion->close();
     exit;
 }
 
@@ -128,7 +128,7 @@ if (!$stmtEstudiantes) {
     error_log("Error en prepare (estudiantes): " . $conexion->error);
     http_response_code(500);
     echo json_encode(['error' => 'Error al preparar la consulta de estudiantes']);
-    $conexion->close();
+    // $conexion->close();
     exit;
 }
 
@@ -142,7 +142,7 @@ if (!$stmtEstudiantes->execute()) {
     http_response_code(500);
     echo json_encode(['error' => 'Error al ejecutar la consulta de estudiantes']);
     $stmtEstudiantes->close();
-    $conexion->close();
+    // $conexion->close();
     exit;
 }
 
@@ -154,7 +154,7 @@ while ($row = $resultEstudiantes->fetch_assoc()) {
 }
 $stmtEstudiantes->close();
 
-$conexion->close();
+// $conexion->close();
 
 // === Respuesta final ===
 echo json_encode([

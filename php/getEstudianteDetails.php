@@ -1,15 +1,15 @@
 <?php
 require_once 'cors.php';
-require_once "../datos_conexion.php";
+// Conexión a BD
+require_once 'Database.php';
 
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+$db = Database::getInstance();
 
-if ($mysqli->connect_error) {
-    echo json_encode(["error" => "Error de conexión: " . $mysqli->connect_error]);
+if ($db->getConnection()->connect_error) {
+    echo json_encode(["error" => "Error de conexión: " . $db->getConnection()->connect_error]);
     exit();
 }
+
 
 $input = json_decode(file_get_contents("php://input"), true);
 $estudianteId = $input['estudianteId'] ?? null;
@@ -81,9 +81,9 @@ $sql = "
     LIMIT 1;
 ";
 
-$stmt = $mysqli->prepare($sql);
+$stmt = $db->getConnection()->prepare($sql);
 if (!$stmt) {
-    echo json_encode(["error" => "Error al preparar la consulta: " . $mysqli->error]);
+    echo json_encode(["error" => "Error al preparar la consulta: " . $db->getConnection()->error]);
     exit();
 }
 
@@ -99,5 +99,5 @@ if ($result->num_rows > 0) {
 }
 
 $stmt->close();
-$mysqli->close();
+// $db->getConnection()->close();
 ?>

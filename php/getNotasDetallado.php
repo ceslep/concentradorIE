@@ -1,17 +1,15 @@
 <?php
-require_once "../datos_conexion.php";
-
 define('DEBUG_MODE', false); // Set to true to output SQL for debugging, false for normal operation
 
 require_once "cors.php";
+require_once "Database.php";
 
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
 
-
-$mysqli = new mysqli($host, $user, $pass, $database);
 $input_data = isset($GLOBALS['test_input_data']) ? $GLOBALS['test_input_data'] : file_get_contents("php://input");
 $datos = json_decode($input_data);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+
 
 function generateSQL($i)
 {
@@ -138,4 +136,4 @@ while ($dato = $result->fetch_assoc()) {
 $stmtNotas->close(); // Cerrar la segunda sentencia
 echo json_encode($datos);
 $result->free();
-$mysqli->close();
+// $mysqli->close();

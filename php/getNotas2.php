@@ -1,14 +1,15 @@
 <?php
 require_once "cors.php";
-require_once("../datos_conexion.php");
+// Conexión a BD
+require_once 'Database.php';
 
-$mysqli = new mysqli($host, $user, $pass, $database);
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
+
 if ($mysqli->connect_error) {
     die(json_encode(["error" => "Connection failed: " . $mysqli->connect_error]));
 }
 
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
 
 $input = file_get_contents("php://input");
 $datos = json_decode($input);
@@ -118,5 +119,5 @@ if ($stmt = $mysqli->prepare($sql)) {
     echo json_encode(["error" => $mysqli->error]);
 }
 
-$mysqli->close();
+// $mysqli->close();
 ?>

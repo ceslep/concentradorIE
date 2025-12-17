@@ -2,14 +2,12 @@
 require_once 'cors.php';
 
 // Conexi贸n a BD
-require_once "../datos_conexion.php";
+// Conexión a BD
+require_once 'Database.php';
 
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
 
-
-if ($mysqli->connect_error) {
     echo json_encode(["error" => "Error de conexión: " . $mysqli->connect_error]);
     exit();
 }
@@ -68,5 +66,5 @@ while ($row = $result->fetch_assoc()) {
 echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
 
 $stmt->close();
-$mysqli->close();
+// $mysqli->close();
 ?>

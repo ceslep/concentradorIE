@@ -4,13 +4,11 @@
 require_once 'cors.php';
 
 // Conexi贸n a BD
-require_once "../datos_conexion.php";
+// Conexión a BD
+require_once "Database.php";
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
 
-
-$mysqli = new mysqli($host, $user, $pass, $database);
-
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
 
 
 $sql = "Select * from  sedes";
@@ -29,4 +27,4 @@ while ($dato = $result->fetch_assoc()) {
 }
 echo json_encode($datos);
 $result->free();
-$mysqli->close();
+// $mysqli->close();

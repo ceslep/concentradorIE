@@ -3,11 +3,11 @@
 const DEBUG_MODE = false; // Set to true to enable debug output
 
 require_once "cors.php";
-
-    require_once("../datos_conexion.php");
+require_once "Database.php";
 
     // Establish database connection
-    $mysqli = new mysqli($host, $user, $pass, $database);
+    $db = Database::getInstance();
+    $mysqli = $db->getConnection();
 
     // Check for connection errors
     if ($mysqli->connect_error) {
@@ -15,7 +15,6 @@ require_once "cors.php";
         exit();
     }
 
-    $mysqli->set_charset('utf8');
 
     $input_data = json_decode(file_get_contents('php://input'));
 
@@ -52,14 +51,14 @@ require_once "cors.php";
         }
 
         echo json_encode(['sql' => $debug_sql]);
-        $mysqli->close();
+        // $mysqli->close();
         exit();
     }
 
     // Check if the statement preparation was successful
     if ($stmt === false) {
         echo json_encode(["error" => "Error al preparar la consulta: " . $mysqli->error]);
-        $mysqli->close();
+        // $mysqli->close();
         exit();
     }
 
@@ -79,5 +78,5 @@ require_once "cors.php";
 
     // Close statement and connection
     $stmt->close();
-    $mysqli->close();
+    // $mysqli->close();
 ?>

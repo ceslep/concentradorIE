@@ -1,13 +1,11 @@
 <?php
 
 require_once "cors.php";
+require_once "Database.php";
 
-require("../datos_conexion.php");
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
 
-
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
 
 if ($mysqli->connect_error) {
     http_response_code(500);
@@ -30,6 +28,6 @@ if ($result) {
     $result->free();
 }
 
-$mysqli->close();
+// $mysqli->close();
 
 echo json_encode($resultados);

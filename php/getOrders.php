@@ -1,12 +1,10 @@
 <?php
 require_once "cors.php";
+require_once "Database.php";
 
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
 
-require_once "../datos_conexion.php";
-
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
 
 // === Leer entrada ===
 $raw_input = file_get_contents("php://input");
@@ -29,13 +27,13 @@ if ($year === false || $nivel === false) {
 }
 
 // === Conexión ===
-$mysqli = new mysqli($host, $user, $pass, $database);
+// === Conexión (Reutilizada) ===
 if ($mysqli->connect_error) {
     http_response_code(500);
     echo json_encode(['error' => 'Error de conexión a la base de datos']);
     exit();
 }
-$mysqli->set_charset('utf8mb4');
+// $mysqli->set_charset('utf8mb4');
 
 // === Consulta segura con prepared statement ===
 $sql = "
@@ -66,4 +64,4 @@ while ($row = $result->fetch_assoc()) {
 echo json_encode($abreviaturas, JSON_UNESCAPED_UNICODE);
 
 $stmt->close();
-$mysqli->close();
+// $mysqli->close();

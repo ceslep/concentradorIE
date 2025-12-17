@@ -1,13 +1,14 @@
 <?php
 // Orígenes permitidos
+
+// Orígenes permitidos
 require_once 'cors.php';
+require_once 'Database.php';
 
 // Conexión a BD
-require_once "../datos_conexion.php";
+// (Handled by Database class)
 
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+$db = Database::getInstance();
 
 // 📥 Datos recibidos
 $datos = json_decode(file_get_contents("php://input"));
@@ -21,7 +22,7 @@ $YEAR       = $datos->year ?? null;
 // 1. Fetch todas las notas
 // ----------------------
 $all_grades = [];
-$stmt_grades = $mysqli->prepare("
+$stmt_grades = $db->query("
     SELECT estudiante, asignatura, valoracion, periodo 
     FROM notas 
     WHERE year = ? 
@@ -30,9 +31,8 @@ $stmt_grades = $mysqli->prepare("
         FROM estugrupos 
         WHERE nivel = ? AND numero = ? AND asignacion = ? AND year = ?
       )
-");
-$stmt_grades->bind_param("siiss", $YEAR, $nivel, $numero, $asignacion, $YEAR);
-$stmt_grades->execute();
+", "siiss", [$YEAR, $nivel, $numero, $asignacion, $YEAR]);
+
 $result_grades = $stmt_grades->get_result();
 
 while ($row = $result_grades->fetch_assoc()) {
@@ -43,7 +43,7 @@ $stmt_grades->close();
 // ----------------------
 // 2. Promedios por asignatura
 // ----------------------
-$stmt_avg_grades = $mysqli->prepare("
+$stmt_avg_grades = $db->query("
     SELECT estudiante, asignatura, AVG(valoracion) as valoracion 
     FROM notas 
     WHERE year = ? 
@@ -53,9 +53,8 @@ $stmt_avg_grades = $mysqli->prepare("
         WHERE nivel = ? AND numero = ? AND asignacion = ? AND year = ?
       )
     GROUP BY estudiante, asignatura
-");
-$stmt_avg_grades->bind_param("siiss", $YEAR, $nivel, $numero, $asignacion, $YEAR);
-$stmt_avg_grades->execute();
+", "siiss", [$YEAR, $nivel, $numero, $asignacion, $YEAR]);
+
 $result_avg_grades = $stmt_avg_grades->get_result();
 
 while ($row = $result_avg_grades->fetch_assoc()) {
@@ -91,9 +90,7 @@ if ($datos->year === $current_year) {
 }
 $sql1 .= " ORDER BY ordenar";
 
-$stmt_asignaturas = $mysqli->prepare($sql1);
-$stmt_asignaturas->bind_param("ssiss", $nivel, $numero, $asignacion, $datos->year, $datos->year);
-$stmt_asignaturas->execute();
+$stmt_asignaturas = $db->query($sql1, "ssiss", [$nivel, $numero, $asignacion, $datos->year, $datos->year]);
 $rasignaturas = $stmt_asignaturas->get_result();
 
 // ----------------------
@@ -134,9 +131,7 @@ if ($datos->year === $current_year) {
 }
 $sql2 .= " ORDER BY nombres2";
 
-$stmt_estudiantes = $mysqli->prepare($sql2);
-$stmt_estudiantes->bind_param("ssis", $nivel, $numero, $asignacion, $datos->year);
-$stmt_estudiantes->execute();
+$stmt_estudiantes = $db->query($sql2, "ssis", [$nivel, $numero, $asignacion, $datos->year]);
 $restudiantes = $stmt_estudiantes->get_result();
 
 $haye = false;
@@ -178,6 +173,7 @@ echo json_encode([
     "html" => $haye ? $html : ""
 ]);
 
-$rasignaturas->free();
-$restudiantes->free();
-$mysqli->close();
+$stmt_asignaturas->close();
+$stmt_estudiantes->close();
+// $db->close() is not needed/exposed, connection persists or closes on script end
+

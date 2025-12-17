@@ -2,10 +2,12 @@
 
 require_once "cors.php";
 require_once("../datos_conexion.php");
-$mysqli = new mysqli($host, $user, $pass, $database);
+require_once "Database.php";
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
+
 $datos = json_decode(file_get_contents("php://input"));
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+
 
 $sql = "select distinct year from estugrupos where year<>0 order by year desc";
 

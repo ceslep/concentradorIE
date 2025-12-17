@@ -4,12 +4,29 @@ require_once 'cors.php';
 // Conexi贸n a BD
 require_once "../datos_conexion.php";
 
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
 
 // Leer datos del cuerpo
 $input = json_decode(file_get_contents("php://input"), true);
+
+
+// Orígenes permitidos
+require_once 'cors.php';
+require_once 'Database.php';
+
+// Conexión a BD
+$db = Database::getInstance();
+
+// ────────────────
+// Orígenes permitidos (removed duplicate require)
+// ────────────────
+
+if ($db->getConnection()->connect_error) {
+    echo json_encode(['msg' => 'Error de conexión: ' . $db->getConnection()->connect_error]);
+    exit();
+}
+
+$db->getConnection()->set_charset('utf8');
+
 
 if (!empty($input['debug']) && $input['debug'] === true) {
     $DEBUG_MODE = true;
@@ -89,21 +106,24 @@ if ($DEBUG_MODE) {
 }
 
 // ────────────────
-// Ejecución normal (solo si NO está en modo debug)
+// Orígenes permitidos
+
 // ────────────────
+// Orígenes permitidos
+// (Already included above)
 
-require_once "../datos_conexion.php";
+// Conexión a BD
+// (Already initialized as $db)
 
-$mysqli = new mysqli($host, $user, $pass, $database);
-
-if ($mysqli->connect_error) {
-    echo json_encode(['msg' => 'Error de conexión: ' . $mysqli->connect_error]);
+if ($db->getConnection()->connect_error) {
+    echo json_encode(['msg' => 'Error de conexión: ' . $db->getConnection()->connect_error]);
     exit();
 }
 
+
 $mysqli->set_charset('utf8');
 
-$stmt = $mysqli->prepare($sqlTemplate);
+$stmt = $db->getConnection()->prepare($sqlTemplate);
 if (!$stmt) {
     echo json_encode(['msg' => 'Error al preparar la consulta: ' . $mysqli->error]);
     $mysqli->close();
@@ -115,7 +135,7 @@ $stmt->bind_param('sss', $estudiante, $year, $year);
 if (!$stmt->execute()) {
     echo json_encode(['msg' => 'Error al ejecutar la consulta: ' . $stmt->error]);
     $stmt->close();
-    $mysqli->close();
+    // $db->close(); // Not closing singleton
     exit();
 }
 
@@ -123,7 +143,7 @@ $result = $stmt->get_result();
 $data = $result->fetch_all(MYSQLI_ASSOC);
 
 $stmt->close();
-$mysqli->close();
+// $db->close();
 
 echo json_encode($data, JSON_UNESCAPED_UNICODE);
 ?>

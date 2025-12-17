@@ -1,11 +1,11 @@
 <?php
 require_once 'cors.php';
+require_once 'Database.php';
 
-// Conexi贸n a BD
-require_once "../datos_conexion.php";
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+// Conexión a BD
+$db = Database::getInstance();
+$db->getConnection()->query("SET NAMES utf8");
+$db->getConnection()->set_charset('utf8');
 
 $input = json_decode(file_get_contents('php://input'), true);
 
@@ -90,16 +90,19 @@ if ($DEBUG_MODE) {
 // ───────────────────────────────
 // Ejecución normal (con consultas preparadas)
 // ───────────────────────────────
-require_once "../datos_conexion.php";
 
-$mysqli = new mysqli($host, $user, $pass, $database);
+// ───────────────────────────────
+// Ejecución normal (con consultas preparadas)
+// ───────────────────────────────
+// (Connection already established as $db)
 
-if ($mysqli->connect_error) {
-    echo json_encode(['msg' => 'Error de conexión: ' . $mysqli->connect_error]);
+if ($db->getConnection()->connect_error) {
+    echo json_encode(['msg' => 'Error de conexión: ' . $db->getConnection()->connect_error]);
     exit();
 }
 
-$mysqli->set_charset('utf8');
+
+
 
 // Preparar la consulta según el caso
 if ($ind !== null) {
@@ -109,7 +112,7 @@ if ($ind !== null) {
         AND estugrupos.year = ?
         ORDER BY convivencia.fechahora DESC
     ";
-    $stmt = $mysqli->prepare($sql);
+    $stmt = $db->getConnection()->prepare($sql);
     $stmt->bind_param('sss', $ind, $year, $year);
 } else {
     $sql = $sqlBase . "
@@ -118,20 +121,20 @@ if ($ind !== null) {
         AND estugrupos.year = ?
         ORDER BY convivencia.fechahora DESC
     ";
-    $stmt = $mysqli->prepare($sql);
+    $stmt = $db->getConnection()->prepare($sql);
     $stmt->bind_param('sss', $estudiante, $year, $year);
 }
 
 if (!$stmt) {
     echo json_encode(['msg' => 'Error al preparar la consulta: ' . $mysqli->error]);
-    $mysqli->close();
+    // $db->getConnection()->close();
     exit();
 }
 
 if (!$stmt->execute()) {
     echo json_encode(['msg' => 'Error al ejecutar: ' . $stmt->error]);
     $stmt->close();
-    $mysqli->close();
+    // $db->getConnection()->close();
     exit();
 }
 
@@ -148,7 +151,7 @@ foreach ($datos as &$fila) {
 }
 
 $stmt->close();
-$mysqli->close();
+// $db->getConnection()->close();
 
 echo json_encode($datos, JSON_UNESCAPED_UNICODE);
 ?>

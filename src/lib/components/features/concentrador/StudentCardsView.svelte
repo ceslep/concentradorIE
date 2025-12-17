@@ -81,7 +81,7 @@
 
   async function handleOpenNotasDetalle(
     student: EstudianteRow,
-    asignatura: AsignaturaNota
+    asignatura: AsignaturaNota,
   ) {
     const p = get(parsed);
     const currentConcentradorType = get(concentradorType);
@@ -92,7 +92,7 @@
         const parsedAsignaturas = p as ConcentradorParsed;
         if (parsedAsignaturas.asignaturas) {
           const foundItem = parsedAsignaturas.asignaturas.find(
-            (item: Asignatura) => item.abreviatura === asignatura.asignatura
+            (item: Asignatura) => item.abreviatura === asignatura.asignatura,
           );
           if (foundItem) {
             itemNombre = foundItem.nombre;
@@ -102,7 +102,7 @@
         const parsedAreas = p as ConcentradorAreasParsed;
         if (parsedAreas.areas) {
           const foundItem = parsedAreas.areas.find(
-            (item: Area) => item.abreviatura === asignatura.asignatura
+            (item: Area) => item.abreviatura === asignatura.asignatura,
           );
           if (foundItem) {
             itemNombre = foundItem.nombre;
@@ -155,7 +155,7 @@
     estId: string,
     nom: string,
     asig: string,
-    per: string
+    per: string,
   ) {
     dispatch("openInasistencias", {
       estudianteId: estId,
@@ -180,7 +180,7 @@
 
   async function fetchDetailsForSelectedStudent(
     studentId: string,
-    year: string
+    year: string,
   ) {
     loadingStudentDetails = true;
     studentDetailsError = null;
@@ -200,7 +200,7 @@
 
   function getGradeForPeriod(
     asignatura: AsignaturaNota,
-    periodoName: string
+    periodoName: string,
   ): number | string {
     const period = asignatura.periodos.find((p) => p.periodo === periodoName);
     return period ? period.valoracion.toFixed(2) : "-";
@@ -246,21 +246,6 @@
     }
   }
 
-  function getPeriodoNameClasses(periodoName: string): string {
-    switch (periodoName.toUpperCase()) {
-      case "UNO":
-        return "text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-400";
-      case "DOS":
-        return "text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-400";
-      case "TRES":
-        return "text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-400";
-      case "CUATRO":
-        return "text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-400";
-      default:
-        return "text-slate-500";
-    }
-  }
-
   function calculateDefinitiva(asignatura: AsignaturaNota): number {
     if (!asignatura.periodos || asignatura.periodos.length === 0) return 0;
     const sum = asignatura.periodos.reduce((acc, p) => acc + p.valoracion, 0);
@@ -288,6 +273,21 @@
     if (definitive >= 3.0)
       return { text: "Bueno", class: "bg-blue-500/20 text-blue-300" };
     return { text: "Requiere atención", class: "bg-rose-500/20 text-rose-300" };
+  }
+
+  function getPeriodoNameClasses(periodoName: string): string {
+    switch (periodoName.toUpperCase()) {
+      case "UNO":
+        return "text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-400";
+      case "DOS":
+        return "text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-400";
+      case "TRES":
+        return "text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-400";
+      case "CUATRO":
+        return "text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-400";
+      default:
+        return "text-slate-500";
+    }
   }
 </script>
 
@@ -821,7 +821,7 @@
           {:else if selectedStudentDetails}
             <!-- Info Cards Grid -->
             <div
-              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
             >
               {#each [{ label: "Nivel Académico", value: selectedStudentDetails.nivel, icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", color: "from-blue-500 to-cyan-400" }, { label: "Grado", value: selectedStudentDetails.grado, icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2", color: "from-purple-500 to-violet-400" }, { label: "Acudiente", value: selectedStudentDetails.acudiente, icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", color: "from-emerald-500 to-green-400" }, { label: "Contacto", value: selectedStudentDetails.telefono1 || "N/A", icon: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z", color: "from-amber-500 to-yellow-400" }] as item, i}
                 <div
@@ -965,13 +965,14 @@
             </div>
 
             <!-- Subjects Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {#if selectedStudent.asignaturas && selectedStudent.asignaturas.length > 0}
                 {#each selectedStudent.asignaturas as asignatura, i (asignatura.asignatura)}
                   <!-- Calculate values once for each asignatura -->
                   {@const definitive = calculateDefinitiva(asignatura)}
                   {@const statusInfo = getStatusInfo(definitive)}
                   {@const progressColor = getProgressBarColor(definitive)}
+
                   <div
                     class="backdrop-blur-sm rounded-2xl p-5 border hover:border-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 group relative overflow-hidden {$theme ===
                     'dark'
@@ -1006,7 +1007,7 @@
                           on:click={() =>
                             handleOpenNotasDetalle(
                               selectedStudent!,
-                              asignatura
+                              asignatura,
                             )}
                           aria-label="Ver detalles"
                         >
@@ -1030,36 +1031,38 @@
                         {#each $selectedPeriodos as periodo, j}
                           {@const grade = getGradeForPeriod(
                             asignatura,
-                            periodo
+                            periodo,
                           )}
                           {@const cardClasses = getPeriodCardClasses(periodo)}
                           {@const textClass = getGradeTextClass(grade)}
                           {@const periodoClasses =
                             getPeriodoNameClasses(periodo)}
-                          <div
-                            class="flex-1 min-w-[70px]"
-                            in:scale={{ delay: j * 100 }}
-                          >
+                          {#if periodo !== "DEF"}
                             <div
-                              class="flex flex-col items-center {cardClasses} rounded-xl p-3 border backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                              class="flex-1 min-w-[70px]"
+                              in:scale={{ delay: j * 100 }}
                             >
-                              <span
-                                class="text-xs font-bold uppercase tracking-wider mb-1 {periodoClasses}"
+                              <div
+                                class="flex flex-col items-center {cardClasses} rounded-xl p-3 border backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
                               >
-                                {periodo}
-                              </span>
-                              <span class="text-xl font-bold {textClass}">
-                                {grade}
-                              </span>
+                                <span
+                                  class="text-xs font-bold uppercase tracking-wider mb-1 {periodoClasses}"
+                                >
+                                  {periodo}
+                                </span>
+                                <span class="text-xl font-bold {textClass}">
+                                  {grade}
+                                </span>
+                              </div>
                             </div>
-                          </div>
+                          {/if}
                         {/each}
                       </div>
 
                       <!-- Definitive Grade -->
                       <div
                         class="{getDefinitiveCardStyles(
-                          definitive
+                          definitive,
                         )} rounded-xl p-4 text-center transition-all duration-500 hover:scale-105"
                       >
                         <div
@@ -1099,7 +1102,7 @@
                               class="h-full rounded-full transition-all duration-1000 ease-out {progressColor}"
                               style="width: {Math.min(
                                 (definitive / 5) * 100,
-                                100
+                                100,
                               )}%"
                             ></div>
                           </div>

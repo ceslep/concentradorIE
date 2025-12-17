@@ -24,12 +24,13 @@ function translateMonthNames($month) {
     return $monthNames[$month] ?? $month;
 }
 
-$mysqli = new mysqli($host, $user, $pass, $database);
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
 if ($mysqli->connect_error) {
     echo json_encode(["error" => "Conexión fallida: " . $mysqli->connect_error]);
     exit();
 }
-$mysqli->set_charset("utf8");
+
 
 // Parámetros por defecto en modo DEBUG
 if (DEBUG_MODE) {
@@ -110,5 +111,5 @@ while ($row = $result->fetch_assoc()) {
 echo json_encode($datos, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
 
 $stmt->close();
-$mysqli->close();
+// $mysqli->close();
 ?>

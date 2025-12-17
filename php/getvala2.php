@@ -20,13 +20,17 @@ $debug_sqls = [];
 $debug_results = null;
 
 // === Conexión ===
-$mysqli = new mysqli($host, $user, $pass, $database);
+// === Conexión ===
+require_once "Database.php";
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
+
 if ($mysqli->connect_error) {
     http_response_code(500);
     echo json_encode(['error' => 'Error de conexión a la base de datos']);
     exit();
 }
-$mysqli->set_charset('utf8mb4');
+
 
 // === Obtener y validar entrada ===
 if ($debug) {
@@ -189,7 +193,7 @@ if ($debug) {
 }
 
 $stmt->close();
-$mysqli->close();
+// $mysqli->close();
 
 // === Función de interpolación (solo para debug) ===
 function interpolate_sql($sql, $params) {

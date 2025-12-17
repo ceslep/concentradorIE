@@ -1,11 +1,12 @@
 <?php
 require_once "cors.php";
 
-require_once("../datos_conexion.php");
-$mysqli = new mysqli($host, $user, $pass, $database);
+require_once("Database.php");
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
 $datos = (object) json_decode(file_get_contents("php://input"));
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+
+
 
 function notas()
 {
@@ -267,6 +268,7 @@ if (empty($Datos)) {
     $sql .= " and (estugrupos.asignacion='$datos->asignacion')\n";
     $sql .= " and estugrupos.activo='S'\n";
     $sql .= " order by nombres\n";
+  //  echo json_encode(array("sql" => $sql));exit(0);
     /* if ($datos->docente = "24337859") {
         echo json_encode(array("sql" => $sql));
         exit(0);
@@ -280,7 +282,7 @@ if (empty($Datos)) {
     }
 
 } else {
-    //echo json_encode(array("datos"=>$Datos,"sql"=>$sql));
+   // echo json_encode(array("datos"=>$Datos,"sql"=>$sql));
     $k = 0;
     $estus = "";
     if (!empty($estudiantesNo)) {
@@ -304,7 +306,7 @@ if (empty($Datos)) {
         $sql .= " and estugrupos.activo='S'\n";
         $sql .= " and estugrupos.estudiante  in ($estus)";
         $sql .= " order by nombres\n";
-        //  echo json_encode(array("sql"=>$sql));exit(0);
+     //     echo json_encode(array("sql"=>$sql));exit(0);
 
         $result = $mysqli->query($sql);
         $DatosNo = $result->fetch_all(MYSQLI_ASSOC);
@@ -331,4 +333,4 @@ echo json_encode(array("sql"=>$sql,"datos"=>count($Datos)));exit(0);
 echo json_encode($Datos);*/
 
 $result->free();
-$mysqli->close();
+// $mysqli->close();

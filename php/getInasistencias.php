@@ -2,17 +2,16 @@
 require_once 'cors.php';
 
 // Conexi贸n a BD
-require_once "../datos_conexion.php";
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+// Conexión a BD
+require_once 'Database.php';
 
-if ($mysqli->connect_error) {
-    echo json_encode(["error" => "Error de conexión: " . $mysqli->connect_error]);
+$db = Database::getInstance();
+
+if ($db->getConnection()->connect_error) {
+    echo json_encode(["error" => "Error de conexión: " . $db->getConnection()->connect_error]);
     exit();
 }
 
-$mysqli->set_charset("utf8");
 
 // Leer datos del cuerpo
 $input = json_decode(file_get_contents("php://input"), true);
@@ -37,7 +36,7 @@ $anio_actual = date("Y");
 // Si es nivel < 6, obtenemos el docente asignado
 $docente_cond = "";
 if ($nivel < 6) {
-    $stmt_doc = $mysqli->prepare("
+    $stmt_doc = $db->getConnection()->prepare("
         SELECT DISTINCT aa.docente
         FROM asignacion_asignaturas aa
         INNER JOIN docentes d ON aa.docente = d.identificacion
@@ -122,9 +121,9 @@ if (DEBUG_MODE) {
 }
 
 // Preparar y ejecutar
-$stmt = $mysqli->prepare($sql);
+$stmt = $db->getConnection()->prepare($sql);
 if (!$stmt) {
-    echo json_encode(["error" => "Error en la consulta: " . $mysqli->error]);
+    echo json_encode(["error" => "Error en la consulta: " . $db->getConnection()->error]);
     exit();
 }
 
@@ -137,5 +136,5 @@ $datos = $result->fetch_all(MYSQLI_ASSOC);
 echo json_encode($datos, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
 
 $stmt->close();
-$mysqli->close();
+// $db->getConnection()->close();
 ?>

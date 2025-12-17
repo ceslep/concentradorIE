@@ -23,9 +23,10 @@ function interpolate_sql($sql, $params) {
 
 $debug = false; // Set to true for debugging, false for production
 
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+require_once "Database.php";
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
+
 
 $datos = (object)json_decode(file_get_contents("php://input"));
 
@@ -248,4 +249,4 @@ if ($debug) {
     echo json_encode($datosRedondeados);
     $result->free();
 }
-$mysqli->close();
+// $mysqli->close();

@@ -2,16 +2,16 @@
 const DEBUG_MODE = true;
 
 require_once "cors.php";
+require_once "Database.php";
 
+$db = Database::getInstance();
+$mysqli = $db->getConnection();
 
-require_once("../datos_conexion.php");
-
-$mysqli = new mysqli($host, $user, $pass, $database);
 if ($mysqli->connect_error) {
     echo json_encode(["error" => "Conexión fallida: " . $mysqli->connect_error]);
     exit();
 }
-$mysqli->set_charset("utf8");
+
 
 // Parámetros por defecto en modo DEBUG
 if (DEBUG_MODE) {
@@ -134,5 +134,5 @@ while ($row = $result->fetch_assoc()) {
 echo json_encode($datos, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
 
 $stmt->close();
-$mysqli->close();
+// $mysqli->close();
 ?>

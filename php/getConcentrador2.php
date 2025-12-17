@@ -1,11 +1,11 @@
 <?php
-require_once 'cors.php';
 
-// Conexi贸n a BD
-require_once "../datos_conexion.php";
-$mysqli = new mysqli($host, $user, $pass, $database);
-$mysqli->query("SET NAMES utf8");
-$mysqli->set_charset('utf8');
+// Conexión a BD
+require_once 'cors.php';
+require_once 'Database.php';
+
+$db = Database::getInstance();
+
 
 // 📥 Datos recibidos
 $datos = json_decode(file_get_contents("php://input"));
@@ -50,9 +50,9 @@ if ($YEAR === $current_year) {
 }
 $sql1 .= " ORDER BY ordenar";
 
-$stmt_asignaturas = $mysqli->prepare($sql1);
-$stmt_asignaturas->bind_param("ssiss", $nivel, $numero, $asignacion, $YEAR, $YEAR);
-$stmt_asignaturas->execute();
+$stmt_asignaturas = $db->query($sql1, "ssiss", [$nivel, $numero, $asignacion, $YEAR, $YEAR]);
+// $stmt_asignaturas->bind_param("ssiss", $nivel, $numero, $asignacion, $YEAR, $YEAR);
+// $stmt_asignaturas->execute();
 $rasignaturas = $stmt_asignaturas->get_result();
 
 $array_asignaturas_data = [];
@@ -76,14 +76,14 @@ if ($activos || $YEAR === $current_year) { // Use $activos from payload
 }
 $sql2 .= " ORDER BY nombres";
 
-$stmt_estudiantes = $mysqli->prepare($sql2);
-$stmt_estudiantes->bind_param("ssis", $nivel, $numero, $asignacion, $YEAR);
-$stmt_estudiantes->execute();
+$stmt_estudiantes = $db->query($sql2, "ssis", [$nivel, $numero, $asignacion, $YEAR]);
+// $stmt_estudiantes->bind_param("ssis", $nivel, $numero, $asignacion, $YEAR);
+// $stmt_estudiantes->execute();
 $restudiantes = $stmt_estudiantes->get_result();
 
 // Prepare statements for grades and average grades to be used inside the loop
-$stmt_grades = $mysqli->prepare("SELECT asignatura, valoracion, periodo FROM notas WHERE year = ? AND estudiante = ?");
-$stmt_avg_grades = $mysqli->prepare("SELECT asignatura, AVG(valoracion) as valoracion FROM notas WHERE year = ? AND estudiante = ? GROUP BY asignatura");
+$stmt_grades = $db->getConnection()->prepare("SELECT asignatura, valoracion, periodo FROM notas WHERE year = ? AND estudiante = ?");
+$stmt_avg_grades = $db->getConnection()->prepare("SELECT asignatura, AVG(valoracion) as valoracion FROM notas WHERE year = ? AND estudiante = ? GROUP BY asignatura");
 
 while ($estudiante_row = $restudiantes->fetch_assoc()) {
     $estudianteId = $estudiante_row['estudiante'];
@@ -141,7 +141,7 @@ while ($estudiante_row = $restudiantes->fetch_assoc()) {
 $stmt_grades->close();
 $stmt_avg_grades->close();
 $restudiantes->free();
-$mysqli->close();
+// $db->getConnection()->close();
 
 echo json_encode($response);
 ?>
