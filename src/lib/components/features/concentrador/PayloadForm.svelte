@@ -108,7 +108,7 @@
             $payload.periodo = savedPayload.periodo;
           } else {
             const selectedPeriod = periods.find(
-              (p) => p.selected === "selected"
+              (p) => p.selected === "selected",
             );
             if (selectedPeriod) {
               $payload.periodo = selectedPeriod.nombre;
@@ -163,7 +163,7 @@
           Array.isArray(savedPayload.selectedPeriodos)
         ) {
           $selectedPeriodos = savedPayload.selectedPeriodos.filter(
-            (p: string) => allPeriods.includes(p)
+            (p: string) => allPeriods.includes(p),
           );
         }
 
@@ -192,8 +192,8 @@
       const uniqueNiveles = [
         ...new Set(
           selectedSede.grados.map(
-            (g: { nivel: string; numero: string }) => g.nivel
-          )
+            (g: { nivel: string; numero: string }) => g.nivel,
+          ),
         ),
       ];
       niveles = uniqueNiveles;
@@ -211,7 +211,7 @@
     if (selectedSede) {
       const filteredNumeros = selectedSede.grados
         .filter(
-          (g: { nivel: string; numero: string }) => g.nivel === $payload.nivel
+          (g: { nivel: string; numero: string }) => g.nivel === $payload.nivel,
         )
         .map((g: { nivel: string; numero: string }) => g.numero);
       numeros = filteredNumeros;
@@ -239,29 +239,53 @@
 </script>
 
 <div
-  class="w-full max-w-full mx-auto font-sans"
+  class="w-full max-w-full mx-auto font-sans payload-form-container"
   style="font-family: 'Inter', sans-serif;"
 >
   <div
-    class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300"
+    class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-gray-200/50 dark:border-gray-700/50 overflow-hidden transition-all duration-300 cyber-border-form relative"
   >
-    <div class="p-3">
+    <!-- Decorative gradient overlay -->
+    <div
+      class="absolute inset-0 opacity-30 dark:opacity-20 pointer-events-none"
+    >
       <div
-        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3"
+        class="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-transparent blur-3xl animate-pulse"
+      ></div>
+      <div
+        class="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-pink-500/20 via-purple-500/20 to-transparent blur-3xl animate-pulse"
+        style="animation-delay: 1s;"
+      ></div>
+    </div>
+
+    <!-- Subtle top gradient line -->
+    <div
+      class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/60 to-transparent"
+    ></div>
+
+    <div class="p-4 relative z-10">
+      <div
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4"
       >
         <!-- Sede -->
-        <div class="flex flex-col gap-1.5 group">
+        <div
+          class="flex flex-col gap-2 group form-field-animated"
+          style="animation-delay: 0ms;"
+        >
           <label
             for="fld-asignacion"
-            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 group-focus-within:bg-gradient-to-r group-focus-within:from-indigo-600 group-focus-within:to-purple-600 dark:group-focus-within:from-indigo-400 dark:group-focus-within:to-purple-400 group-focus-within:bg-clip-text group-focus-within:text-transparent transition-all duration-300"
           >
-            <span class="material-symbols-rounded text-base">business</span>
+            <span
+              class="material-symbols-rounded text-base drop-shadow-sm group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400"
+              >business</span
+            >
             Sede
           </label>
           <div class="relative">
             <select
               id="fld-asignacion"
-              class="w-full appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.Asignacion}
               on:change={() => {
                 updateNiveles();
@@ -274,7 +298,7 @@
               {/each}
             </select>
             <div
-              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
             >
               <span class="material-symbols-rounded text-xl">expand_more</span>
             </div>
@@ -282,18 +306,24 @@
         </div>
 
         <!-- Nivel -->
-        <div class="flex flex-col gap-1.5 group">
+        <div
+          class="flex flex-col gap-2 group form-field-animated"
+          style="animation-delay: 50ms;"
+        >
           <label
             for="fld-nivel"
-            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 group-focus-within:bg-gradient-to-r group-focus-within:from-indigo-600 group-focus-within:to-purple-600 dark:group-focus-within:from-indigo-400 dark:group-focus-within:to-purple-400 group-focus-within:bg-clip-text group-focus-within:text-transparent transition-all duration-300"
           >
-            <span class="material-symbols-rounded text-base">school</span>
+            <span
+              class="material-symbols-rounded text-base drop-shadow-sm group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400"
+              >school</span
+            >
             Nivel
           </label>
           <div class="relative">
             <select
               id="fld-nivel"
-              class="w-full h-8 appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.nivel}
               on:change={() => {
                 updateNumeros();
@@ -306,7 +336,7 @@
               {/each}
             </select>
             <div
-              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
             >
               <span class="material-symbols-rounded text-xl">expand_more</span>
             </div>
@@ -314,18 +344,24 @@
         </div>
 
         <!-- Número -->
-        <div class="flex flex-col gap-1.5 group">
+        <div
+          class="flex flex-col gap-2 group form-field-animated"
+          style="animation-delay: 100ms;"
+        >
           <label
             for="fld-numero"
-            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 group-focus-within:bg-gradient-to-r group-focus-within:from-indigo-600 group-focus-within:to-purple-600 dark:group-focus-within:from-indigo-400 dark:group-focus-within:to-purple-400 group-focus-within:bg-clip-text group-focus-within:text-transparent transition-all duration-300"
           >
-            <span class="material-symbols-rounded text-base">numbers</span>
+            <span
+              class="material-symbols-rounded text-base drop-shadow-sm group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400"
+              >numbers</span
+            >
             Número
           </label>
           <div class="relative">
             <select
               id="fld-numero"
-              class="w-full h-8 appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.numero}
               on:change={() => loadConcentradorData()}
               {disabled}
@@ -335,7 +371,7 @@
               {/each}
             </select>
             <div
-              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
             >
               <span class="material-symbols-rounded text-xl">expand_more</span>
             </div>
@@ -343,12 +379,16 @@
         </div>
 
         <!-- Periodo -->
-        <div class="flex flex-col gap-1.5 group">
+        <div
+          class="flex flex-col gap-2 group form-field-animated"
+          style="animation-delay: 150ms;"
+        >
           <label
             for="fld-periodo"
-            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 group-focus-within:bg-gradient-to-r group-focus-within:from-indigo-600 group-focus-within:to-purple-600 dark:group-focus-within:from-indigo-400 dark:group-focus-within:to-purple-400 group-focus-within:bg-clip-text group-focus-within:text-transparent transition-all duration-300"
           >
-            <span class="material-symbols-rounded text-base"
+            <span
+              class="material-symbols-rounded text-base drop-shadow-sm group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400"
               >calendar_month</span
             >
             Periodo
@@ -356,7 +396,7 @@
           <div class="relative">
             <select
               id="fld-periodo"
-              class="w-full h-8 appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.periodo}
               on:change={() => loadConcentradorData()}
               {disabled}
@@ -366,7 +406,7 @@
               {/each}
             </select>
             <div
-              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
             >
               <span class="material-symbols-rounded text-xl">expand_more</span>
             </div>
@@ -374,12 +414,16 @@
         </div>
 
         <!-- Año -->
-        <div class="flex flex-col gap-1.5 group">
+        <div
+          class="flex flex-col gap-2 group form-field-animated"
+          style="animation-delay: 200ms;"
+        >
           <label
             for="fld-year"
-            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 group-focus-within:bg-gradient-to-r group-focus-within:from-indigo-600 group-focus-within:to-purple-600 dark:group-focus-within:from-indigo-400 dark:group-focus-within:to-purple-400 group-focus-within:bg-clip-text group-focus-within:text-transparent transition-all duration-300"
           >
-            <span class="material-symbols-rounded text-base"
+            <span
+              class="material-symbols-rounded text-base drop-shadow-sm group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400"
               >calendar_today</span
             >
             Año
@@ -387,7 +431,7 @@
           <div class="relative">
             <select
               id="fld-year"
-              class="w-full h-8 appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.year}
               on:change={() => loadConcentradorData()}
               {disabled}
@@ -397,7 +441,7 @@
               {/each}
             </select>
             <div
-              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
             >
               <span class="material-symbols-rounded text-xl">expand_more</span>
             </div>
@@ -405,12 +449,20 @@
         </div>
 
         <!-- Activos -->
-        <div class="flex flex-col gap-1.5 group">
+        <div
+          class="flex flex-col gap-2 group form-field-animated"
+          style="animation-delay: 250ms;"
+        >
           <label
             for="fld-activos"
-            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
+            class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 group-focus-within:bg-gradient-to-r group-focus-within:from-indigo-600 group-focus-within:to-purple-600 dark:group-focus-within:from-indigo-400 dark:group-focus-within:to-purple-400 group-focus-within:bg-clip-text group-focus-within:text-transparent transition-all duration-300"
           >
-            <span class="material-symbols-rounded text-base">
+            <span
+              class="material-symbols-rounded text-base drop-shadow-sm transition-all duration-300 {activosString ===
+              'true'
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-gray-500 dark:text-gray-500'}"
+            >
               {activosString === "true" ? "toggle_on" : "toggle_off"}
             </span>
             Activos
@@ -418,7 +470,7 @@
           <div class="relative">
             <select
               id="fld-activos"
-              class="w-full h-8 appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+              class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               value={activosString}
               on:change={(e) => {
                 const target = e.target as HTMLSelectElement;
@@ -431,7 +483,7 @@
               <option value="false">No</option>
             </select>
             <div
-              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"
+              class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors"
             >
               <span class="material-symbols-rounded text-xl">expand_more</span>
             </div>
@@ -439,24 +491,29 @@
         </div>
 
         <!-- Toggle Periodos Button -->
-        <div class="flex flex-col gap-1.5 group">
+        <div
+          class="flex flex-col gap-2 group form-field-animated"
+          style="animation-delay: 300ms;"
+        >
           <label
             for="btn-toggle-periodos"
-            class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-colors"
+            class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 transition-colors"
           >
-            <span class="material-symbols-rounded text-base">tune</span>
+            <span class="material-symbols-rounded text-base drop-shadow-sm"
+              >tune</span
+            >
             Periodos
           </label>
           <button
             id="btn-toggle-periodos"
             type="button"
             on:click={toggleShowPeriodos}
-            class="w-full h-8 appearance-none bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-between gap-2"
+            class="w-full appearance-none bg-gradient-to-r from-indigo-500/90 to-purple-500/90 hover:from-indigo-600 hover:to-purple-600 border-2 border-indigo-400/50 dark:border-indigo-500/50 text-white text-xs font-bold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-indigo-500/30 flex items-center justify-between gap-2 active:scale-95 toggle-glow"
             {disabled}
           >
             <span>{$showPeriodos ? "Ocultar" : "Mostrar"}</span>
             <span
-              class="material-symbols-rounded text-base transition-transform duration-200 {$showPeriodos
+              class="material-symbols-rounded text-base transition-transform duration-300 {$showPeriodos
                 ? 'rotate-180'
                 : ''}"
             >
@@ -469,20 +526,23 @@
       <!-- Sección de selección de periodos -->
       {#if $showPeriodos}
         <div
-          class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700"
-          transition:slide={{ duration: 200 }}
+          class="mt-4 pt-4 border-t-2 border-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20"
+          transition:slide={{ duration: 300 }}
         >
           <h3
-            class="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"
+            class="text-sm font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-4 flex items-center gap-2"
           >
-            <span class="material-symbols-rounded text-indigo-500"
+            <span
+              class="material-symbols-rounded text-indigo-500 dark:text-indigo-400 drop-shadow-sm"
               >checklist</span
             >
             Seleccionar Periodos
           </h3>
           <div class="flex flex-wrap gap-3">
             {#each allPeriods as p (p)}
-              <label class="relative cursor-pointer group">
+              <label
+                class="relative cursor-pointer group periodo-badge-wrapper"
+              >
                 <input
                   type="checkbox"
                   checked={$selectedPeriodos.includes(p)}
@@ -490,10 +550,26 @@
                   class="peer sr-only"
                 />
                 <div
-                  class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium transition-all duration-200
-                            peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:text-indigo-600
-                            dark:peer-checked:bg-indigo-900/20 dark:peer-checked:border-indigo-500 dark:peer-checked:text-indigo-400
-                            group-hover:border-indigo-300 dark:group-hover:border-indigo-700"
+                  class="px-4 py-2 rounded-xl border-2 font-bold text-xs transition-all duration-300 transform
+                            bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-sm
+                            border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400
+                            peer-checked:scale-105
+                            {p === 'UNO'
+                    ? 'peer-checked:bg-gradient-to-br peer-checked:from-blue-500 peer-checked:to-blue-600 peer-checked:border-blue-400 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-blue-500/40 periodo-glow-blue'
+                    : ''}
+                            {p === 'DOS'
+                    ? 'peer-checked:bg-gradient-to-br peer-checked:from-green-500 peer-checked:to-green-600 peer-checked:border-green-400 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-green-500/40 periodo-glow-green'
+                    : ''}
+                            {p === 'TRES'
+                    ? 'peer-checked:bg-gradient-to-br peer-checked:from-yellow-500 peer-checked:to-yellow-600 peer-checked:border-yellow-400 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-yellow-500/40 periodo-glow-yellow'
+                    : ''}
+                            {p === 'CUATRO'
+                    ? 'peer-checked:bg-gradient-to-br peer-checked:from-purple-500 peer-checked:to-purple-600 peer-checked:border-purple-400 peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-purple-500/40 periodo-glow-purple'
+                    : ''}
+                            {p === 'DEF'
+                    ? 'peer-checked:bg-gradient-to-br peer-checked:from-indigo-600 peer-checked:to-indigo-700 peer-checked:border-indigo-400 peer-checked:text-white peer-checked:shadow-xl peer-checked:shadow-indigo-500/50 periodo-glow-def font-extrabold'
+                    : ''}
+                            group-hover:scale-105 group-hover:border-indigo-300 dark:group-hover:border-indigo-600"
                 >
                   {p}
                 </div>
@@ -505,3 +581,111 @@
     </div>
   </div>
 </div>
+
+<style>
+  /* Cyber border glow effect for form container */
+  .cyber-border-form {
+    position: relative;
+  }
+
+  .cyber-border-form::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 1rem;
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.4),
+      rgba(168, 85, 247, 0.3),
+      rgba(236, 72, 153, 0.3),
+      rgba(99, 102, 241, 0.4)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  /* Form field entrance animations */
+  @keyframes slideInField {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .form-field-animated {
+    animation: slideInField 0.5s ease-out backwards;
+  }
+
+  /* Select glow effect on focus */
+  .select-glow:focus {
+    box-shadow:
+      0 0 0 3px rgba(99, 102, 241, 0.1),
+      0 4px 12px rgba(99, 102, 241, 0.15);
+  }
+
+  /* Toggle button glow */
+  .toggle-glow:hover {
+    box-shadow:
+      0 0 20px rgba(99, 102, 241, 0.4),
+      0 0 40px rgba(168, 85, 247, 0.2);
+  }
+
+  /* Periodo badge glow effects */
+  .periodo-glow-blue:hover {
+    box-shadow:
+      0 0 20px rgba(59, 130, 246, 0.6),
+      0 0 30px rgba(59, 130, 246, 0.3);
+  }
+
+  .periodo-glow-green:hover {
+    box-shadow:
+      0 0 20px rgba(34, 197, 94, 0.6),
+      0 0 30px rgba(34, 197, 94, 0.3);
+  }
+
+  .periodo-glow-yellow:hover {
+    box-shadow:
+      0 0 20px rgba(234, 179, 8, 0.6),
+      0 0 30px rgba(234, 179, 8, 0.3);
+  }
+
+  .periodo-glow-purple:hover {
+    box-shadow:
+      0 0 20px rgba(168, 85, 247, 0.6),
+      0 0 30px rgba(168, 85, 247, 0.3);
+  }
+
+  .periodo-glow-def:hover {
+    box-shadow:
+      0 0 25px rgba(99, 102, 241, 0.7),
+      0 0 40px rgba(99, 102, 241, 0.4);
+  }
+
+  /* Badge pulse animation on select */
+  @keyframes badgePulse {
+    0%,
+    100% {
+      transform: scale(1.05);
+    }
+    50% {
+      transform: scale(1.08);
+    }
+  }
+
+  .periodo-badge-wrapper input:checked + div {
+    animation: badgePulse 0.3s ease-out;
+  }
+</style>
