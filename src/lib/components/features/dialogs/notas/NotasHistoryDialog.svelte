@@ -150,8 +150,8 @@
     >
         <div
             class="dialog-content flex flex-col {$theme === 'dark'
-                ? 'bg-[#202124] text-[#e8eaed]'
-                : 'bg-white text-[#202124]'}"
+                ? 'bg-[#1f1f1f] text-[#e8eaed]'
+                : 'bg-white text-[#1f1f1f]'}"
             on:click|stopPropagation
             role="dialog"
             aria-modal="true"
@@ -160,17 +160,20 @@
                 if (e.key === "Escape") closeDialog();
             }}
         >
-            <div class="px-6 pt-6 pb-4">
+            <div
+                class="px-6 pt-6 pb-5 border-b {$theme === 'dark'
+                    ? 'border-[#3c4043]'
+                    : 'border-[#e8eaed]'}"
+            >
                 <h2
-                    class="text-[1.375rem] leading-[1.75rem] font-normal {$theme ===
-                    'dark'
+                    class="text-xl font-semibold leading-7 {$theme === 'dark'
                         ? 'text-[#e8eaed]'
-                        : 'text-[#202124]'}"
+                        : 'text-[#1f1f1f]'}"
                 >
                     Historial de Notas
                 </h2>
                 <p
-                    class="text-sm mt-1 {$theme === 'dark'
+                    class="text-sm mt-1.5 {$theme === 'dark'
                         ? 'text-[#9aa0a6]'
                         : 'text-[#5f6368]'}"
                 >
@@ -178,32 +181,32 @@
                 </p>
             </div>
 
-            <div
-                class="flex-1 overflow-hidden relative border-t {$theme ===
-                'dark'
-                    ? 'border-[#3c4043]'
-                    : 'border-[#dadce0]'}"
-            >
+            <div class="flex-1 overflow-hidden relative">
                 {#if loading}
                     <div class="p-6">
                         <Skeleton rows={5} columns={6} theme={$theme} />
                     </div>
                 {:else if error}
-                    <div class="p-6 text-center">
-                        <p class="text-[#d93025]">Error: {error}</p>
+                    <div
+                        class="p-6 text-center rounded-lg mx-6 mt-6 {$theme ===
+                        'dark'
+                            ? 'bg-red-900/20'
+                            : 'bg-red-50'}"
+                    >
+                        <p class="text-[#d93025] font-medium">Error: {error}</p>
                     </div>
                 {:else if notasHistory.length > 0}
                     <div class="table-container custom-scrollbar">
                         <table class="w-full text-sm text-left">
                             <thead
                                 class="sticky top-0 z-10 {$theme === 'dark'
-                                    ? 'bg-[#202124]'
-                                    : 'bg-white'}"
+                                    ? 'bg-[#25262a]'
+                                    : 'bg-[#f8f9fa]'}"
                             >
                                 <tr>
                                     {#each columnNames as colName}
                                         <th
-                                            class="font-medium px-4 py-3 whitespace-nowrap {$theme ===
+                                            class="font-semibold text-xs uppercase tracking-wider px-6 py-4 whitespace-nowrap {$theme ===
                                             'dark'
                                                 ? 'text-[#9aa0a6]'
                                                 : 'text-[#5f6368]'}"
@@ -214,16 +217,24 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {#each filteredNotasHistory as nota}
+                                {#each filteredNotasHistory as nota, index}
                                     <tr
-                                        class="border-b last:border-0 transition-colors duration-150 {$theme ===
+                                        class="border-b last:border-0 transition-all duration-200 {$theme ===
                                         'dark'
-                                            ? 'border-[#3c4043] hover:bg-[#303134]'
-                                            : 'border-[#f1f3f4] hover:bg-[#f8f9fa]'}"
+                                            ? 'border-[#3c4043] hover:bg-[#292a2d]'
+                                            : 'border-[#e8eaed] hover:bg-[#f8f9fa]'} {index %
+                                            2 ===
+                                        0
+                                            ? $theme === 'dark'
+                                                ? ''
+                                                : ''
+                                            : $theme === 'dark'
+                                              ? 'bg-[#25262a]/30'
+                                              : 'bg-[#fafbfc]'}"
                                     >
                                         {#each columnNames as colName}
                                             <td
-                                                class="px-4 py-3 whitespace-nowrap"
+                                                class="px-5 py-4 whitespace-nowrap"
                                             >
                                                 <Tooltip
                                                     content={getHintText(
@@ -232,11 +243,18 @@
                                                     )}
                                                 >
                                                     <span
-                                                        class:blink-red={shouldBlinkRed(
+                                                        class:low-grade={shouldBlinkRed(
                                                             nota[
                                                                 colName as keyof NotaHistory
                                                             ],
                                                         )}
+                                                        class={!shouldBlinkRed(
+                                                            nota[
+                                                                colName as keyof NotaHistory
+                                                            ],
+                                                        )
+                                                            ? "font-medium"
+                                                            : ""}
                                                     >
                                                         {nota[
                                                             colName as keyof NotaHistory
@@ -253,9 +271,9 @@
                 {:else}
                     <div class="p-8 text-center">
                         <p
-                            class={$theme === "dark"
-                                ? "text-[#9aa0a6]"
-                                : "text-[#5f6368]"}
+                            class="text-base {$theme === 'dark'
+                                ? 'text-[#9aa0a6]'
+                                : 'text-[#5f6368]'}"
                         >
                             No hay historial disponible.
                         </p>
@@ -263,13 +281,17 @@
                 {/if}
             </div>
 
-            <div class="px-6 py-4 flex justify-end">
+            <div
+                class="px-6 py-4 flex justify-end border-t {$theme === 'dark'
+                    ? 'border-[#3c4043]'
+                    : 'border-[#e8eaed]'}"
+            >
                 <button
                     on:click={closeDialog}
-                    class="px-6 py-2 rounded-full text-sm font-medium transition-colors duration-200 {$theme ===
+                    class="px-6 py-2.5 min-h-[44px] rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 {$theme ===
                     'dark'
-                        ? 'text-[#8ab4f8] hover:bg-[#8ab4f8]/10'
-                        : 'text-[#1a73e8] hover:bg-[#1a73e8]/10'}"
+                        ? 'text-[#8ab4f8] hover:bg-[#8ab4f8]/10 focus:ring-[#8ab4f8] focus:ring-offset-[#1f1f1f]'
+                        : 'text-[#1a73e8] hover:bg-[#1a73e8]/10 focus:ring-[#1a73e8] focus:ring-offset-white'} active:scale-95"
                 >
                     Cerrar
                 </button>
@@ -285,23 +307,29 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.32); /* Material scrim opacity */
-        backdrop-filter: blur(2px);
+        background: linear-gradient(
+            135deg,
+            rgba(0, 0, 0, 0.35),
+            rgba(0, 0, 0, 0.28)
+        );
+        backdrop-filter: blur(6px);
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 1000;
-        animation: fadeIn 0.2s ease-out;
+        animation: fadeIn 0.25s ease-out;
     }
 
     .dialog-content {
         width: 90%;
-        max-width: 600px;
+        max-width: 800px;
         max-height: 85vh;
-        border-radius: 28px; /* Material 3 Dialog radius */
-        box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.18);
+        border-radius: 28px;
+        box-shadow:
+            0 28px 56px -16px rgba(0, 0, 0, 0.24),
+            0 8px 16px -8px rgba(0, 0, 0, 0.12);
         overflow: hidden;
-        animation: scaleIn 0.2s cubic-bezier(0.2, 0, 0, 1);
+        animation: scaleIn 0.25s cubic-bezier(0.2, 0, 0, 1);
     }
 
     .table-container {
@@ -309,20 +337,28 @@
         height: 100%;
     }
 
-    /* Custom Scrollbar for a cleaner look */
+    /* Custom Scrollbar with refined aesthetics */
     .custom-scrollbar::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 10px;
+        height: 10px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
         background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 4px;
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 5px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.25);
     }
     :global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+    :global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.25);
     }
 
     @keyframes fadeIn {
@@ -337,29 +373,40 @@
     @keyframes scaleIn {
         from {
             opacity: 0;
-            transform: scale(0.95);
+            transform: scale(0.92) translateY(8px);
         }
         to {
             opacity: 1;
-            transform: scale(1);
+            transform: scale(1) translateY(0);
         }
     }
 
-    @keyframes blink {
-        0% {
-            opacity: 1;
+    @keyframes gentlePulse {
+        0%,
+        100% {
+            background-color: rgba(217, 48, 37, 0.12);
+            box-shadow: 0 0 0 0 rgba(217, 48, 37, 0.4);
         }
         50% {
-            opacity: 0.5;
-        }
-        100% {
-            opacity: 1;
+            background-color: rgba(217, 48, 37, 0.18);
+            box-shadow: 0 0 0 3px rgba(217, 48, 37, 0);
         }
     }
 
-    .blink-red {
-        animation: blink 1s linear infinite;
-        color: #d93025; /* Google Red */
-        font-weight: 500;
+    .low-grade {
+        color: #d93025;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        animation: gentlePulse 2s ease-in-out infinite;
+        display: inline-block;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+        .dialog-content {
+            width: 95%;
+            max-height: 90vh;
+        }
     }
 </style>

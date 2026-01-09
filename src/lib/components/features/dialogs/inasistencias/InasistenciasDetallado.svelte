@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { fetchInasistenciasDetallado } from "../../../../api";
-  import type { Inasistencia, InasistenciasDetalladoPayload } from "../../../../types";
+  import type {
+    Inasistencia,
+    InasistenciasDetalladoPayload,
+  } from "../../../../types";
   import { theme } from "../../../../themeStore";
   import { fade, scale } from "svelte/transition";
 
@@ -10,6 +13,7 @@
   export let nombres: string;
   export let asignatura: string;
   export let periodo: string;
+  export let year: string;
 
   let inasistencias: Inasistencia[] = [];
   let loading = false;
@@ -30,6 +34,7 @@
         nombres: nombres,
         asignatura: asignatura,
         periodo: periodo,
+        year: year,
       };
       inasistencias = await fetchInasistenciasDetallado(payload);
     } catch (e: any) {
@@ -58,12 +63,12 @@
 {#if showDialog}
   <div
     class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 font-sans"
-    transition:fade={{ duration: 200 }}
+    transition:fade={{ duration: 250 }}
     style="font-family: 'Inter', sans-serif;"
   >
     <!-- Backdrop -->
     <div
-      class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+      class="absolute inset-0 bg-gradient-to-br from-gray-900/65 via-gray-900/60 to-gray-900/65 backdrop-blur-md transition-opacity"
       role="button"
       tabindex="0"
       on:click={closeDialog}
@@ -74,60 +79,63 @@
 
     <!-- Modal Container -->
     <div
-      class="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 transform transition-all"
-      transition:scale={{ start: 0.96, duration: 200 }}
+      class="relative w-full max-w-5xl max-h-[92vh] flex flex-col bg-white dark:bg-[#1a1b1e] rounded-3xl shadow-2xl overflow-hidden border border-gray-200/80 dark:border-gray-700/60 transform transition-all"
+      transition:scale={{ start: 0.94, duration: 250 }}
     >
       <!-- Header -->
       <div
-        class="flex-none flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10"
+        class="flex-none flex items-center justify-between px-7 py-6 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-br from-white/95 via-white/90 to-white/95 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-gray-900/95 backdrop-blur-xl z-10"
       >
-        <div>
+        <div class="flex-1 min-w-0">
           <h2
-            class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none"
+            class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent tracking-tight leading-tight mb-3"
           >
             Inasistencias Detalladas
           </h2>
-          <div
-            class="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500 dark:text-gray-400"
-          >
+          <div class="flex flex-wrap items-center gap-2 text-sm">
             {#if nombres}
               <div
-                class="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-md"
+                class="flex items-center gap-2 bg-gray-100/80 dark:bg-gray-800/80 px-3 py-1.5 rounded-lg group hover:bg-gray-200/80 dark:hover:bg-gray-700/80 transition-colors"
               >
-                <span class="material-symbols-rounded text-sm text-gray-400"
-                  >person</span
+                <div
+                  class="p-0.5 rounded bg-gray-200 dark:bg-gray-700 group-hover:bg-gray-300 dark:group-hover:bg-gray-600 transition-colors"
                 >
-                <span class="font-medium text-gray-700 dark:text-gray-300"
+                  <span
+                    class="material-symbols-rounded text-base text-gray-600 dark:text-gray-400"
+                    >person</span
+                  >
+                </div>
+                <span class="font-semibold text-gray-800 dark:text-gray-200"
                   >{nombres}</span
                 >
               </div>
             {/if}
             {#if asignatura}
               <div
-                class="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md text-indigo-600 dark:text-indigo-400"
+                class="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/40 dark:to-blue-900/40 px-3 py-1.5 rounded-lg text-indigo-700 dark:text-indigo-300 border border-indigo-100/50 dark:border-indigo-800/30 shadow-sm"
               >
-                <span class="material-symbols-rounded text-sm">book</span>
-                <span class="font-semibold">{asignatura}</span>
+                <span class="material-symbols-rounded text-base">book</span>
+                <span class="font-bold">{asignatura}</span>
               </div>
             {/if}
             {#if periodo}
               <div
-                class="flex items-center gap-1.5 bg-green-50 dark:bg-green-900/30 px-2.5 py-1 rounded-md text-green-600 dark:text-green-400"
+                class="flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/40 dark:to-green-900/40 px-3 py-1.5 rounded-lg text-emerald-700 dark:text-emerald-300 border border-emerald-100/50 dark:border-emerald-800/30 shadow-sm"
               >
-                <span class="material-symbols-rounded text-sm"
+                <span class="material-symbols-rounded text-base"
                   >calendar_today</span
                 >
-                <span class="font-semibold">Periodo {periodo}</span>
+                <span class="font-bold">Periodo {periodo}</span>
               </div>
             {/if}
           </div>
         </div>
         <button
           on:click={closeDialog}
-          class="group p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/40"
+          class="group p-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30 flex-shrink-0"
         >
           <span
-            class="material-symbols-rounded text-gray-400 group-hover:text-red-500 transition-colors text-2xl"
+            class="material-symbols-rounded text-gray-500 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors text-[24px] font-medium"
             >close</span
           >
         </button>
@@ -135,174 +143,220 @@
 
       <!-- Content -->
       <div
-        class="flex-1 overflow-y-auto p-0 custom-scrollbar bg-gray-50 dark:bg-black/20"
+        class="flex-1 overflow-y-auto p-0 custom-scrollbar bg-gradient-to-br from-gray-50/80 via-gray-50/60 to-gray-50/80 dark:from-black/30 dark:via-black/20 dark:to-black/30"
       >
         {#if loading}
-          <div class="flex flex-col items-center justify-center h-64 space-y-4">
+          <div class="flex flex-col items-center justify-center h-80 space-y-5">
             <div class="relative">
+              <div
+                class="absolute inset-0 bg-indigo-500/20 rounded-full blur-2xl animate-pulse"
+              ></div>
               <span
-                class="material-symbols-rounded text-6xl text-indigo-500 animate-spin"
+                class="material-symbols-rounded text-7xl text-indigo-600 dark:text-indigo-400 animate-spin relative"
                 >progress_activity</span
               >
             </div>
-            <p
-              class="text-sm font-medium text-gray-500 dark:text-gray-400 animate-pulse"
-            >
-              Cargando inasistencias...
-            </p>
+            <div class="text-center space-y-2">
+              <p
+                class="text-base font-semibold text-gray-700 dark:text-gray-300"
+              >
+                Cargando inasistencias...
+              </p>
+              <p class="text-sm text-gray-500 dark:text-gray-500">
+                Por favor espera un momento
+              </p>
+            </div>
           </div>
         {:else if error}
           <div
-            class="flex flex-col items-center justify-center h-64 text-center p-8"
+            class="flex flex-col items-center justify-center h-80 text-center p-8"
           >
-            <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-full mb-4">
-              <span class="material-symbols-rounded text-4xl text-red-500"
+            <div
+              class="bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 p-5 rounded-2xl mb-5 shadow-sm"
+            >
+              <span
+                class="material-symbols-rounded text-5xl text-red-600 dark:text-red-400"
                 >error</span
               >
             </div>
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-              Error al cargar
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              No se pudo cargar la información
             </h3>
-            <p class="text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
+            <p
+              class="text-gray-600 dark:text-gray-400 max-w-md leading-relaxed"
+            >
               {error}
             </p>
           </div>
         {:else if inasistencias.length > 0}
-          <div class="p-6">
+          <div class="p-6 md:p-8">
             <div
-              class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-900"
+              class="overflow-hidden rounded-2xl border border-gray-200/80 dark:border-gray-700/50 shadow-lg bg-white dark:bg-gray-800/90 backdrop-blur-sm"
             >
-              <table
-                class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-              >
-                <thead class="bg-gray-50 dark:bg-gray-800">
-                  <tr>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                      >Fecha</th
-                    >
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                      >Horas</th
-                    >
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                      >Hora Clase</th
-                    >
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                      >Detalle</th
-                    >
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                      >Excusa</th
-                    >
-                  </tr>
-                </thead>
-                <tbody
-                  class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900"
+              <div class="overflow-x-auto custom-table-scrollbar">
+                <table
+                  class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
                 >
-                  {#each inasistencias as inasistencia (inasistencia.ind)}
-                    <tr
-                      class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-150"
-                    >
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                          <span
-                            class="text-sm font-medium text-gray-900 dark:text-white"
-                            >{inasistencia.fecha}</span
-                          >
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-center">
-                        <span
-                          class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
-                        >
-                          {inasistencia.horas}
-                        </span>
-                      </td>
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400"
+                  <thead
+                    class="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-900/80 dark:to-gray-900/60 border-b-2 border-gray-200 dark:border-gray-700"
+                  >
+                    <tr>
+                      <th
+                        scope="col"
+                        class="px-6 md:px-8 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider"
+                        >Fecha</th
                       >
-                        {inasistencia.hora_clase}
-                      </td>
-                      <td class="px-6 py-4">
-                        {#if inasistencia.detalle}
-                          <div class="flex items-start gap-2">
+                      <th
+                        scope="col"
+                        class="px-6 md:px-8 py-4 text-center text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider"
+                        >Horas</th
+                      >
+                      <th
+                        scope="col"
+                        class="px-6 md:px-8 py-4 text-center text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider"
+                        >Hora Clase</th
+                      >
+                      <th
+                        scope="col"
+                        class="px-6 md:px-8 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider"
+                        >Detalle</th
+                      >
+                      <th
+                        scope="col"
+                        class="px-6 md:px-8 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider"
+                        >Excusa</th
+                      >
+                    </tr>
+                  </thead>
+                  <tbody
+                    class="divide-y divide-gray-100 dark:divide-gray-700/60 bg-white dark:bg-gray-800/90"
+                  >
+                    {#each inasistencias as inasistencia, index (inasistencia.ind)}
+                      <tr
+                        class="hover:bg-gradient-to-r hover:from-gray-50/80 hover:to-transparent dark:hover:from-gray-700/40 dark:hover:to-transparent transition-all duration-200 {index %
+                          2 ===
+                        0
+                          ? ''
+                          : 'bg-gray-50/30 dark:bg-gray-800/30'}"
+                      >
+                        <td class="px-6 md:px-8 py-4 whitespace-nowrap">
+                          <div class="flex items-center gap-2">
                             <span
-                              class="material-symbols-rounded text-lg text-blue-500 mt-0.5"
-                              >info</span
+                              class="material-symbols-rounded text-base text-gray-400"
+                              >calendar_month</span
                             >
                             <span
-                              class="text-sm text-gray-600 dark:text-gray-300"
-                              >{inasistencia.detalle}</span
+                              class="text-sm font-semibold text-gray-900 dark:text-gray-100"
+                              >{inasistencia.fecha}</span
                             >
                           </div>
-                        {:else}
-                          <span class="text-sm text-gray-400 italic"
-                            >Sin detalle</span
+                        </td>
+                        <td
+                          class="px-6 md:px-8 py-4 whitespace-nowrap text-center"
+                        >
+                          <span
+                            class="inline-flex items-center justify-center min-w-[3rem] px-3 py-1 rounded-lg text-sm font-bold bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 shadow-sm"
                           >
-                        {/if}
-                      </td>
-                      <td class="px-6 py-4">
-                        {#if inasistencia.excusa_motivo}
-                          <div class="flex flex-col gap-1">
+                            {inasistencia.horas}
+                          </span>
+                        </td>
+                        <td
+                          class="px-6 md:px-8 py-4 whitespace-nowrap text-center"
+                        >
+                          <span
+                            class="text-sm font-medium text-gray-700 dark:text-gray-300 font-mono"
+                          >
+                            {inasistencia.hora_clase}
+                          </span>
+                        </td>
+                        <td class="px-6 md:px-8 py-4">
+                          {#if inasistencia.detalle}
+                            <div class="flex items-start gap-2 max-w-md">
+                              <div
+                                class="p-1 rounded-md bg-blue-50 dark:bg-blue-900/30 mt-0.5 flex-shrink-0"
+                              >
+                                <span
+                                  class="material-symbols-rounded text-base text-blue-600 dark:text-blue-400"
+                                  >info</span
+                                >
+                              </div>
+                              <span
+                                class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
+                                >{inasistencia.detalle}</span
+                              >
+                            </div>
+                          {:else}
                             <span
-                              class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 w-fit"
+                              class="text-sm text-gray-400 dark:text-gray-500 italic"
+                              >Sin detalle</span
+                            >
+                          {/if}
+                        </td>
+                        <td class="px-6 md:px-8 py-4">
+                          {#if inasistencia.excusa_motivo}
+                            <div class="flex flex-col gap-2">
+                              <span
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/40 dark:to-green-900/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/30 w-fit shadow-sm"
+                              >
+                                <span class="material-symbols-rounded text-sm"
+                                  >check_circle</span
+                                >
+                                Excusada
+                              </span>
+                              <div class="pl-1 space-y-1">
+                                <p
+                                  class="text-xs font-medium text-gray-600 dark:text-gray-400"
+                                >
+                                  {inasistencia.excusa_motivo}
+                                </p>
+                                {#if inasistencia.excusa_causa}
+                                  <p
+                                    class="text-xs text-gray-500 dark:text-gray-500"
+                                  >
+                                    <span class="font-semibold">Causa:</span>
+                                    {inasistencia.excusa_causa}
+                                  </p>
+                                {/if}
+                              </div>
+                            </div>
+                          {:else}
+                            <span
+                              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/40 dark:to-rose-900/40 text-red-800 dark:text-red-300 border border-red-200/50 dark:border-red-800/30 shadow-sm"
                             >
                               <span class="material-symbols-rounded text-sm"
-                                >check_circle</span
+                                >cancel</span
                               >
-                              Excusada
+                              No Excusada
                             </span>
-                            <span
-                              class="text-xs text-gray-500 dark:text-gray-400 ml-1"
-                              >{inasistencia.excusa_motivo}</span
-                            >
-                            {#if inasistencia.excusa_causa}
-                              <span class="text-xs text-gray-400 ml-1"
-                                >Causa: {inasistencia.excusa_causa}</span
-                              >
-                            {/if}
-                          </div>
-                        {:else}
-                          <span
-                            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400"
-                          >
-                            <span class="material-symbols-rounded text-sm"
-                              >cancel</span
-                            >
-                            No Excusada
-                          </span>
-                        {/if}
-                      </td>
-                    </tr>
-                  {/each}
-                </tbody>
-              </table>
+                          {/if}
+                        </td>
+                      </tr>
+                    {/each}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         {:else}
           <div
-            class="flex flex-col items-center justify-center h-64 text-center p-8 opacity-60"
+            class="flex flex-col items-center justify-center h-80 text-center p-8"
           >
             <div
-              class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"
+              class="w-24 h-24 bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30 rounded-full flex items-center justify-center mb-6 shadow-inner"
             >
-              <span class="material-symbols-rounded text-5xl text-gray-400"
+              <span
+                class="material-symbols-rounded text-6xl text-emerald-600 dark:text-emerald-400"
                 >event_available</span
               >
             </div>
-            <p class="text-lg font-medium text-gray-900 dark:text-white">
-              Sin inasistencias
-            </p>
-            <p class="text-gray-500 dark:text-gray-400 mt-1">
-              No se encontraron registros para este periodo.
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              ¡Excelente asistencia!
+            </h3>
+            <p
+              class="text-gray-600 dark:text-gray-400 leading-relaxed max-w-sm"
+            >
+              No se encontraron registros de inasistencias para este periodo.
+              Sigue así.
             </p>
           </div>
         {/if}
@@ -310,11 +364,11 @@
 
       <!-- Footer -->
       <div
-        class="flex-none p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 flex justify-end"
+        class="flex-none px-6 md:px-8 py-5 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900/80 dark:to-gray-900/60 flex justify-end backdrop-blur-sm"
       >
         <button
           on:click={closeDialog}
-          class="px-6 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700"
+          class="px-8 py-3 rounded-xl bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 font-bold hover:from-gray-200 hover:to-gray-100 dark:hover:from-gray-600 dark:hover:to-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 dark:focus:ring-gray-600 dark:focus:ring-offset-gray-900"
         >
           Cerrar
         </button>

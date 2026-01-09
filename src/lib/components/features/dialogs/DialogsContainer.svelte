@@ -64,6 +64,7 @@
         nombres={inasistenciasNombres}
         asignatura={inasistenciasAsignatura}
         periodo={inasistenciasPeriodo}
+        year={payloadYear}
         bind:showDialog={showInasistenciasDetallado}
     />
 {/if}

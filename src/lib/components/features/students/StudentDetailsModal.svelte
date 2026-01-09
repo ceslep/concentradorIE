@@ -143,12 +143,12 @@
     closeModal();
   }
 
-  // Glassmorphism input classes with premium styling
+  // Enterprise-grade glassmorphism input system with refined aesthetics
   const INPUT_CLASSES =
-    "peer block w-full rounded-xl border border-white/30 dark:border-white/20 shadow-lg bg-white/20 dark:bg-gray-800/20 backdrop-blur-xl px-4 py-3.5 text-gray-900 dark:text-white placeholder-transparent focus:border-indigo-400 focus:bg-white/30 dark:focus:bg-gray-800/30 focus:ring-4 focus:ring-indigo-500/30 transition-all duration-300 ease-out hover:shadow-xl hover:bg-white/30 dark:hover:bg-gray-800/30 hover:border-white/40 dark:hover:border-white/30";
+    "peer block w-full rounded-xl border-2 border-white/30 dark:border-white/15 shadow-[0_8px_16px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)] bg-gradient-to-br from-white/25 to-white/15 dark:from-gray-800/25 dark:to-gray-800/15 backdrop-blur-xl px-4 py-3.5 text-base font-medium text-gray-900 dark:text-white placeholder-transparent focus:border-indigo-400/80 focus:bg-gradient-to-br focus:from-white/35 focus:to-white/25 dark:focus:from-gray-800/35 dark:focus:to-gray-800/25 focus:ring-4 focus:ring-indigo-500/20 focus:shadow-[0_12px_24px_rgba(99,102,241,0.15),0_4px_8px_rgba(99,102,241,0.1)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_12px_20px_rgba(0,0,0,0.12),0_4px_6px_rgba(0,0,0,0.06)] hover:border-white/45 dark:hover:border-white/25 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100";
 
   const LABEL_CLASSES =
-    "absolute left-4 -top-2.5 bg-white dark:bg-gray-900 px-2 text-sm font-medium text-gray-600 dark:text-gray-400 transition-all duration-200 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3.5 peer-placeholder-shown:left-4 peer-focus:-top-2.5 peer-focus:left-4 peer-focus:text-sm peer-focus:text-indigo-600 dark:peer-focus:text-indigo-400 peer-focus:font-semibold";
+    "block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2 transition-colors duration-200";
 </script>
 
 {#if showModal}
@@ -160,20 +160,21 @@
     on:keydown={(e) => e.key === "Escape" && closeModal()}
     role="presentation"
   >
-    <!-- Premium modal container -->
+    <!-- Premium modal container with enhanced glassmorphism -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div
       transition:scale={{
-        duration: 300,
-        start: 0.95,
+        duration: 350,
+        start: 0.92,
         opacity: 0,
         easing: cubicOut,
       }}
-      class="relative w-full max-w-6xl max-h-[95vh] flex flex-col rounded-3xl shadow-[0_0_80px_rgba(139,92,246,0.3)] backdrop-blur-2xl bg-white/20 dark:bg-gray-900/20 text-gray-900 dark:text-gray-100 overflow-hidden border border-white/30 dark:border-white/10 premium-glass"
+      class="relative w-full max-w-6xl max-h-[95vh] flex flex-col rounded-3xl shadow-[0_25px_80px_rgba(99,102,241,0.35),0_15px_40px_rgba(139,92,246,0.25)] backdrop-blur-2xl bg-white/20 dark:bg-gray-900/20 text-gray-900 dark:text-gray-100 overflow-hidden border-2 border-white/30 dark:border-white/15 premium-glass"
       on:click|stopPropagation
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
+      aria-describedby="modal-description"
       tabindex="-1"
     >
       <!-- Premium glassmorphism header -->
@@ -189,23 +190,34 @@
         <div
           class="relative flex items-center justify-between px-8 py-6 bg-white/10 dark:bg-gray-900/10 backdrop-blur-xl"
         >
-          <div class="flex items-center gap-4">
-            <!-- Student initials badge with gradient -->
+          <div class="flex items-center gap-5">
+            <!-- Student initials badge with gradient and enhanced shadow -->
             <div
-              class="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg ring-4 ring-indigo-500/20 transform hover:scale-105 transition-transform duration-300"
-              in:scale={{ duration: 400, delay: 100, start: 0.5 }}
+              class="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 shadow-[0_12px_24px_rgba(99,102,241,0.4),0_4px_8px_rgba(99,102,241,0.2)] ring-4 ring-indigo-500/15 transform hover:scale-105 hover:shadow-[0_16px_32px_rgba(99,102,241,0.5)] transition-all duration-400 cursor-default"
+              in:scale={{
+                duration: 450,
+                delay: 120,
+                start: 0.4,
+                easing: cubicOut,
+              }}
+              role="img"
+              aria-label="Iniciales del estudiante: {getInitials(
+                estudiante.nombres,
+              )}"
             >
-              <span class="text-2xl font-black text-white tracking-wide">
+              <span
+                class="text-2xl font-black text-white tracking-wide drop-shadow-lg"
+              >
                 {getInitials(estudiante.nombres)}
               </span>
             </div>
 
-            <!-- Title section with improved typography -->
-            <div class="flex flex-col">
+            <!-- Title section with improved typography hierarchy -->
+            <div class="flex flex-col gap-1">
               <div class="flex items-center gap-3">
                 <span
-                  class="material-symbols-rounded text-indigo-600 dark:text-indigo-400 text-3xl"
-                  >person_edit</span
+                  class="material-symbols-rounded text-indigo-600 dark:text-indigo-400 text-3xl drop-shadow-sm"
+                  aria-hidden="true">person_edit</span
                 >
                 <h3
                   id="modal-title"
@@ -215,26 +227,29 @@
                 </h3>
               </div>
               <p
-                class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 mt-1"
+                id="modal-description"
+                class="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 leading-tight drop-shadow-sm"
               >
                 {estudiante.nombres}
               </p>
             </div>
           </div>
 
-          <!-- Enhanced close button with ripple effect -->
+          <!-- Enhanced close button with improved accessibility -->
           <button
+            type="button"
             on:click={closeModal}
-            class="group relative p-3 rounded-2xl text-gray-600 hover:text-white dark:text-gray-300 dark:hover:text-white transition-all duration-300 overflow-hidden hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/30"
+            class="group relative p-3.5 rounded-2xl text-gray-600 hover:text-white dark:text-gray-300 dark:hover:text-white transition-all duration-300 overflow-hidden hover:shadow-[0_8px_24px_rgba(99,102,241,0.35)] focus:outline-none focus:ring-4 focus:ring-indigo-500/30 flex-shrink-0"
             title="Cerrar (Esc)"
-            aria-label="Cerrar modal"
+            aria-label="Cerrar ventana modal"
           >
             <div
-              class="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              class="absolute inset-0 bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              aria-hidden="true"
             ></div>
             <span
               class="material-symbols-rounded text-2xl relative z-10 transform group-hover:rotate-90 transition-transform duration-300"
-              >close</span
+              aria-hidden="true">close</span
             >
           </button>
         </div>
@@ -249,133 +264,142 @@
           aria-label="Tabs"
           role="tablist"
         >
-          <!-- Personal Tab -->
+          <!-- Tab: Personal -->
           <button
             role="tab"
+            type="button"
             aria-selected={activeTab === "personal"}
             aria-controls="personal-panel"
             on:click={() => (activeTab = "personal")}
-            class="group relative min-w-fit flex items-center gap-2.5 py-4 px-5 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
+            class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'personal'
-              ? 'text-indigo-700 dark:text-indigo-300'
-              : 'text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400'}"
+              ? 'text-indigo-600 dark:text-indigo-400 bg-white/5 dark:bg-white/5'
+              : 'text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/5'}"
           >
             <span
-              class="material-symbols-rounded text-xl transition-transform duration-300 {activeTab ===
+              class="material-symbols-rounded text-[1.375rem] transition-transform duration-300 {activeTab ===
               'personal'
-                ? 'scale-110'
-                : 'group-hover:scale-105'}">person</span
+                ? 'scale-110 drop-shadow-sm'
+                : 'group-hover:scale-110'}"
+              aria-hidden="true">person</span
             >
-            <span class="whitespace-nowrap">Personal</span>
-            <!-- Active indicator -->
+            <span class="whitespace-nowrap tracking-wide">Personal</span>
             {#if activeTab === "personal"}
               <div
-                in:scale={{ duration: 200, start: 0.8 }}
-                class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-full shadow-lg shadow-indigo-500/50"
+                in:scale={{ duration: 250, start: 0.9, opacity: 0 }}
+                class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 shadow-[0_-2px_6px_rgba(99,102,241,0.5)]"
               ></div>
             {/if}
           </button>
 
-          <!-- Academic Tab -->
+          <!-- Tab: Academic -->
           <button
             role="tab"
+            type="button"
             aria-selected={activeTab === "academic"}
             aria-controls="academic-panel"
             on:click={() => (activeTab = "academic")}
-            class="group relative min-w-fit flex items-center gap-2.5 py-4 px-5 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
+            class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'academic'
-              ? 'text-indigo-700 dark:text-indigo-300'
-              : 'text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400'}"
+              ? 'text-emerald-600 dark:text-emerald-400 bg-white/5 dark:bg-white/5'
+              : 'text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white/5'}"
           >
             <span
-              class="material-symbols-rounded text-xl transition-transform duration-300 {activeTab ===
+              class="material-symbols-rounded text-[1.375rem] transition-transform duration-300 {activeTab ===
               'academic'
-                ? 'scale-110'
-                : 'group-hover:scale-105'}">school</span
+                ? 'scale-110 drop-shadow-sm'
+                : 'group-hover:scale-110'}"
+              aria-hidden="true">school</span
             >
-            <span class="whitespace-nowrap">Académico</span>
+            <span class="whitespace-nowrap tracking-wide">Académico</span>
             {#if activeTab === "academic"}
               <div
-                in:scale={{ duration: 200, start: 0.8 }}
-                class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-t-full shadow-lg shadow-green-500/50"
+                in:scale={{ duration: 250, start: 0.9, opacity: 0 }}
+                class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 via-green-600 to-teal-600 shadow-[0_-2px_6px_rgba(16,185,129,0.5)]"
               ></div>
             {/if}
           </button>
 
-          <!-- Contact Tab -->
+          <!-- Tab: Contact -->
           <button
             role="tab"
+            type="button"
             aria-selected={activeTab === "contact"}
             aria-controls="contact-panel"
             on:click={() => (activeTab = "contact")}
-            class="group relative min-w-fit flex items-center gap-2.5 py-4 px-5 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
+            class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'contact'
-              ? 'text-indigo-700 dark:text-indigo-300'
-              : 'text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400'}"
+              ? 'text-blue-600 dark:text-blue-400 bg-white/5 dark:bg-white/5'
+              : 'text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/5'}"
           >
             <span
-              class="material-symbols-rounded text-xl transition-transform duration-300 {activeTab ===
+              class="material-symbols-rounded text-[1.375rem] transition-transform duration-300 {activeTab ===
               'contact'
-                ? 'scale-110'
-                : 'group-hover:scale-105'}">contact_mail</span
+                ? 'scale-110 drop-shadow-sm'
+                : 'group-hover:scale-110'}"
+              aria-hidden="true">contact_mail</span
             >
-            <span class="whitespace-nowrap">Contacto</span>
+            <span class="whitespace-nowrap tracking-wide">Contacto</span>
             {#if activeTab === "contact"}
               <div
-                in:scale={{ duration: 200, start: 0.8 }}
-                class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-t-full shadow-lg shadow-blue-500/50"
+                in:scale={{ duration: 250, start: 0.9, opacity: 0 }}
+                class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-cyan-600 to-sky-600 shadow-[0_-2px_6px_rgba(59,130,246,0.5)]"
               ></div>
             {/if}
           </button>
 
-          <!-- Family Tab -->
+          <!-- Tab: Family -->
           <button
             role="tab"
+            type="button"
             aria-selected={activeTab === "family"}
             aria-controls="family-panel"
             on:click={() => (activeTab = "family")}
-            class="group relative min-w-fit flex items-center gap-2.5 py-4 px-5 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
+            class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'family'
-              ? 'text-indigo-700 dark:text-indigo-300'
-              : 'text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400'}"
+              ? 'text-pink-600 dark:text-pink-400 bg-white/5 dark:bg-white/5'
+              : 'text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-white/5'}"
           >
             <span
-              class="material-symbols-rounded text-xl transition-transform duration-300 {activeTab ===
+              class="material-symbols-rounded text-[1.375rem] transition-transform duration-300 {activeTab ===
               'family'
-                ? 'scale-110'
-                : 'group-hover:scale-105'}">family_restroom</span
+                ? 'scale-110 drop-shadow-sm'
+                : 'group-hover:scale-110'}"
+              aria-hidden="true">family_restroom</span
             >
-            <span class="whitespace-nowrap">Familiar</span>
+            <span class="whitespace-nowrap tracking-wide">Familiar</span>
             {#if activeTab === "family"}
               <div
-                in:scale={{ duration: 200, start: 0.8 }}
-                class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 to-rose-500 rounded-t-full shadow-lg shadow-pink-500/50"
+                in:scale={{ duration: 250, start: 0.9, opacity: 0 }}
+                class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-pink-500 via-rose-600 to-red-600 shadow-[0_-2px_6px_rgba(236,72,153,0.5)]"
               ></div>
             {/if}
           </button>
 
-          <!-- Medical Tab -->
+          <!-- Tab: Medical -->
           <button
             role="tab"
+            type="button"
             aria-selected={activeTab === "medical"}
             aria-controls="medical-panel"
             on:click={() => (activeTab = "medical")}
-            class="group relative min-w-fit flex items-center gap-2.5 py-4 px-5 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
+            class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'medical'
-              ? 'text-indigo-700 dark:text-indigo-300'
-              : 'text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400'}"
+              ? 'text-orange-600 dark:text-orange-400 bg-white/5 dark:bg-white/5'
+              : 'text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-white/5'}"
           >
             <span
-              class="material-symbols-rounded text-xl transition-transform duration-300 {activeTab ===
+              class="material-symbols-rounded text-[1.375rem] transition-transform duration-300 {activeTab ===
               'medical'
-                ? 'scale-110'
-                : 'group-hover:scale-105'}">health_and_safety</span
+                ? 'scale-110 drop-shadow-sm'
+                : 'group-hover:scale-110'}"
+              aria-hidden="true">health_and_safety</span
             >
-            <span class="whitespace-nowrap">Médico</span>
+            <span class="whitespace-nowrap tracking-wide">Médico</span>
             {#if activeTab === "medical"}
               <div
-                in:scale={{ duration: 200, start: 0.8 }}
-                class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-t-full shadow-lg shadow-red-500/50"
+                in:scale={{ duration: 250, start: 0.9, opacity: 0 }}
+                class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 via-amber-600 to-yellow-600 shadow-[0_-2px_6px_rgba(249,115,22,0.5)]"
               ></div>
             {/if}
           </button>
@@ -1369,74 +1393,59 @@
       <div
         class="flex-none flex justify-end gap-4 p-8 border-t-2 border-gray-100 dark:border-gray-800 bg-gradient-to-t from-white/90 to-white/70 dark:from-gray-900/90 dark:to-gray-900/70 backdrop-blur-sm"
       >
-        <!-- Cancel button -->
+        <!-- Cancel Button -->
         <button
           type="button"
           on:click={closeModal}
           disabled={isSaving}
-          class="group relative inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl font-semibold text-base shadow-lg transition-all duration-300 overflow-hidden focus:outline-none focus:ring-4 focus:ring-gray-400/30 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+          class="px-6 py-3 rounded-2xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-500/20 disabled:opacity-50"
         >
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 transition-opacity duration-300"
-          ></div>
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          ></div>
-          <span
-            class="material-symbols-rounded text-xl relative z-10 text-gray-700 dark:text-gray-200 transform group-hover:rotate-2 transition-transform duration-300"
-            >cancel</span
-          >
-          <span class="relative z-10 text-gray-700 dark:text-gray-200"
-            >Cerrar</span
-          >
+          Cancelar
         </button>
 
-        <!-- Save button with loading state -->
+        <!-- Save Button with animated gradient -->
         <button
           type="submit"
           on:click={handleSubmit}
           disabled={isSaving}
-          class="group relative inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl font-semibold text-base shadow-lg shadow-indigo-500/30 transition-all duration-300 overflow-hidden focus:outline-none focus:ring-4 focus:ring-indigo-500/40 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-2xl hover:shadow-indigo-500/40 transform hover:scale-[1.02] active:scale-[0.98]"
+          class="group relative px-8 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold shadow-[0_8px_20px_rgba(99,102,241,0.35)] hover:shadow-[0_12px_28px_rgba(99,102,241,0.5)] transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 overflow-hidden focus:outline-none focus:ring-4 focus:ring-indigo-500/40 disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
         >
+          <!-- Shimmer effect overlay -->
           <div
-            class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600"
-          ></div>
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out"
           ></div>
 
-          <!-- Loading spinner -->
-          {#if isSaving}
-            <svg
-              class="relative z-10 w-5 h-5 text-white animate-spin"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-          {:else}
-            <span
-              class="material-symbols-rounded text-xl relative z-10 text-white transform group-hover:scale-110 transition-transform duration-300"
-              >save</span
-            >
-          {/if}
-
-          <span class="relative z-10 text-white">
-            {isSaving ? "Guardando..." : "Guardar Cambios"}
-          </span>
+          <div class="relative z-10 flex items-center justify-center gap-3">
+            {#if isSaving}
+              <svg
+                class="w-5 h-5 animate-spin"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span>Guardando...</span>
+            {:else}
+              <span
+                class="material-symbols-rounded text-xl transition-transform duration-300 group-hover:scale-110"
+                aria-hidden="true">save</span
+              >
+              <span>Guardar Cambios</span>
+            {/if}
+          </div>
         </button>
       </div>
     </div>
@@ -1447,13 +1456,37 @@
   /* Material Symbols Font */
   @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
 
-  /* Premium Glass Effect with enhanced depth */
+  /* Enterprise-grade Premium Glass Effect with multi-layer depth */
   .premium-glass {
     box-shadow:
-      0 20px 60px -15px rgba(0, 0, 0, 0.3),
-      0 8px 16px -8px rgba(0, 0, 0, 0.2),
-      0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-      0 0 20px 0 rgba(139, 92, 246, 0.1);
+      0 25px 70px -20px rgba(0, 0, 0, 0.35),
+      0 12px 24px -10px rgba(0, 0, 0, 0.25),
+      0 4px 12px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+      0 1px 0 0 rgba(255, 255, 255, 0.15) inset,
+      0 0 30px 0 rgba(139, 92, 246, 0.12);
+  }
+
+  /* Glass panel refinement for fieldsets */
+  .glass-panel {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+    opacity: 0.5;
   }
 
   /* Enhanced Custom Scrollbar */
@@ -1521,11 +1554,18 @@
     }
   }
 
-  /* Enhanced focus visible for keyboard navigation */
+  /* Enhanced focus-visible for keyboard navigation (WCAG AAA compliance) */
   *:focus-visible {
-    outline: 2px solid rgba(139, 92, 246, 0.8);
-    outline-offset: 2px;
-    border-radius: 0.375rem;
+    outline: 3px solid rgba(99, 102, 241, 0.9);
+    outline-offset: 3px;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  }
+
+  /* Ensure inputs have proper focus rings */
+  input:focus-visible,
+  select:focus-visible {
+    outline: none;
   }
 
   /* Smooth font rendering */

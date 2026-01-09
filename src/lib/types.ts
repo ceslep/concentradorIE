@@ -206,6 +206,7 @@ export interface InasistenciasDetalladoPayload {
   nombres: string;
   asignatura: string;
   periodo: string;
+  year: string;
 }
 
 export interface Inasistencia {
