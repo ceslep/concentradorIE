@@ -1,3 +1,31 @@
+<!-- 
+NOTASHISTORYDIALOG.SVELTE
+
+DESCRIPCIÓN:
+Diálogo especializado en auditar el rastro de cambios de las calificaciones. Muestra las diferentes versiones de las notas N1-N12 capturadas en el tiempo, ayudando a detectar modificaciones o errores de digitación.
+
+USO:
+<NotasHistoryDialog {studentId} {subject} {periodo} {year} bind:showDialog />
+
+DEPENDENCIAS:
+- API: fetchNotasHistory.
+- Componentes: Skeleton, Tooltip (shared).
+
+PROPS/EMIT:
+- Prop: `showDialog` → boolean → Visibilidad.
+- Parámetros de consulta: `studentId`, `subject`, `periodo`, `year`.
+
+RELACIONES:
+- Llamado por: NotasDetalleDialog.svelte.
+
+NOTAS DE DESARROLLO:
+- Filtra notas duplicadas y filas vacías para mostrar un historial limpio y relevante.
+- Implementa tooltips para ver metadatos (Aspecto/Fecha) sobre cada celda de nota histórica.
+
+ESTILOS:
+- Estética 'Google-like' minimalista con 'gentlePulse' en notas reprobatorias bajas.
+-->
+
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     import { GET_NOTAS_HISTORY_ENDPOINT } from "../../../../../constants";
@@ -115,8 +143,12 @@
         return true;
     }
 
+    /**
+     * Genera el texto descriptivo del tooltip para una celda de nota.
+     * Muestra el aspecto evaluado y la fecha de registro correspondientes.
+     */
     function getHintText(nota: NotaHistory, colName: string): string {
-        // Extract the number from "notaX"
+        // Extrae el número de columna de "notaX"
         const num = colName.replace("nota", "");
         const aspectoKey = `aspecto${num}` as keyof NotaHistory;
         const fechaKey = `fecha${num}` as keyof NotaHistory;

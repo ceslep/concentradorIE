@@ -1,3 +1,34 @@
+<!-- 
+APPHEADER.SVELTE
+
+DESCRIPCIÓN:
+Cabecera premium del sistema 'Concentrador IE'. Proporciona navegación principal, controles de vista, cambio de tema, exportación de datos y cierre de sesión. Utiliza glassmorphism para un diseño moderno y fluido.
+
+USO:
+<AppHeader bind:showPayloadForm bind:showInfoCantDialog on:logout={handleLogout} /> en App.svelte.
+
+DEPENDENCIAS:
+- Store: theme (themeStore.ts), storeConcentrador (loading, lastDuration, concentradorType, viewMode).
+- Utilidades: loadConcentradorData, exportCSV, exportExcel (storeConcentrador.ts).
+
+PROPS/EMIT:
+- Prop: `showPayloadForm` → boolean → Controla la visibilidad del formulario de parámetros.
+- Prop: `showInfoCantDialog` → boolean → Controla la visibilidad del diálogo de estadísticas.
+- Evento emitido: `logout` → Notifica al padre para limpiar la sesión.
+
+RELACIONES:
+- Llamado por: App.svelte.
+- Depende de: themeStore.ts y storeConcentrador.ts.
+
+NOTAS DE DESARROLLO:
+- Implementa animaciones 'animate-slide-in-down' y 'animate-scale-in'.
+- El switch de tipo (Asignaturas/Áreas) dispara automáticamente la recarga de datos.
+
+ESTILOS:
+- Usa clases de utilidad 'glass-effect', 'btn-premium', y 'text-gradient'.
+- Adaptable (responsive) con ocultamiento de etiquetas en móviles.
+-->
+
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { theme } from "../../themeStore";
@@ -16,14 +47,50 @@
 
   const dispatch = createEventDispatcher();
 
+  /**
+   * Maneja el cambio de tipo de concentrador (Asignaturas <-> Áreas).
+   * @param event - Evento de cambio del checkbox.
+   */
   function handleConcentradorTypeChange(event: Event) {
     const target = event.target as HTMLInputElement;
     concentradorType.set(target.checked ? "areas" : "asignaturas");
-    loadConcentradorData(); // Reload data when concentrador type changes
+    loadConcentradorData(); // Recarga los datos al cambiar el tipo
   }
 
+  /**
+   * Alterna la visibilidad del formulario de parámetros (Sede, Nivel, etc.).
+   */
+  function togglePayloadForm() {
+    showPayloadForm = !showPayloadForm;
+  }
+
+  /**
+   * Cambia el tipo de concentrador entre 'asignaturas' y 'areas'.
+   * @param type - El tipo de vista seleccionado.
+   */
+  function handleTypeChange(type: "asignaturas" | "areas") {
+    concentradorType.set(type);
+  }
+
+  /**
+   * Ejecuta la recarga de datos del concentrador.
+   */
+  function handleReload() {
+    loadConcentradorData();
+  }
+
+  /**
+   * Solicita el cierre de sesión mediante el despacho de un evento.
+   */
   function handleLogout() {
     dispatch("logout");
+  }
+
+  /**
+   * Dispara el diálogo de información de cantidades poblacionales.
+   */
+  function openInfoCant() {
+    showInfoCantDialog = true;
   }
 </script>
 
@@ -154,45 +221,50 @@
             ? 'text-gray-300'
             : 'text-gray-600'} hidden sm:inline"
           style="font-family: var(--font-heading);"
-                  >
-                    Áreas
-                  </span>
-              </div>
-        
-              <!-- View Mode Toggle -->
-              <div
-                class="flex items-center gap-1 px-2 py-1 rounded-lg {$theme === 'dark'
-                  ? 'bg-gray-800/50'
-                  : 'bg-gray-100/80'} shadow-sm"
-              >
-                <button
-                  on:click={() => viewMode.set('table-view')}
-                  class="p-1.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500
+        >
+          Áreas
+        </span>
+      </div>
+
+      <!-- View Mode Toggle -->
+      <div
+        class="flex items-center gap-1 px-2 py-1 rounded-lg {$theme === 'dark'
+          ? 'bg-gray-800/50'
+          : 'bg-gray-100/80'} shadow-sm"
+      >
+        <button
+          on:click={() => viewMode.set("table-view")}
+          class="p-1.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500
                     {$viewMode === 'table-view'
-                      ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-md'
-                      : 'text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'}"
-                  title="Vista de Tabla"
-                  aria-label="Cambiar a vista de tabla"
-                >
-                  <span class="material-symbols-rounded text-base sm:text-lg">table_rows</span>
-                </button>
-                <button
-                  on:click={() => viewMode.set('cards-view')}
-                  class="p-1.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500
+            ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-md'
+            : 'text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'}"
+          title="Vista de Tabla"
+          aria-label="Cambiar a vista de tabla"
+        >
+          <span class="material-symbols-rounded text-base sm:text-lg"
+            >table_rows</span
+          >
+        </button>
+        <button
+          on:click={() => viewMode.set("cards-view")}
+          class="p-1.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500
                     {$viewMode === 'cards-view'
-                      ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-md'
-                      : 'text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'}"
-                  title="Vista de Tarjetas"
-                  aria-label="Cambiar a vista de tarjetas"
-                >
-                  <span class="material-symbols-rounded text-base sm:text-lg">grid_view</span>
-                </button>
-              </div>
-        
-              <!-- Divider - Hidden on mobile -->
-              <div
-                class="h-6 w-px {$theme === 'dark'
-                  ? 'bg-gray-700'          : 'bg-gray-200'} hidden sm:block"
+            ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-md'
+            : 'text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'}"
+          title="Vista de Tarjetas"
+          aria-label="Cambiar a vista de tarjetas"
+        >
+          <span class="material-symbols-rounded text-base sm:text-lg"
+            >grid_view</span
+          >
+        </button>
+      </div>
+
+      <!-- Divider - Hidden on mobile -->
+      <div
+        class="h-6 w-px {$theme === 'dark'
+          ? 'bg-gray-700'
+          : 'bg-gray-200'} hidden sm:block"
       ></div>
 
       <!-- Action Buttons Group -->

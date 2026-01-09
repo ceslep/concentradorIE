@@ -1,3 +1,31 @@
+<!-- 
+GRADESSTATISTICS.SVELTE
+
+DESCRIPCIÓN:
+Dashboard estadístico avanzado que procesa un set de calificaciones para generar visualizaciones de distribución (Campana de Gauss), promedios por actividad y listas de estudiantes destacados/en riesgo.
+
+USO:
+<GradesStatistics data={tableData} loading={isLoading} /> en GradesTableDialog o cualquier vista de análisis.
+
+DEPENDENCIAS:
+- Store: theme (themeStore.ts).
+- Tipos: GradeData (gradeTableUtils.ts).
+
+PROPS/EMIT:
+- Prop: `data` → GradeData[] → Array de objetos con calificaciones a procesar.
+- Prop: `loading` → boolean → Estado de procesamiento/carga.
+
+RELACIONES:
+- Llamado por: GradesTableDialog.svelte.
+
+NOTAS DE DESARROLLO:
+- Realiza cálculos complejos de Desviación Estándar y Distribución Normal en tiempo real.
+- Renderiza una Campana de Gauss dinámica mediante SVG basada en los datos actuales.
+
+ESTILOS:
+- Usa variables CSS para temas. Gráficos de barras hechos con HTML/CSS puro y SVG para la curva.
+-->
+
 <script lang="ts">
   import { onMount } from "svelte";
   import type { GradeData } from "../../../../utils/gradeTableUtils";
@@ -31,6 +59,9 @@
     calculateStatistics();
   }
 
+  /**
+   * Ejecuta el procesamiento estadístico completo cuando cambian los datos.
+   */
   function calculateStatistics() {
     if (!data || data.length === 0) {
       resetStats();
@@ -84,7 +115,7 @@
 
     // Finalize activity averages
     activityAverages = activitySums.map((s, i) =>
-      activityCounts[i] > 0 ? s / activityCounts[i] : 0
+      activityCounts[i] > 0 ? s / activityCounts[i] : 0,
     );
 
     // Top Students
@@ -103,6 +134,11 @@
     calculateGaussianData(grades, average);
   }
 
+  /**
+   * Calcula los parámetros de la distribución normal y genera los puntos para el SVG.
+   * @param grades - Array de notas numéricas.
+   * @param mean - Promedio aritmético.
+   */
   function calculateGaussianData(grades: number[], mean: number) {
     if (grades.length < 2) {
       standardDeviation = 0;

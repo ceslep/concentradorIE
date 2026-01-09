@@ -1,3 +1,32 @@
+<!-- 
+PAYLOADFORM.SVELTE
+
+DESCRIPCIÓN:
+Motor de parámetros de la aplicación. Gestiona la selección de Sede, Nivel, Grupo, Periodo y Año. Incluye persistencia local para recordar la última selección del usuario.
+
+USO:
+<PayloadForm disabled={loading} /> usado internamente por PayloadFormSection.svelte.
+
+DEPENDENCIAS:
+- Store: storeConcentrador (payload, showPeriodos, selectedPeriodos, loadConcentradorData), theme (themeStore.ts).
+- API: fetchAsignaciones, fetchPeriodos, fetchYears.
+
+PROPS/EMIT:
+- Prop: `disabled` → boolean → Bloquea la interacción durante procesos de carga.
+
+RELACIONES:
+- Llamado por: PayloadFormSection.svelte.
+- Almacena datos en: localStorage (`concentradorIE_lastPayload`).
+
+NOTAS DE DESARROLLO:
+- Sincroniza dinámicamente los niveles y grupos base a la sede seleccionada.
+- Orquestador principal de la carga inicial de datos mediante `loadConcentradorData()`.
+
+ESTILOS:
+- Diseño compacto con 'cyber-border-form' y efectos de foco ('select-glow').
+- Checkboxes personalizados para selección múltiple de periodos.
+-->
+
 <script lang="ts">
   import {
     payload,

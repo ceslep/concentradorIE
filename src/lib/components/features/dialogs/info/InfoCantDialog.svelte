@@ -1,3 +1,31 @@
+<!-- 
+INFOCANTDIALOG.SVELTE
+
+DESCRIPCIÓN:
+Diálogo maestro que presenta el resumen de población estudiantil de la institución. Permite alternar entre una vista tabular detallada con subtotales y una vista gráfica de análisis.
+
+USO:
+<InfoCantDialog bind:showDialog />
+
+DEPENDENCIAS:
+- Componentes: InfoCantCharts, Skeleton (shared).
+- Store: payload (storeConcentrador), theme (themeStore).
+
+PROPS/EMIT:
+- Prop: `showDialog` → boolean → Visibilidad.
+
+RELACIONES:
+- Llamado por: App.svelte (vía DialogsContainer).
+
+NOTAS DE DESARROLLO:
+- Realiza el procesamiento de datos en el cliente para calcular subtotales por nivel y sede (`processData`).
+- Implementa una interfaz interactiva para intercambiar visualizaciones (Tabla <-> Gráfico).
+
+ESTILOS:
+- 'dark-glass' y 'light-glass' dinámicos según el tema global.
+- 'modern-table' con sticky headers para facilitar la navegación en sets de datos extensos.
+-->
+
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
   import { fade, scale } from "svelte/transition";
@@ -46,6 +74,10 @@
     }
   }
 
+  /**
+   * Procesa los datos brutos para inyectar subtotales y totales en la lista.
+   * Crea filas especiales para resúmenes de nivel, totales de sede y el total general.
+   */
   function processData(rawData: InfoCantData[]) {
     const groupedBySede: { [key: string]: InfoCantData[] } = {};
     rawData.forEach((item) => {

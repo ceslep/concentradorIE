@@ -1,3 +1,32 @@
+<!-- 
+LOGIN.SVELTE
+
+DESCRIPCIÓN:
+Pantalla de autenticación principal con diseño futurista. Gestiona el acceso de usuarios validando contra un endpoint de API y emitiendo un evento de éxito para la gestión de sesión global.
+
+USO:
+<Login on:loginSuccess={handleLoginSuccess} /> en App.svelte cuando no hay sesión activa.
+
+DEPENDENCIAS:
+- Store: theme (themeStore.ts).
+- UI Lib: flowbite-svelte (Card, Button, Label, Input, Alert, Spinner).
+- Constantes: LOGIN_ENDPOINT.
+
+PROPS/EMIT:
+- Evento emitido: `loginSuccess` → Emite los datos del usuario autenticado `{ user }`.
+
+RELACIONES:
+- Llamado por: App.svelte (componente raíz).
+
+NOTAS DE DESARROLLO:
+- Utiliza degradados radiales dinámicos similares a BackgroundDecorations pero específicos para la vista de login.
+- Soporta visibilidad de contraseña (toggle).
+
+ESTILOS:
+- Clases personalizadas: 'glass-card-custom', 'logo-sheen', 'glass-button'.
+- Adaptado para dispositivos móviles con escalado de logo dinámico.
+-->
+
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { theme } from "../../../themeStore";
@@ -13,6 +42,10 @@
 
   let showPassword = false;
 
+  /**
+   * Procesa el inicio de sesión enviando las credenciales al servidor.
+   * Maneja estados de carga, errores de red y despacho de éxito.
+   */
   async function handleLogin() {
     loading = true;
     error = "";
@@ -29,6 +62,7 @@
       const data = await response.json();
 
       if (data.success) {
+        // Notifica a App.svelte del éxito para actualizar la sesión global
         dispatch("loginSuccess", { user: data.user });
       } else {
         error = data.message || "Error al iniciar sesión";
@@ -60,28 +94,31 @@
   <div
     class="w-full max-w-5xl relative z-10 animate-fade-in-up flex items-center justify-center px-2"
   >
-    <Card
-      size="xl"
-      class="glass-card-custom p-4 sm:p-6 lg:p-8 w-full"
-    >
-              <div
-              class="flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-4 sm:gap-6 lg:gap-12 w-full h-full"
-              >
-              <!-- Institution Logo -->
-              <div class="flex flex-col items-center justify-center flex-shrink-0 h-full">
-                <div
-                  class="relative logo-sheen w-32 h-32 sm:w-40 sm:h-40 md:w-52 md:h-52 lg:w-72 lg:h-72 overflow-hidden"
-                >
-                  <img
-                    src="/src/assets/uescudo.png"
-                    alt="Escudo Institución Educativa"
-                    class="w-full h-full object-contain drop-shadow-2xl"
-                  />
-                </div>
-              </div>
-      
-              <!-- Login Form -->
-              <div class="flex-1 w-full lg:max-w-md h-full flex flex-col justify-center">          <div class="text-center lg:text-left mb-4 sm:mb-6 lg:mb-8">
+    <Card size="xl" class="glass-card-custom p-4 sm:p-6 lg:p-8 w-full">
+      <div
+        class="flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-4 sm:gap-6 lg:gap-12 w-full h-full"
+      >
+        <!-- Institution Logo -->
+        <div
+          class="flex flex-col items-center justify-center flex-shrink-0 h-full"
+        >
+          <div
+            class="relative logo-sheen w-32 h-32 sm:w-40 sm:h-40 md:w-52 md:h-52 lg:w-72 lg:h-72 overflow-hidden"
+          >
+            <img
+              src="/src/assets/uescudo.png"
+              alt="Escudo Institución Educativa"
+              class="w-full h-full object-contain drop-shadow-2xl"
+            />
+          </div>
+        </div>
+
+        <!-- Formulario de Inicio de Sesión -->
+        <div
+          class="flex-1 w-full lg:max-w-md h-full flex flex-col justify-center"
+        >
+          <!-- Encabezado del Formulario con degradado de texto -->
+          <div class="text-center lg:text-left mb-4 sm:mb-6 lg:mb-8">
             <h1
               class="text-lg sm:text-xl lg:text-2xl font-bold mb-2 {$theme ===
               'dark'

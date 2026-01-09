@@ -1,3 +1,27 @@
+<!-- 
+DIALOGSCONTAINER.SVELTE
+
+DESCRIPCIÓN:
+Orquestador central de diálogos. Actúa como capa de abstracción para renderizar múltiples modales (Notas, Información, Inasistencias, Estadísticas) centralizando sus propiedades y estados.
+
+USO:
+<DialogsContainer {...props} /> en App.svelte.
+
+DEPENDENCIAS:
+- Componentes: NotasDetalleDialog, InfoCantDialog, InasistenciasDetallado, GradesTableDialog.
+- Tipos: NotaDetalle (types.ts).
+
+PROPS/EMIT:
+- Recibe múltiples props para cada diálogo hijo, facilitando la limpieza del componente App.svelte.
+
+RELACIONES:
+- Llamado por: App.svelte.
+- Envuelve a: Todos los componentes de diálogo principales.
+
+NOTAS DE DESARROLLO:
+- Este componente no maneja lógica propia, solo actúa como pasarela de props (prop drilling controlado) para mantener App.svelte organizado.
+-->
+
 <script lang="ts">
     import NotasDetalleDialog from "./notas/NotasDetalleDialog.svelte";
     import InfoCantDialog from "./info/InfoCantDialog.svelte";

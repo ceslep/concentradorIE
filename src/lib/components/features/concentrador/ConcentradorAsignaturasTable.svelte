@@ -1,3 +1,33 @@
+<!-- 
+CONCENTRADORASIGNATURASTABLE.SVELTE
+
+DESCRIPCIÓN:
+Versión premium de la tabla de calificaciones organizada por Asignaturas. Incluye efectos visuales avanzados (glow), animaciones de entrada y acceso a estadísticas por docente.
+
+USO:
+<ConcentradorAsignaturasTable {handleValoracionClick} onHeaderClick={handleHeaderClick} /> en App.svelte.
+
+DEPENDENCIAS:
+- Store: theme (themeStore.ts), storeConcentrador (parsed, loading, payload, showPeriodos, selectedPeriodos, currentOrden, selectedAsignatura).
+- Tipos: EstudianteRow, ConcentradorParsed, AsignaturaOrdenItem (types.ts).
+
+PROPS/EMIT:
+- Prop: `handleValoracionClick` → function → Callback para abrir el detalle de notas.
+- Prop: `onHeaderClick` → function → Callback disparado al hacer clic en el nombre de una asignatura para ver estadísticas.
+
+RELACIONES:
+- Llamado por: App.svelte.
+- Llama a: GradesTableDialog (vía App.svelte).
+
+NOTAS DE DESARROLLO:
+- Implementa 'cyber-border' y efectos de brillo ('nota-glow').
+- Animaciones de entrada escalonadas para las filas de estudiantes (`idx * 20ms`).
+
+ESTILOS:
+- 'futuristic-scrollbar' y 'avatar-glow' para una estética moderna de alto nivel.
+- Altas densidades de información gestionadas con sticky headers/columns.
+-->
+
 <script lang="ts">
   import type {
     EstudianteRow,
@@ -42,6 +72,9 @@
   $: hoverRow = dark ? "hover:bg-gray-800/60" : "hover:bg-gray-50";
   $: stickyColBg = dark ? "bg-gray-900" : "bg-white";
 
+  /**
+   * Filtra la lista de estudiantes basándose en el término de búsqueda interactivo.
+   */
   $: filteredEstudiantes = (() => {
     if (!$parsed || $concentradorType !== "asignaturas")
       return [] as EstudianteRow[];
@@ -53,6 +86,10 @@
         );
   })();
 
+  /**
+   * Busca el valor de la calificación para una asignatura y período específicos.
+   * @returns La calificación formateada a un decimal o cadena vacía.
+   */
   function valorPeriodo(
     est: EstudianteRow,
     asignatura: string,
@@ -110,6 +147,10 @@
     );
   }
 
+  /**
+   * Determina la clase de color y brillo (glow) según el valor de la nota.
+   * @param valor - El valor numérico de la nota en formato string.
+   */
   function colorNota(valor: string): string {
     if (!valor)
       return "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500 border border-gray-200 dark:border-gray-700";
@@ -117,7 +158,7 @@
     if (isNaN(v))
       return "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500 border border-gray-200 dark:border-gray-700";
 
-    // Enhanced gradient colors with glow effects
+    // Paleta premium: Verde (>=4), Ámbar (>=3), Rojo (<3)
     if (v >= 4)
       return "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 dark:shadow-emerald-500/20 border border-emerald-400/50 nota-glow-green";
     if (v >= 3)
@@ -134,10 +175,14 @@
   >
     <!-- Futuristic background pattern -->
     <div class="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none">
-      <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 animate-pulse"></div>
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 animate-pulse"
+      ></div>
     </div>
-    
-    <div class="flex flex-col items-center justify-center h-full py-20 gap-8 relative z-10">
+
+    <div
+      class="flex flex-col items-center justify-center h-full py-20 gap-8 relative z-10"
+    >
       <!-- Enhanced multi-layer loading spinner -->
       <div class="relative">
         <div
@@ -153,20 +198,33 @@
         ></div>
         <!-- Center pulse -->
         <div class="absolute inset-0 flex items-center justify-center">
-          <div class="w-3 h-3 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-ping"></div>
-          <div class="absolute w-2 h-2 bg-indigo-600 dark:bg-indigo-300 rounded-full"></div>
+          <div
+            class="w-3 h-3 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-ping"
+          ></div>
+          <div
+            class="absolute w-2 h-2 bg-indigo-600 dark:bg-indigo-300 rounded-full"
+          ></div>
         </div>
       </div>
-      
+
       <div class="text-center space-y-2">
         <p class="text-lg font-bold {textPrimary} mb-1 tracking-wide">
           Cargando datos...
         </p>
         <p class="text-sm {textSecondary}">Por favor espera un momento</p>
         <div class="flex gap-1 justify-center mt-3">
-          <div class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
-          <div class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
-          <div class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
+          <div
+            class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"
+            style="animation-delay: 0ms;"
+          ></div>
+          <div
+            class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"
+            style="animation-delay: 150ms;"
+          ></div>
+          <div
+            class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"
+            style="animation-delay: 300ms;"
+          ></div>
         </div>
       </div>
     </div>
@@ -178,9 +236,13 @@
     in:fade={{ duration: 300 }}
   >
     <!-- Subtle gradient overlay at top -->
-    <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
-    
-    <div class="overflow-x-auto overflow-y-auto max-h-[70vh] futuristic-scrollbar">
+    <div
+      class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"
+    ></div>
+
+    <div
+      class="overflow-x-auto overflow-y-auto max-h-[70vh] futuristic-scrollbar"
+    >
       <table class="min-w-full text-sm text-left border-collapse">
         <thead
           class="text-xs uppercase tracking-wider sticky top-0 z-20 {bgHeader} shadow-lg border-b-2 border-indigo-500/20 dark:border-indigo-500/30"
@@ -195,14 +257,18 @@
                 <span
                   class="flex items-center gap-2 text-[11px] font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent"
                 >
-                  <span class="material-symbols-rounded text-lg text-indigo-600 dark:text-indigo-400 drop-shadow-sm">school</span>
+                  <span
+                    class="material-symbols-rounded text-lg text-indigo-600 dark:text-indigo-400 drop-shadow-sm"
+                    >school</span
+                  >
                   ESTUDIANTE
                 </span>
                 <div class="relative group">
                   <span
                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 group-focus-within:text-indigo-500 transition-all duration-300 z-10"
                   >
-                    <span class="material-symbols-rounded text-base drop-shadow-sm"
+                    <span
+                      class="material-symbols-rounded text-base drop-shadow-sm"
                       >search</span
                     >
                   </span>
@@ -247,7 +313,9 @@
             <tr class={bgHeader}>
               {#each $currentOrden as asignaturaItem (asignaturaItem.abreviatura)}
                 {#if asignaturaItem}
-                  <th class="p-1.5 border-b-2 border-indigo-500/20 dark:border-indigo-500/30">
+                  <th
+                    class="p-1.5 border-b-2 border-indigo-500/20 dark:border-indigo-500/30"
+                  >
                     <div class="flex justify-center gap-1">
                       {#each $selectedPeriodos.filter((p: string) => p !== "DEF") as per}
                         <span
@@ -277,7 +345,7 @@
 
         <tbody class="divide-y {borderDivide}">
           {#each filteredEstudiantes as est, idx (est.nombres)}
-            <tr 
+            <tr
               class="group transition-all duration-200 {hoverRow} hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-indigo-500/5 student-row"
               style="animation-delay: {idx * 20}ms;"
             >
@@ -405,22 +473,35 @@
     width: 10px;
     height: 10px;
   }
-  
+
   .futuristic-scrollbar::-webkit-scrollbar-track {
-    background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.05), transparent);
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(99, 102, 241, 0.05),
+      transparent
+    );
     border-radius: 10px;
   }
-  
+
   .futuristic-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(168, 85, 247, 0.4));
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.4),
+      rgba(168, 85, 247, 0.4)
+    );
     border-radius: 10px;
     border: 2px solid transparent;
     background-clip: padding-box;
     transition: all 0.3s ease;
   }
-  
+
   .futuristic-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.6), rgba(168, 85, 247, 0.6));
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.6),
+      rgba(168, 85, 247, 0.6)
+    );
     box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
   }
 
@@ -428,21 +509,26 @@
   .cyber-border {
     position: relative;
   }
-  
+
   .cyber-border::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: -1px;
     border-radius: 1rem;
     padding: 1px;
-    background: linear-gradient(135deg, 
-      rgba(99, 102, 241, 0.3), 
-      rgba(168, 85, 247, 0.2), 
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.3),
+      rgba(168, 85, 247, 0.2),
       rgba(236, 72, 153, 0.2),
       rgba(99, 102, 241, 0.3)
     );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0.5;
@@ -451,28 +537,37 @@
 
   /* Glow effects for nota buttons */
   .nota-glow-green:hover {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5), 0 0 40px rgba(16, 185, 129, 0.2);
+    box-shadow:
+      0 0 20px rgba(16, 185, 129, 0.5),
+      0 0 40px rgba(16, 185, 129, 0.2);
   }
-  
+
   .nota-glow-yellow:hover {
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.2);
+    box-shadow:
+      0 0 20px rgba(251, 191, 36, 0.5),
+      0 0 40px rgba(251, 191, 36, 0.2);
   }
-  
+
   .nota-glow-red:hover {
-    box-shadow: 0 0 20px rgba(244, 63, 94, 0.5), 0 0 40px rgba(244, 63, 94, 0.2);
+    box-shadow:
+      0 0 20px rgba(244, 63, 94, 0.5),
+      0 0 40px rgba(244, 63, 94, 0.2);
   }
 
   /* Avatar glow animation */
   .avatar-glow {
     animation: avatar-pulse 3s ease-in-out infinite;
   }
-  
+
   @keyframes avatar-pulse {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
     50% {
-      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.5), 0 0 30px rgba(168, 85, 247, 0.3);
+      box-shadow:
+        0 4px 20px rgba(168, 85, 247, 0.5),
+        0 0 30px rgba(168, 85, 247, 0.3);
     }
   }
 
@@ -480,13 +575,16 @@
   .period-def-glow {
     animation: def-pulse 2s ease-in-out infinite;
   }
-  
+
   @keyframes def-pulse {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 0 rgba(99, 102, 241, 0);
     }
     50% {
-      box-shadow: 0 0 12px rgba(99, 102, 241, 0.5), 0 0 20px rgba(99, 102, 241, 0.2);
+      box-shadow:
+        0 0 12px rgba(99, 102, 241, 0.5),
+        0 0 20px rgba(99, 102, 241, 0.2);
     }
   }
 
@@ -495,20 +593,26 @@
     position: relative;
     overflow: hidden;
   }
-  
+
   .header-btn::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 50%;
     left: 50%;
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+    background: radial-gradient(
+      circle,
+      rgba(99, 102, 241, 0.3) 0%,
+      transparent 70%
+    );
     transform: translate(-50%, -50%);
-    transition: width 0.6s ease, height 0.6s ease;
+    transition:
+      width 0.6s ease,
+      height 0.6s ease;
   }
-  
+
   .header-btn:hover::before {
     width: 300px;
     height: 300px;
@@ -525,7 +629,7 @@
       transform: translateX(0);
     }
   }
-  
+
   .student-row {
     animation: slideInRow 0.4s ease-out backwards;
   }

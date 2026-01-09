@@ -1,3 +1,28 @@
+<!-- 
+GRADEDETAILSDIALOG.SVELTE
+
+DESCRIPCIÓN:
+Diálogo ligero (info modal) para mostrar metadatos de una calificación específica: aspecto evaluado, porcentaje de la nota y fechas de asignación/registro.
+
+USO:
+<GradeDetailsDialog {show} {columnName} {aspecto} ... {onClose} />
+
+PROPS/EMIT:
+- Prop: `show` → boolean → Visibilidad.
+- Prop: `columnName` → string → Título del aspecto (ej: 'N1').
+- Prop: `onClose` → function → Callback para cerrar el modal.
+
+RELACIONES:
+- Llamado por: GradesTable2.svelte.
+
+NOTAS DE DESARROLLO:
+- Diseño minimalista y autocontenido con sus propios estilos CSS.
+- Accesible mediante la tecla 'Escape'.
+
+ESTILOS:
+- Implementa un overlay con desenfoque (`backdrop-filter: blur(8px)`) y gradientes de marca.
+-->
+
 <script lang="ts">
     import { fade } from "svelte/transition";
 
@@ -11,6 +36,9 @@
     export let onClose: () => void;
 
     // Handle escape key
+    /**
+     * Emite el evento de cierre al componente padre.
+     */
     function handleKeydown(e: KeyboardEvent) {
         if (e.key === "Escape") {
             onClose();

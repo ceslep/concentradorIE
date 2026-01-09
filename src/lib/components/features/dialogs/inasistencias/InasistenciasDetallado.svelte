@@ -1,3 +1,31 @@
+<!-- 
+INASISTENCIASDETALLADO.SVELTE
+
+DESCRIPCIÓN:
+Diálogo para la consulta pormenorizada de inasistencias de un estudiante. Muestra fechas, cantidad de horas, horas de clase específicas y justifica si existe excusa válida.
+
+USO:
+<InasistenciasDetallado {estudianteId} {nombres} {asignatura} {periodo} {year} bind:showDialog />
+
+DEPENDENCIAS:
+- API: fetchInasistenciasDetallado.
+- Tipos: Inasistencia, InasistenciasDetalladoPayload.
+
+PROPS/EMIT:
+- Prop: `showDialog` → boolean → Control de visibilidad.
+- Prop: `estudianteId`, `nombres`, `asignatura`, `periodo`, `year` → Datos de contexto para la consulta.
+
+RELACIONES:
+- Llamado por: DialogsContainer.svelte o StudentCardsView.svelte.
+
+NOTAS DE DESARROLLO:
+- Realiza una carga reactiva de datos al detectar cambios en los parámetros de entrada cuando el diálogo está abierto.
+- Maneja estados de "Sin inasistencias" con visualizaciones motivadoras.
+
+ESTILOS:
+- 'custom-table-scrollbar' y fondos degradados suaves para mejorar la legibilidad de largas listas de registros.
+-->
+
 <script lang="ts">
   import { onMount } from "svelte";
   import { fetchInasistenciasDetallado } from "../../../../api";
@@ -19,12 +47,18 @@
   let loading = false;
   let error: string | null = null;
 
+  /**
+   * Cierra el diálogo y limpia los datos cargados.
+   */
   function closeDialog() {
     showDialog = false;
     inasistencias = [];
     error = null;
   }
 
+  /**
+   * Ejecuta la consulta de inasistencias detalladas mediante la API.
+   */
   async function loadInasistencias() {
     loading = true;
     error = null;
@@ -141,7 +175,7 @@
         </button>
       </div>
 
-      <!-- Content -->
+      <!-- Contenido Principal -->
       <div
         class="flex-1 overflow-y-auto p-0 custom-scrollbar bg-gradient-to-br from-gray-50/80 via-gray-50/60 to-gray-50/80 dark:from-black/30 dark:via-black/20 dark:to-black/30"
       >

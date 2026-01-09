@@ -1,3 +1,32 @@
+<!-- 
+APP.SVELTE
+
+DESCRIPCIÓN:
+Componente raíz de la aplicación Concentrador IE. Orquestra la autenticación, la carga de datos maestros, la navegación entre vistas (Tablas vs Tarjetas) y la gestión centralizada de diálogos/modales.
+
+USO:
+Punto de entrada principal configurado en main.ts.
+
+DEPENDENCIAS:
+- Stores: parsed, loading, error, payload, viewMode, etc.
+- Componentes: AppHeader, PayloadFormSection, ConcentradorAsignaturasTable, ConcentradorAreasTable, StudentCardsView, DialogsContainer.
+- API: fetchNotasDetallado, fetchNotasDetalladoAreas.
+
+PROPS/EMIT:
+No recibe props externas significativas al ser el componente raíz.
+
+RELACIONES:
+- Actúa como contenedor padre de toda la jerarquía de componentes.
+- Gestiona el estado compartido que fluye hacia DialogsContainer.
+
+NOTAS DE DESARROLLO:
+- Centraliza la lógica de `handleValoracionClick` para uniformizar la carga de detalles de notas desde cualquier vista.
+- Implementa la persistencia de sesión básica mediante `sessionStorage`.
+
+ESTILOS:
+- Envuelve el contenido en BackgroundDecorations para establecer la estética global (Cyber-Mechanical).
+-->
+
 <script lang="ts">
   import { onMount } from "svelte";
   import { get } from "svelte/store";
@@ -56,11 +85,14 @@
   let isAuthenticated = false;
   let user: any = null;
 
+  /**
+   * Gestiona la visualización de inasistencias detalladas para un estudiante.
+   */
   function handleShowInasistencias(
     estudianteId: string,
     nombres: string,
     asignatura: string,
-    periodo: string
+    periodo: string,
   ) {
     inasistenciasEstudianteId = estudianteId;
     inasistenciasNombres = nombres;
@@ -96,18 +128,23 @@
     sessionStorage.removeItem("user");
   }
 
+  /**
+   * Orquestador central para la carga de detalles de notas.
+   * Se activa al hacer clic en una valoración específica en cualquier tabla o tarjeta.
+   * Realiza la llamada a la API y abre el diálogo correspondiente.
+   */
   async function handleValoracionClick(
     est: EstudianteRow | EstudianteRowArea,
     itemAbrev: string,
     periodo: string,
     valoracion: string,
-    itemNombre: string = itemAbrev // Add itemNombre with default
+    itemNombre: string = itemAbrev,
   ) {
-    // If valoracion is empty or '-', check if it's a specific request from a subject card button
+    // Si la valoración está vacía o es '-', verificar si es una solicitud desde una tarjeta de asignatura
     if ((!valoracion || valoracion === "-") && itemNombre) {
-        // This is a request from a subject card button, proceed to fetch notes for this subject
+      // Es una solicitud desde el botón de la tarjeta, proceder a cargar notas
     } else if (!valoracion || valoracion === "-") {
-        return; // For other specific grade clicks, if no valoracion, do nothing.
+      return;
     }
 
     showNotasDetalleDialog = true;
@@ -115,14 +152,14 @@
     notasDetalleLoading = true;
     notasDetalleError = null;
 
-    let selectedItemName = itemNombre; // Use itemNombre if provided
+    let selectedItemName = itemNombre;
     const currentConcentradorType = get(concentradorType);
 
     if ($parsed) {
       if (currentConcentradorType === "asignaturas") {
         const p = $parsed as ConcentradorParsed;
         const selectedAsignatura = p.asignaturas?.find(
-          (a) => a.abreviatura === itemAbrev
+          (a) => a.abreviatura === itemAbrev,
         );
         selectedItemName = selectedAsignatura?.nombre || itemAbrev;
       } else {
@@ -134,9 +171,9 @@
 
     selectedEstudianteId = est.id;
     selectedStudentName = est.nombres;
-    selectedAsignatura.set(itemAbrev); // Update the store
+    selectedAsignatura.set(itemAbrev);
     selectedAsignaturaNombre = selectedItemName;
-    selectedPeriodoForDialog = periodo; // Set the clicked period
+    selectedPeriodoForDialog = periodo;
 
     const payloadDetalle: NotasDetalladoPayload = {
       estudiante: est.id,
@@ -168,7 +205,8 @@
 
   // Function to handle the custom event from StudentCardsView
   function handleOpenNotasDetalleEvent(event: CustomEvent) {
-    const { student, itemAbrev, periodo, valoracion, itemNombre } = event.detail;
+    const { student, itemAbrev, periodo, valoracion, itemNombre } =
+      event.detail;
     handleValoracionClick(student, itemAbrev, periodo, valoracion, itemNombre);
   }
 </script>
@@ -194,7 +232,7 @@
     <ErrorAlert error={$error} />
 
     <!-- === TABLA DE ESTUDIANTES / VISTA DE TARJETAS === -->
-    {#if $viewMode === 'cards-view'}
+    {#if $viewMode === "cards-view"}
       <StudentCardsView on:openNotasDetalle={handleOpenNotasDetalleEvent} />
     {:else if $concentradorType === "asignaturas"}
       <ConcentradorAsignaturasTable
@@ -203,7 +241,8 @@
       />
     {:else}
       <ConcentradorAreasTable {handleValoracionClick} />
-    {/if}    <!-- === SKELETON (cargando) === -->
+    {/if}
+    <!-- === SKELETON (cargando) === -->
     <LoadingSkeleton
       loading={$loading}
       parsed={$parsed}

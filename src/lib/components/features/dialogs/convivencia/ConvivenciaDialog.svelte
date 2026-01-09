@@ -1,3 +1,33 @@
+<!-- 
+CONVIVENCIADIALOG.SVELTE
+
+DESCRIPCIÓN:
+Diálogo especializado en la gestión y visualización de registros de convivencia. Presenta una interfaz de maestro-detalle para explorar faltas, descripciones, descargos y firmas digitales.
+
+USO:
+<ConvivenciaDialog bind:showDialog {estudianteId} {year} />
+
+DEPENDENCIAS:
+- API: fetchConsolidadoConvivencia, fetchConvivenciaDetallado.
+- Tipos: ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado.
+
+PROPS/EMIT:
+- Prop: `showDialog` → boolean → Controla la visibilidad.
+- Prop: `estudianteId` → string → ID del estudiante a consultar.
+- Prop: `year` → string → Año lectivo.
+- Prop: `hasConvivenciaRecords` → boolean → Prop reactiva (salida) que indica si existen registros.
+
+RELACIONES:
+- Llamado por: GradesTable2.svelte (vía GradesTableDialog) o StudentCardsView.svelte.
+
+NOTAS DE DESARROLLO:
+- Implementa una vista dividida (sidebar + content).
+- Soporta la visualización de firmas de estudiante y acudiente en formato imagen (base64/url).
+
+ESTILOS:
+- Usa 'backdrop-blur-sm' y animaciones Svelte (`fade`, `scale`) para una experiencia fluida.
+-->
+
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
   import { fade, scale } from "svelte/transition";
@@ -26,17 +56,23 @@
 
   const dispatch = createEventDispatcher();
 
+  /**
+   * Cierra el diálogo y reinicia todos los estados internos.
+   */
   function closeDialog() {
     showDialog = false;
     convivenciaRecords = [];
     error = null;
     selectedRecord = null;
-    convivenciaDetallado = null; // Reset detailed data
-    errorDetalle = null; // Reset detailed error
-    hasConvivenciaRecords = false; // Reset on close
+    convivenciaDetallado = null; // Reinicia datos detallados
+    errorDetalle = null; // Reinicia errores de detalle
+    hasConvivenciaRecords = false; // Reinicia estado de existencia
     dispatch("close");
   }
 
+  /**
+   * Carga la lista resumida de registros de convivencia del estudiante.
+   */
   async function loadConvivenciaData() {
     loading = true;
     error = null;
@@ -45,25 +81,29 @@
         estudiante: estudianteId,
         year: year,
       };
-      // Agregar un delay mínimo para que el loading sea visible
+      // Simulación de delay para mejorar la percepción de carga (UX)
       const [data] = await Promise.all([
         fetchConsolidadoConvivencia(payload),
-        new Promise((resolve) => setTimeout(resolve, 800)), // 800ms delay mínimo
+        new Promise((resolve) => setTimeout(resolve, 800)),
       ]);
       convivenciaRecords = data;
-      hasConvivenciaRecords = convivenciaRecords.length > 0; // Update prop
+      hasConvivenciaRecords = convivenciaRecords.length > 0;
     } catch (e: any) {
       error = e.message;
-      hasConvivenciaRecords = false; // No records on error
+      hasConvivenciaRecords = false;
     } finally {
       loading = false;
     }
   }
 
+  /**
+   * Carga el detalle extendido de un registro específico de convivencia.
+   * @param recordInd - Índice/ID único del registro.
+   */
   async function loadConvivenciaDetalladoData(recordInd: string) {
     loadingDetalle = true;
     errorDetalle = null;
-    convivenciaDetallado = null; // Clear previous detailed data
+    convivenciaDetallado = null; // Limpia datos previos
     try {
       convivenciaDetallado = await fetchConvivenciaDetallado({
         ind: recordInd,
@@ -212,9 +252,9 @@
         </div>
       {/if}
 
-      <!-- Body Content -->
+      <!-- Contenido Principal: Barra lateral + Panel de Detalle -->
       <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
-        <!-- Left Sidebar: List of Records -->
+        <!-- Sidebar: Lista cronológica de registros -->
         <div
           class="w-full md:w-80 lg:w-96 flex-none border-r border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-black/20 overflow-y-auto p-4 space-y-3 custom-scrollbar"
         >

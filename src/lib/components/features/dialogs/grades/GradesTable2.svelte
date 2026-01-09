@@ -1,3 +1,34 @@
+<!-- 
+GRADESTABLE2.SVELTE
+
+DESCRIPCIÓN:
+Componente de tabla de calificaciones de alto rendimiento (nativo). Permite la edición directa de notas con validación en tiempo real, navegación por teclado, deshacer/rehacer y guardado automático.
+
+USO:
+<GradesTable2 {docenteId} {periodo} bind:tableData bind:isLoading />
+
+DEPENDENCIAS:
+- Store: payload, selectedAsignatura (storeConcentrador.ts).
+- Utils: calculateRowVal, gradeFormatter, validateGrade, etc. (gradeTableUtils.ts).
+- Componentes: GradeDetailsDialog.svelte.
+
+PROPS/EMIT:
+- Prop: `tableNotasId` → string → ID único para el contenedor.
+- Prop: `enableAutoSave` → boolean → Habilita el guardado automático de cambios.
+- Prop: `onAutoSave` → function → Callback asíncrono para persistir cambios.
+
+RELACIONES:
+- Llamado por: GradesTableDialog.svelte.
+- Llama a: GradeDetailsDialog.svelte.
+
+NOTAS DE DESARROLLO:
+- Implementa una arquitectura robusta de Undo/Redo basada en pilas (`undoStack`, `redoStack`).
+- Optimizado para navegación rápida con flechas y validación automática de rango (1.0 - 5.0).
+
+ESTILOS:
+- Usa celdas editables nativas (`contenteditable`) con estilos 'low-grade' para notas reprobatorias.
+-->
+
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
@@ -94,6 +125,10 @@
 
   // ========== HELPER FUNCTIONS ==========
 
+  /**
+   * Carga los datos de la tabla desde la API.
+   * Inicializa las filas con IDs únicos y calcula el promedio inicial (Val).
+   */
   const loadTableData = async () => {
     if (!docente || !asignatura) return;
     isLoading = true;
@@ -142,14 +177,19 @@
     } else {
       const q = searchQuery.toLowerCase();
       filteredData = tableData.filter((row) =>
-        row.Nombres.toLowerCase().includes(q)
+        row.Nombres.toLowerCase().includes(q),
       );
     }
   };
 
+  /**
+   * Gestiona la navegación entre celdas editables usando las flechas del teclado.
+   * @param direction - Sentido del movimiento.
+   * @param originElement - Elemento desde donde se origina el movimiento.
+   */
   const navigateCell = (
     direction: "up" | "down" | "left" | "right",
-    originElement?: HTMLElement
+    originElement?: HTMLElement,
   ) => {
     // Encontrar la celda actualmente enfocada o usar la pasada
     const activeElement =
@@ -176,7 +216,7 @@
     } else if (direction === "up" || direction === "down") {
       // Mover a la fila anterior o siguiente
       const allRows = Array.from(
-        currentRow.parentElement?.querySelectorAll("tr") || []
+        currentRow.parentElement?.querySelectorAll("tr") || [],
       );
       const currentRowIndex = allRows.indexOf(currentRow);
 
@@ -186,7 +226,7 @@
 
       if (targetRow) {
         const targetRowCells = Array.from(
-          targetRow.querySelectorAll("td.editable-cell")
+          targetRow.querySelectorAll("td.editable-cell"),
         );
         targetCell = targetRowCells[currentCellIndex] || null;
       }
@@ -233,6 +273,9 @@
     if (enableAutoSave) debouncedSave();
   };
 
+  /**
+   * Revierte el último cambio realizado (Undo).
+   */
   const performUndo = () => {
     if (!canUndo) return;
     const entry = undoStack.pop();
@@ -298,15 +341,15 @@
       headers
         .map(
           (h) =>
-            `"${String(row[h as keyof GradeData] ?? "").replace(/"/g, '""')}"`
+            `"${String(row[h as keyof GradeData] ?? "").replace(/"/g, '""')}"`,
         )
-        .join(",")
+        .join(","),
     );
     const csv = [headers.join(","), ...rows].join("\n");
     downloadFile(
       `Notas_${asignatura}_${currentPeriodo}_${year}.csv`,
       csv,
-      "text/csv"
+      "text/csv",
     );
   };
 
@@ -317,7 +360,7 @@
   const downloadFile = (
     filename: string,
     content: string,
-    contentType: string
+    contentType: string,
   ) => {
     const blob = new Blob([content], { type: contentType });
     const url = URL.createObjectURL(blob);
@@ -985,7 +1028,6 @@
     outline-offset: 2px;
     border-radius: 4px;
   }
-
 
   .low-grade {
     color: #ef4444 !important;

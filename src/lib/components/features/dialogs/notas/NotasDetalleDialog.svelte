@@ -1,3 +1,32 @@
+<!-- 
+NOTASDETALLEDIALOG.SVELTE
+
+DESCRIPCIÓN:
+Diálogo central para la revisión profunda de calificaciones de un estudiante en una asignatura. Permite ver el desglose por tipo de nota, acceder al historial de cambios, inasistencias y detalles adicionales del estudiante.
+
+USO:
+<NotasDetalleDialog {...props} /> como parte de DialogsContainer.
+
+DEPENDENCIAS:
+- API: fetchStudentDetails.
+- Componentes: NotasHistoryDialog, ConvivenciaDialog, StudentDetailsModal.
+
+PROPS/EMIT:
+- Prop: `notasDetalle` → NotaDetalle[] → Array con el desglose de notas actual.
+- Prop: `onShowInasistencias` → function → Callback para redirigir a la vista de inasistencias.
+
+RELACIONES:
+- Llamado por: DialogsContainer.svelte (procedente de un click en tablas o tarjetas).
+- Llama a: Múltiplos submódulos de diálogo/modales.
+
+NOTAS DE DESARROLLO:
+- Realiza el ordenamiento por fecha de las notas cargadas.
+- Actúa como hub de navegación hacia otros detalles académicos del estudiante.
+
+ESTILOS:
+- Diseño inmersivo con 'backdrop-blur-md' y gradientes dinámicos en el header.
+-->
+
 <script lang="ts">
     import { fade, scale } from "svelte/transition";
     import type { NotaDetalle, EstudianteDetalle } from "../../../../types";
@@ -47,7 +76,11 @@
         error = null;
     }
 
-    // Función auxiliar para convertir "Mes Día" a un objeto Date
+    /**
+     * Convierte una cadena de fecha con formato "Mes Día" (español) a un objeto Date.
+     * @param fechaStr - Cadena tipo "Octubre 24".
+     * @param currentYear - Año actual para completar el objeto Date.
+     */
     function parseFecha(fechaStr: string, currentYear: string): Date {
         if (!fechaStr || fechaStr.trim() === "") {
             return new Date(0);

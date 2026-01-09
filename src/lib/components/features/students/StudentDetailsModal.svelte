@@ -1,3 +1,33 @@
+<!-- 
+STUDENTDETAILSMODAL.SVELTE
+
+DESCRIPCIÓN:
+Modal de edición integral para la información del estudiante. Presenta una interfaz organizada por pestañas (Personal, Académico, Contacto, Familiar, Médico) con estética glassmorphism premium.
+
+USO:
+<StudentDetailsModal {estudiante} bind:showModal />
+
+DEPENDENCIAS:
+- Store: eNombres, eGenero, eFecnac, etc. (storeConcentrador.ts) - Stores individuales para cada campo de edición.
+- Animaciones: fade, slide, scale, cubicOut.
+
+PROPS/EMIT:
+- Prop: `showModal` → boolean → Control de visibilidad.
+- Prop: `estudiante` → EstudianteDetalle → Objeto con la información inicial del estudiante.
+- Emit: `close` → Notifica el cierre del modal.
+
+RELACIONES:
+- Llamado por: NotasDetalleDialog.svelte.
+
+NOTAS DE DESARROLLO:
+- Sincroniza bidireccionalmente los datos del prop `estudiante` con los stores globales mediante reactividad (`$: if (estudiante) ...`).
+- Implementa un sistema de clases CSS reutilizables (`INPUT_CLASSES`, `LABEL_CLASSES`) para mantener la coherencia visual.
+
+ESTILOS:
+- Usa 'premium-glass' para el contenedor principal.
+- Implementa una paleta de colores vibrante por pestaña (Indigo para personal, Emerald para académico, etc.).
+-->
+
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { fade, slide, scale } from "svelte/transition";
@@ -71,7 +101,10 @@
     dispatch("close");
   }
 
-  // Get initials from student name for avatar badge
+  /**
+   * Obtiene las iniciales del estudiante a partir de su nombre.
+   * Se utiliza para el avatar del modal.
+   */
   function getInitials(name: string): string {
     if (!name) return "E";
     const parts = name.trim().split(" ");
@@ -133,10 +166,13 @@
     eSede.set(estudiante.sede);
   }
 
-  // Form submission handler with loading state
+  /**
+   * Procesa el envío del formulario.
+   * Actualmente simula la persistencia con un retardo.
+   */
   async function handleSubmit() {
     isSaving = true;
-    // Simulate save operation
+    // Simular operación de guardado
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log("Saving student changes...");
     isSaving = false;

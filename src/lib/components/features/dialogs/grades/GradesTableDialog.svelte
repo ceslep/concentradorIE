@@ -1,3 +1,31 @@
+<!-- 
+GRADESTABLEDIALOG.SVELTE
+
+DESCRIPCIÓN:
+Diálogo contenedor para el análisis detallado de un curso/docente. Permite alternar entre una vista de tabla de calificaciones completa y un panel de estadísticas.
+
+USO:
+<GradesTableDialog bind:showDialog {docenteId} {periodo} />
+
+DEPENDENCIAS:
+- Componentes: GradesTable2, GradesStatistics.
+- Store: theme (themeStore.ts), selectedAsignatura (storeConcentrador.ts).
+
+PROPS/EMIT:
+- Prop: `showDialog` → boolean → Visibilidad.
+- Prop: `docenteId` → string → ID del curso/docente a cargar.
+- Prop: `periodo` → string → Periodo lectivo actual.
+
+RELACIONES:
+- Llamado por: ConcentradorAsignaturasTable.svelte.
+
+NOTAS DE DESARROLLO:
+- Gestiona el estado compartido `tableData` entre el componente de tabla y el de estadísticas para evitar doble carga.
+
+ESTILOS:
+- Modal a pantalla casi completa (98vw) con transiciones de escala y opacidad.
+-->
+
 <script lang="ts">
   import GradesTable2 from "./GradesTable2.svelte";
   import GradesStatistics from "./GradesStatistics.svelte";
@@ -8,10 +36,14 @@
   export let docenteId: string; // New prop
   export let periodo: string;
 
+  /**
+   * Cierra el diálogo restaurando la visibilidad a false.
+   */
   function closeDialog() {
     showDialog = false;
   }
 
+  // Estado compartido para evitar recargas innecesarias entre tabla y estadísticas
   let tableData: any[] = [];
   let showStats = false;
   let isLoading = false;

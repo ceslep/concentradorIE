@@ -1,3 +1,33 @@
+<!-- 
+PAYLOADFORMSECTION.SVELTE
+
+DESCRIPCIÓN:
+Contenedor decorativo y funcional para el formulario de parámetros. Proporciona una interfaz colapsable con efectos visuales premium y estados de carga dedicados.
+
+USO:
+<PayloadFormSection show={showPayloadForm} loading={$loading} /> en App.svelte.
+
+DEPENDENCIAS:
+- Componente hijo: PayloadForm.svelte.
+- Store: theme (themeStore.ts).
+
+PROPS/EMIT:
+- Prop: `show` → boolean → Controla la visibilidad (colapsado/expandido).
+- Prop: `loading` → boolean → Muestra un overlay de carga sobre el formulario.
+
+RELACIONES:
+- Llamado por: App.svelte.
+- Envuelve a: PayloadForm.svelte.
+
+NOTAS DE DESARROLLO:
+- Utiliza 'animate-pulse-slow' y 'animate-gradient-x' para fondos vivos y dinámicos.
+- Implementa una máscara SVG/CSS para bordes animados de alta precisión.
+
+ESTILOS:
+- 'glass-effect-premium' para una apariencia de cristal traslúcido.
+- Bordes rotativos decorativos (`rotateBorder`).
+-->
+
 <script lang="ts">
   import PayloadForm from "./PayloadForm.svelte";
   import { theme } from "../../../themeStore";

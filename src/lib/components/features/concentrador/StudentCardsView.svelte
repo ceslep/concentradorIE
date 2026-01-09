@@ -1,3 +1,34 @@
+<!-- 
+STUDENTCARDSVIEW.SVELTE
+
+DESCRIPCIÓN:
+Vista alternativa "dashboard" para visualizar estudiantes. Presenta una interfaz de dos paneles con una lista lateral de estudiantes y un panel de detalles central con tarjetas descriptivas de notas y convivencia.
+
+USO:
+<StudentCardsView on:openNotasDetalle={handleOpenNotasDetalleEvent} /> en App.svelte.
+
+DEPENDENCIAS:
+- Store: storeConcentrador (parsed, loading, error, payload, selectedPeriodos, concentradorType), theme (themeStore.ts).
+- API: fetchStudentDetails, fetchNotasDetallado, fetchNotasDetalladoAreas.
+- Componentes: NotasDetalleDialog.svelte.
+
+PROPS/EMIT:
+- Evento emitido: `openNotasDetalle` → Dispara la apertura del detalle de notas en el padre.
+- Evento emitido: `openInasistencias` → Dispara la vista de inasistencias en el padre.
+
+RELACIONES:
+- Llamado por: App.svelte cuando `viewMode === 'cards-view'`.
+- Llama a: NotasDetalleDialog.svelte para visualización rápida de notas.
+
+NOTAS DE DESARROLLO:
+- Implementa efectos de 'ripple' personalizados en los clics de botones.
+- Gestión compleja de estados para el colapso de la barra lateral y pestañas de contenido.
+
+ESTILOS:
+- Diseño altamente inmersivo con 'backdrop-blur-xl' y animaciones de entrada 'fly' y 'scale'.
+- Gradientes dinámicos basados en la valoración de las notas (Verde/Azul/Rojo).
+-->
+
 <script lang="ts">
   import { writable, get } from "svelte/store";
   import type {
@@ -61,6 +92,10 @@
   const dispatch = createEventDispatcher();
 
   // Add ripple effect
+  /**
+   * Crea un efecto visual de onda (ripple) en las coordenadas del clic.
+   * @param event - El evento del ratón que dispara la onda.
+   */
   function createRipple(event: MouseEvent) {
     const button = event.currentTarget as HTMLElement;
     const rect = button.getBoundingClientRect();
@@ -79,6 +114,10 @@
     }, 600);
   }
 
+  /**
+   * Abre el diálogo con el desglose detallado de notas para una asignatura.
+   * Realiza la petición a la API según el tipo de concentrador (Asignaturas/Áreas).
+   */
   async function handleOpenNotasDetalle(
     student: EstudianteRow,
     asignatura: AsignaturaNota,
@@ -111,7 +150,7 @@
       }
     }
 
-    // Prepare Dialog State
+    // Configuración inicial del estado del diálogo
     dialogStudentName = student.nombres;
     dialogAsignatura = itemNombre;
     dialogEstudianteId = student.id;
@@ -138,6 +177,7 @@
         numero: currentPayload.numero,
       };
 
+      // Petición dinámica basada en el contexto de visualización
       if (currentConcentradorType === "areas") {
         notasDetalle = await fetchNotasDetalladoAreas(detailPayload);
       } else {
@@ -178,6 +218,11 @@
     studentDetailsError = null;
   }
 
+  /**
+   * Obtiene información extendida del estudiante (API secundaria).
+   * @param studentId - ID del estudiante.
+   * @param year - Año lectivo para la consulta.
+   */
   async function fetchDetailsForSelectedStudent(
     studentId: string,
     year: string,
@@ -1310,18 +1355,20 @@
   }
 
   /* Gradient text */
-  .gradient-text {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  .title-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  /* Line clamp */
+  /* Optimized card text clamping */
   .line-clamp-2 {
-    overflow: hidden;
     display: -webkit-box;
-    -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-clamp: 2;
   }
 
   /* Card hover effects */

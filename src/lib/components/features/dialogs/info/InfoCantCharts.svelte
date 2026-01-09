@@ -1,3 +1,30 @@
+<!-- 
+INFOCANTCHARTS.SVELTE
+
+DESCRIPCIÓN:
+Módulo de visualización gráfica para la estadística de población estudiantil. Renderiza gráficos de dona (distribución por sede) y barras (estudiantes por nivel/sede) usando Chart.js.
+
+USO:
+<InfoCantCharts {data} /> dentro de InfoCantDialog.svelte.
+
+DEPENDENCIAS:
+- Librería: Chart.js/auto.
+- Store: theme (themeStore.ts).
+
+PROPS/EMIT:
+- Prop: `data` → InfoCantData[] → Datos brutos de población.
+
+RELACIONES:
+- Llamado por: InfoCantDialog.svelte.
+
+NOTAS DE DESARROLLO:
+- Implementa una paleta de colores premium auto-adaptativa al tema oscuro/claro.
+- Destruye y recrea los gráficos reactivamente ante cambios de tema para evitar solapamientos de canvas.
+
+ESTILOS:
+- Usa tarjetas con efecto 'glass-effect' y sombras suaves para los contenedores de gráficos.
+-->
+
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import Chart from "chart.js/auto";
@@ -30,17 +57,21 @@
         "rgba(139, 92, 246, 1)",
     ];
 
+    /**
+     * Procesa los datos brutos de población para agrupar por sedes y niveles.
+     * @returns Objeto con arrays formateados para el consumo de Chart.js.
+     */
     function processData() {
         const sedeTotals: { [key: string]: number } = {};
         const sedeNivelData: { [key: string]: { [key: number]: number } } = {};
         const allNiveles = new Set<number>();
 
         data.forEach((item) => {
-            // Sede Totals
+            // Totales por Sede
             sedeTotals[item.sede] =
                 (sedeTotals[item.sede] || 0) + item.total_estudiantes;
 
-            // Sede-Nivel Data
+            // Datos por Sede-Nivel
             if (!sedeNivelData[item.sede]) {
                 sedeNivelData[item.sede] = {};
             }
@@ -61,6 +92,10 @@
         };
     }
 
+    /**
+     * Inicializa las instancias de Chart.js para los gráficos de dona y barras.
+     * Configura colores, leyendas y comportamientos responsivos.
+     */
     function initCharts() {
         if (!data || data.length === 0) return;
 

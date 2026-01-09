@@ -1,4 +1,32 @@
+<!-- 
+ERRORALERT.SVELTE
+
+DESCRIPCIÓN:
+Componente de alerta para mostrar mensajes de error con una estética disruptiva y animada (shake). Utiliza glassmorphism fuerte para destacar sobre otros elementos.
+
+USO:
+<ErrorAlert error={$error} /> en App.svelte o cualquier contenedor de errores.
+
+DEPENDENCIAS:
+- Store: theme (themeStore.ts).
+
+PROPS/EMIT:
+- Prop: `error` → string | null → El mensaje de error a mostrar. Si es null, el componente no se renderiza.
+
+RELACIONES:
+- Llamado por: App.svelte.
+
+NOTAS DE DESARROLLO:
+- Incluye una animación 'animate-shake' para captar la atención del usuario.
+- El gradiente de fondo es reactivo al tema.
+
+ESTILOS:
+- Clase 'glass-effect-strong' para máxima legibilidad sobre fondos complejos.
+- Bordes semitransparentes con colores de alerta.
+-->
+
 <script lang="ts">
+    import { fade } from "svelte/transition";
     import { theme } from "../../themeStore";
 
     export let error: string | null = null;
@@ -6,13 +34,11 @@
 
 {#if error}
     <div
-        class="glass-effect-strong border-2 border-red-500/50 px-6 py-4 rounded-2xl relative animate-shake shadow-premium-xl"
+        transition:fade={{ duration: 300 }}
+        class="glass-effect-strong border-2 border-red-500/50 px-6 py-4 rounded-2xl relative animate-shake shadow-premium-xl mx-4 my-4 flex items-center gap-3"
         role="alert"
-        style="background: {$theme === 'dark'
-            ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(185, 28, 28, 0.15))'
-            : 'linear-gradient(135deg, rgba(254, 202, 202, 0.5), rgba(252, 165, 165, 0.5))'};"
     >
-        <div class="flex items-start gap-3">
+        <div class="flex items-start gap-3 w-full">
             <div
                 class="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg"
             >

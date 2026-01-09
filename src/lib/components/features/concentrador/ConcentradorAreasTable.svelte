@@ -1,5 +1,37 @@
+<!-- 
+CONCENTRADORAREASTABLE.SVELTE
+
+DESCRIPCIÓN:
+Tabla principal para la visualización de calificaciones agrupadas por Áreas. Ofrece funcionalidades de búsqueda, visualización de periodos/definitivas y acceso detallado a notas.
+
+USO:
+<ConcentradorAreasTable {handleValoracionClick} /> en App.svelte.
+
+DEPENDENCIAS:
+- Store: theme (themeStore.ts), storeConcentrador (parsed, loading, concentradorType, showPeriodos, selectedPeriodos, currentOrden).
+- Tipos: ConcentradorAreasParsed, EstudianteRowArea (types.ts).
+
+PROPS/EMIT:
+- Prop: `handleValoracionClick` → function → Función para abrir el detalle de una nota específica.
+
+RELACIONES:
+- Llamado por: App.svelte.
+- Depende de: VirtualRows.svelte (en versiones optimizadas) y storeConcentrador.ts.
+
+NOTAS DE DESARROLLO:
+- Componente optimizado para visualización por áreas con sticky columns para nombres de estudiantes.
+- Colores de notas dinámicos: Verde (4-5), Amarillo (3-3.9), Rojo (0-2.9).
+
+ESTILOS:
+- Implementa 'custom-scrollbar' y efectos de glassmorphism suaves.
+- Soporte completo para modo oscuro (dark mode).
+-->
+
 <script lang="ts">
-  import type { ConcentradorAreasParsed, EstudianteRowArea } from "../../../types";
+  import type {
+    ConcentradorAreasParsed,
+    EstudianteRowArea,
+  } from "../../../types";
   import { theme } from "../../../themeStore";
   import {
     parsed,
@@ -41,6 +73,9 @@
   $: hoverRow = dark ? "hover:bg-gray-700/50" : "hover:bg-gray-50";
   $: stickyColBg = dark ? "bg-gray-800" : "bg-white";
 
+  /**
+   * Filtra reactivamente la lista de estudiantes por nombre.
+   */
   $: filteredEstudiantes = (() => {
     if (!$parsed || $concentradorType !== "areas")
       return [] as EstudianteRowArea[];
@@ -94,6 +129,10 @@
     return item?.nombre ?? abreviatura;
   }
 
+  /**
+   * Obtiene la calificación de un área específica para un período dado.
+   * @returns Calificación formateada o cadena vacía si no existe.
+   */
   function valorPeriodo(
     est: EstudianteRowArea,
     areaAbrev: string,

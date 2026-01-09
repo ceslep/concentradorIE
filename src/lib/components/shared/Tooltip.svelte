@@ -1,10 +1,38 @@
+<!-- 
+TOOLTIP.SVELTE
+
+DESCRIPCIÓN:
+Componente de información flotante con posicionamiento inteligente y soporte para portales (se renderiza en el body para evitar problemas de desbordamiento de contenedores).
+
+USO:
+<Tooltip content="Información extra" position="top"> <button>Hover me</button> </Tooltip>
+
+DEPENDENCIAS:
+- Store: theme (themeStore.ts).
+- Svelte Utility: fade (svelte/transition), portal (action local).
+
+PROPS/EMIT:
+- Prop: `content` → string | null → Texto a mostrar.
+- Prop: `position` → 'top'|'bottom'|'left'|'right' → Ubicación relativa al disparador.
+
+RELACIONES:
+- Usado en: Múltiples componentes (AppHeader, StudentCardsView, etc.) para accesibilidad.
+
+NOTAS DE DESARROLLO:
+- Implementa una acción 'portal' para asegurar que el tooltip esté siempre por encima de cualquier otro elemento Z-index.
+- Recalcula la posición dinámicamente al hacer scroll o reajustar la ventana.
+
+ESTILOS:
+- Z-index alto (9999) y transición de desvanecimiento suave (fade).
+-->
+
 <script lang="ts">
-    import { theme } from '../../themeStore';
-    import { fade } from 'svelte/transition';
-    import { onMount, onDestroy, tick } from 'svelte';
+    import { theme } from "../../themeStore";
+    import { fade } from "svelte/transition";
+    import { onMount, onDestroy, tick } from "svelte";
 
     export let content: string | null;
-    export let position: 'top' | 'bottom' | 'left' | 'right' = 'top';
+    export let position: "top" | "bottom" | "left" | "right" = "top";
 
     let showTooltip = false;
     let triggerElement: HTMLElement;
@@ -19,7 +47,7 @@
                 if (target.contains(node)) {
                     target.removeChild(node);
                 }
-            }
+            },
         };
     }
 
@@ -51,41 +79,58 @@
         let left = 0;
 
         switch (position) {
-            case 'top':
+            case "top":
                 top = triggerRect.top - tooltipRect.height - 8; // 8px for spacing
-                left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
+                left =
+                    triggerRect.left +
+                    triggerRect.width / 2 -
+                    tooltipRect.width / 2;
                 break;
-            case 'bottom':
+            case "bottom":
                 top = triggerRect.bottom + 8; // 8px for spacing
-                left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
+                left =
+                    triggerRect.left +
+                    triggerRect.width / 2 -
+                    tooltipRect.width / 2;
                 break;
-            case 'left':
-                top = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
+            case "left":
+                top =
+                    triggerRect.top +
+                    triggerRect.height / 2 -
+                    tooltipRect.height / 2;
                 left = triggerRect.left - tooltipRect.width - 8; // 8px for spacing
                 break;
-            case 'right':
-                top = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
+            case "right":
+                top =
+                    triggerRect.top +
+                    triggerRect.height / 2 -
+                    tooltipRect.height / 2;
                 left = triggerRect.right + 8; // 8px for spacing
                 break;
         }
 
         // Ensure tooltip stays within viewport
-        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const viewportWidth =
+            window.innerWidth || document.documentElement.clientWidth;
+        const viewportHeight =
+            window.innerHeight || document.documentElement.clientHeight;
 
         if (left < 0) left = 0;
         if (top < 0) top = 0;
-        if (left + tooltipRect.width > viewportWidth) left = viewportWidth - tooltipRect.width;
-        if (top + tooltipRect.height > viewportHeight) top = viewportHeight - tooltipRect.height;
+        if (left + tooltipRect.width > viewportWidth)
+            left = viewportWidth - tooltipRect.width;
+        if (top + tooltipRect.height > viewportHeight)
+            top = viewportHeight - tooltipRect.height;
 
         tooltipElement.style.top = `${top + window.scrollY}px`;
         tooltipElement.style.left = `${left + window.scrollX}px`;
-        tooltipElement.style.position = 'absolute';
+        tooltipElement.style.position = "absolute";
     }
 
     $: tooltipClasses = (() => {
-        let classes = 'z-[9999] px-3 py-2 text-sm font-medium rounded-lg shadow-sm whitespace-pre-wrap';
-        classes += ` ${$theme === 'dark' ? 'bg-gray-700 text-gray-200' : 'bg-gray-800 text-white'}`;
+        let classes =
+            "z-[9999] px-3 py-2 text-sm font-medium rounded-lg shadow-sm whitespace-pre-wrap";
+        classes += ` ${$theme === "dark" ? "bg-gray-700 text-gray-200" : "bg-gray-800 text-white"}`;
         return classes;
     })();
 
@@ -97,13 +142,13 @@
     }
 
     onMount(() => {
-        window.addEventListener('scroll', handleScrollOrResize, true);
-        window.addEventListener('resize', handleScrollOrResize);
+        window.addEventListener("scroll", handleScrollOrResize, true);
+        window.addEventListener("resize", handleScrollOrResize);
     });
 
     onDestroy(() => {
-        window.removeEventListener('scroll', handleScrollOrResize, true);
-        window.removeEventListener('resize', handleScrollOrResize);
+        window.removeEventListener("scroll", handleScrollOrResize, true);
+        window.removeEventListener("resize", handleScrollOrResize);
     });
 
     // Reactive statement to re-position tooltip if content or position changes while visible
@@ -112,7 +157,9 @@
     }
 </script>
 
-<div class="relative inline-block" role="group"
+<div
+    class="relative inline-block"
+    role="group"
     bind:this={triggerElement}
     on:mouseenter={show}
     on:mouseleave={hide}
@@ -126,18 +173,19 @@
     <div use:portal={portalTarget}>
         <div
             bind:this={tooltipElement}
-            class="{tooltipClasses}"
+            class={tooltipClasses}
             transition:fade={{ duration: 100 }}
             style="position: absolute;"
         >
             {content}
             <!-- Arrow for the tooltip -->
-            <div class="absolute w-2 h-2 rotate-45
+            <div
+                class="absolute w-2 h-2 rotate-45
                         {$theme === 'dark' ? 'bg-gray-700' : 'bg-gray-800'}"
-                 class:bottom-[-4px]={position === 'top'}
-                 class:top-[-4px]={position === 'bottom'}
-                 class:right-[-4px]={position === 'left'}
-                 class:left-[-4px]={position === 'right'}
+                class:bottom-[-4px]={position === "top"}
+                class:top-[-4px]={position === "bottom"}
+                class:right-[-4px]={position === "left"}
+                class:left-[-4px]={position === "right"}
             ></div>
         </div>
     </div>
