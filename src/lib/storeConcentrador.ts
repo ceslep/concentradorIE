@@ -67,7 +67,7 @@ export const payload = writable<ConcentradorPayload>(defaultConcentradorPayload)
 export const showPeriodos = writable<boolean>(false);
 export const selectedPeriodos = writable<string[]>(['UNO', 'DOS', 'TRES', 'CUATRO', 'DEF']);
 export const lastDuration = writable<number>(0);
-export const concentradorType = writable<'asignaturas' | 'areas'>('asignaturas'); // Default to asignaturas
+export const concentradorType = writable<'asignaturas' | 'areas' | 'registro'>('asignaturas'); // Default to asignaturas
 export const selectedAsignatura = writable<string | null>(null); // For GradesTableDialog
 export const viewMode = writable<'cards-view' | 'table-view'>('table-view'); // New store to control view mode
 
@@ -114,6 +114,15 @@ export async function loadConcentradorData() {
         lastDuration.set(end - start);
         loading.set(false);
     }
+}
+
+/**
+ * Resetea el estado para volver a la pantalla de selección inicial (Dashboard).
+ */
+export function resetToDashboard() {
+    parsed.set(null);
+    loading.set(false);
+    error.set(null);
 }
 
 

@@ -200,7 +200,7 @@ ESTILOS:
         isInitialized = true;
 
         // After all payload values are set, load the concentrador data
-        loadConcentradorData();
+        // loadConcentradorData(); // Comentado para permitir que DashboardSelection maneje la carga inicial
       } catch (error) {
         // Error loading initial data
         isInitialized = true;

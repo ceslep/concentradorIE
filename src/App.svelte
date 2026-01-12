@@ -40,6 +40,7 @@ ESTILOS:
   import AppHeader from "./lib/components/layout/AppHeader.svelte";
   import BackgroundDecorations from "./lib/components/layout/BackgroundDecorations.svelte";
   import Login from "./lib/components/features/auth/Login.svelte";
+  import DashboardSelection from "./lib/components/layout/DashboardSelection.svelte";
   import StudentCardsView from "./lib/components/features/concentrador/StudentCardsView.svelte"; // Re-added import
   import {
     parsed,
@@ -117,6 +118,8 @@ ESTILOS:
   });
 
   function handleLoginSuccess(event: CustomEvent) {
+    parsed.set(null);
+    loading.set(false);
     user = event.detail.user;
     isAuthenticated = true;
     sessionStorage.setItem("user", JSON.stringify(user));
@@ -215,39 +218,61 @@ ESTILOS:
   <Login on:loginSuccess={handleLoginSuccess} />
 {:else}
   <BackgroundDecorations>
-    <!-- === CABECERA === -->
-    <AppHeader
-      bind:showPayloadForm
-      bind:showInfoCantDialog
-      on:logout={handleLogout}
-    />
-
-    <!-- === FORMULARIO COLAPSABLE === -->
-    <PayloadFormSection show={showPayloadForm} loading={$loading} />
-
-    <!-- === CONTROLES === -->
-    <ControlsSection />
-
-    <!-- === MENSAJE DE ERROR === -->
-    <ErrorAlert error={$error} />
-
-    <!-- === TABLA DE ESTUDIANTES / VISTA DE TARJETAS === -->
-    {#if $viewMode === "cards-view"}
-      <StudentCardsView on:openNotasDetalle={handleOpenNotasDetalleEvent} />
-    {:else if $concentradorType === "asignaturas"}
-      <ConcentradorAsignaturasTable
-        {handleValoracionClick}
-        onHeaderClick={handleHeaderClick}
-      />
+    {#if !$parsed && !$loading}
+      <!-- === PANTALLA DE SELECCIÓN INICIAL === -->
+      <DashboardSelection onLogout={handleLogout} />
     {:else}
-      <ConcentradorAreasTable {handleValoracionClick} />
+      <!-- === VISTA PRINCIPAL DEL CONCENTRADOR === -->
+      <AppHeader
+        bind:showPayloadForm
+        bind:showInfoCantDialog
+        on:logout={handleLogout}
+      />
+
+      <PayloadFormSection show={showPayloadForm} loading={$loading} />
+
+      <ControlsSection />
+
+      <ErrorAlert error={$error} />
+
+      {#if $viewMode === "cards-view"}
+        <StudentCardsView on:openNotasDetalle={handleOpenNotasDetalleEvent} />
+      {:else if $concentradorType === "asignaturas"}
+        <ConcentradorAsignaturasTable
+          {handleValoracionClick}
+          onHeaderClick={handleHeaderClick}
+        />
+      {:else if $concentradorType === "areas"}
+        <ConcentradorAreasTable {handleValoracionClick} />
+      {:else}
+        <!-- Módulo de Registro de Notas (Placeholder) -->
+        <div
+          class="flex flex-col items-center justify-center min-h-[50vh] text-center p-8 glass-effect rounded-3xl animate-fade-in"
+        >
+          <div
+            class="w-24 h-24 bg-indigo-500 rounded-3xl flex items-center justify-center text-5xl mb-6 shadow-xl shadow-indigo-500/20"
+          >
+            📝
+          </div>
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Módulo de Registro de Notas
+          </h2>
+          <p
+            class="text-gray-600 dark:text-gray-400 max-w-md mx-auto leading-relaxed"
+          >
+            Estamos preparando este módulo para que puedas registrar las
+            calificaciones de tus estudiantes con la máxima eficiencia.
+            ¡Próximamente disponible!
+          </p>
+        </div>
+      {/if}
+
+      <LoadingSkeleton
+        loading={$loading}
+        parsed={$parsed}
+        currentOrden={$currentOrden}
+      />
     {/if}
-    <!-- === SKELETON (cargando) === -->
-    <LoadingSkeleton
-      loading={$loading}
-      parsed={$parsed}
-      currentOrden={$currentOrden}
-    />
 
     <!-- === TODOS LOS DIÁLOGOS === -->
     <DialogsContainer

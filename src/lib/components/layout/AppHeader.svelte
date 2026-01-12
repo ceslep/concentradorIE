@@ -40,6 +40,7 @@ ESTILOS:
     exportExcel,
     concentradorType,
     viewMode,
+    resetToDashboard,
   } from "../../storeConcentrador";
 
   export let showPayloadForm: boolean;
@@ -340,6 +341,19 @@ ESTILOS:
           ? 'bg-gray-700'
           : 'bg-gray-200'} hidden sm:block"
       ></div>
+
+      <!-- Dashboard Button -->
+      <button
+        on:click={resetToDashboard}
+        class="btn-premium p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 hover:scale-105 shadow-md {$theme ===
+        'dark'
+          ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500'
+          : 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600'}"
+        aria-label="Volver al Dashboard"
+        title="Volver al Dashboard"
+      >
+        <span class="material-symbols-rounded text-base sm:text-lg">apps</span>
+      </button>
 
       <!-- Logout Button -->
       <button
