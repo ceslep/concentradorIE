@@ -41,7 +41,8 @@ ESTILOS:
   import BackgroundDecorations from "./lib/components/layout/BackgroundDecorations.svelte";
   import Login from "./lib/components/features/auth/Login.svelte";
   import DashboardSelection from "./lib/components/layout/DashboardSelection.svelte";
-  import StudentCardsView from "./lib/components/features/concentrador/StudentCardsView.svelte"; // Re-added import
+  import StudentCardsView from "./lib/components/features/concentrador/StudentCardsView.svelte";
+  import RegistrationMenu from "./lib/components/features/concentrador/RegistrationMenu.svelte";
   import {
     parsed,
     loading,
@@ -218,7 +219,7 @@ ESTILOS:
   <Login on:loginSuccess={handleLoginSuccess} />
 {:else}
   <BackgroundDecorations>
-    {#if !$parsed && !$loading}
+    {#if !$parsed && !$loading && $concentradorType !== "registro"}
       <!-- === PANTALLA DE SELECCIÓN INICIAL === -->
       <DashboardSelection onLogout={handleLogout} />
     {:else}
@@ -235,7 +236,9 @@ ESTILOS:
 
       <ErrorAlert error={$error} />
 
-      {#if $viewMode === "cards-view"}
+      {#if $concentradorType === "registro"}
+        <RegistrationMenu {user} />
+      {:else if $viewMode === "cards-view"}
         <StudentCardsView on:openNotasDetalle={handleOpenNotasDetalleEvent} />
       {:else if $concentradorType === "asignaturas"}
         <ConcentradorAsignaturasTable
@@ -244,27 +247,6 @@ ESTILOS:
         />
       {:else if $concentradorType === "areas"}
         <ConcentradorAreasTable {handleValoracionClick} />
-      {:else}
-        <!-- Módulo de Registro de Notas (Placeholder) -->
-        <div
-          class="flex flex-col items-center justify-center min-h-[50vh] text-center p-8 glass-effect rounded-3xl animate-fade-in"
-        >
-          <div
-            class="w-24 h-24 bg-indigo-500 rounded-3xl flex items-center justify-center text-5xl mb-6 shadow-xl shadow-indigo-500/20"
-          >
-            📝
-          </div>
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Módulo de Registro de Notas
-          </h2>
-          <p
-            class="text-gray-600 dark:text-gray-400 max-w-md mx-auto leading-relaxed"
-          >
-            Estamos preparando este módulo para que puedas registrar las
-            calificaciones de tus estudiantes con la máxima eficiencia.
-            ¡Próximamente disponible!
-          </p>
-        </div>
       {/if}
 
       <LoadingSkeleton

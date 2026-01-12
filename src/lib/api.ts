@@ -1,4 +1,4 @@
-import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT, GET_CONCENTRADOR_AREAS_ENDPOINT, GET_VALORACIONES_AREAS_ENDPOINT, GET_NOTAS_DETALLADO_AREAS_ENDPOINT, GET_ORDERS_ENDPOINT, GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT, GET_CONVIVENCIA_DETALLADO_ENDPOINT, GET_ESTUDIANTE_DETAILS_ENDPOINT } from '../constants'
+import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT, GET_CONCENTRADOR_AREAS_ENDPOINT, GET_VALORACIONES_AREAS_ENDPOINT, GET_NOTAS_DETALLADO_AREAS_ENDPOINT, GET_ORDERS_ENDPOINT, GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT, GET_CONVIVENCIA_DETALLADO_ENDPOINT, GET_ESTUDIANTE_DETAILS_ENDPOINT, GET_GENERAR_MENU_ENDPOINT } from '../constants'
 import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion, ValoracionAreasResponseItem, AreaOrder, AreaOrderPayload, ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado, AsignaturaOrdenItem, EstudianteRow, Asignatura, Area, EstudianteDetalle } from './types' // Import EstudianteRow, Asignatura, Area
 
 export interface Sede {
@@ -296,4 +296,36 @@ export async function fetchStudentDetails(estudianteId: string, year: string): P
     return data[0];
   }
   return data;
+}
+
+/**
+ * Representa un elemento en el menú de registro de notas.
+ */
+export interface RegistrationMenuItem {
+  grado: string;
+  nivel: number;
+  numero: number;
+  gradoA: string;
+  asignaturas: { asignatura: string }[];
+}
+
+/**
+ * Obtiene la lista de cursos y asignaturas para el registro de notas.
+ * @param docente - ID del docente.
+ * @param year - Año académico.
+ */
+export async function fetchRegistrationMenu(docente: string, year: string): Promise<RegistrationMenuItem[]> {
+  const res = await fetch(GET_GENERAR_MENU_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ docente, year })
+  })
+  
+  if (!res.ok) {
+    throw new Error('Error al obtener el menú de registro: ' + res.status)
+  }
+  
+  return res.json()
 }

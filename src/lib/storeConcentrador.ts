@@ -123,6 +123,7 @@ export function resetToDashboard() {
     parsed.set(null);
     loading.set(false);
     error.set(null);
+    concentradorType.set('asignaturas'); // Reset to default to show DashboardSelection
 }
 
 
