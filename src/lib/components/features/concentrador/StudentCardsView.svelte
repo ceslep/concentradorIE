@@ -56,40 +56,47 @@ ESTILOS:
     fetchNotasDetallado,
     fetchNotasDetalladoAreas,
   } from "$lib/api";
-  import { onMount, createEventDispatcher } from "svelte";
+  import { onMount } from "svelte";
   import { fade, fly, scale } from "svelte/transition";
   import NotasDetalleDialog from "../dialogs/notas/NotasDetalleDialog.svelte";
   import { theme } from "$lib/themeStore";
 
-  export let selectedStudent: EstudianteRow | null = null;
-  let selectedStudentDetails: EstudianteDetalle | null = null;
-  let loadingStudentDetails = false;
-  let studentDetailsError: string | null = null;
+  let {
+    selectedStudent = $bindable(null),
+    onOpenInasistencias,
+    onOpenNotasDetalle,
+  } = $props<{
+    selectedStudent?: EstudianteRow | null;
+    onOpenInasistencias?: (detail: any) => void;
+    onOpenNotasDetalle?: (detail: any) => void;
+  }>();
+
+  let selectedStudentDetails: EstudianteDetalle | null = $state(null);
+  let loadingStudentDetails = $state(false);
+  let studentDetailsError: string | null = $state(null);
 
   // Notas Dialog State
-  let showNotasDialog = false;
-  let notasDetalle: NotaDetalle[] = [];
-  let loadingNotas = false;
-  let notasError: string | null = null;
+  let showNotasDialog = $state(false);
+  let notasDetalle: NotaDetalle[] = $state([]);
+  let loadingNotas = $state(false);
+  let notasError: string | null = $state(null);
 
   // Context for Dialog
-  let dialogStudentName = "";
-  let dialogAsignatura = "";
-  let dialogPeriodo = "";
-  let dialogEstudianteId = "";
-  let dialogYear = "";
+  let dialogStudentName = $state("");
+  let dialogAsignatura = $state("");
+  let dialogPeriodo = $state("");
+  let dialogEstudianteId = $state("");
+  let dialogYear = $state("");
 
   // Convivencia Dialog State
-  let showConvivenciaDialog = false;
+  let showConvivenciaDialog = $state(false);
 
   // UI States
-  let isSidebarCollapsed = false;
-  let activeTab = "asignaturas";
-  let hoveredStudent: string | null = null;
-  let rippleElements: Array<{ x: number; y: number; id: number }> = [];
+  let isSidebarCollapsed = $state(false);
+  let activeTab = $state("asignaturas");
+  let hoveredStudent: string | null = $state(null);
+  let rippleElements: Array<{ x: number; y: number; id: number }> = $state([]);
   let nextRippleId = 0;
-
-  const dispatch = createEventDispatcher();
 
   // Add ripple effect
   /**
@@ -197,12 +204,14 @@ ESTILOS:
     asig: string,
     per: string,
   ) {
-    dispatch("openInasistencias", {
-      estudianteId: estId,
-      nombres: nom,
-      asignatura: asig,
-      periodo: per,
-    });
+    if (onOpenInasistencias) {
+      onOpenInasistencias({
+        estudianteId: estId,
+        nombres: nom,
+        asignatura: asig,
+        periodo: per,
+      });
+    }
   }
 
   onMount(() => {
@@ -211,12 +220,14 @@ ESTILOS:
     }
   });
 
-  $: if (selectedStudent) {
-    fetchDetailsForSelectedStudent(selectedStudent.id, get(payload).year);
-  } else {
-    selectedStudentDetails = null;
-    studentDetailsError = null;
-  }
+  $effect(() => {
+    if (selectedStudent) {
+      fetchDetailsForSelectedStudent(selectedStudent.id, get(payload).year);
+    } else {
+      selectedStudentDetails = null;
+      studentDetailsError = null;
+    }
+  });
 
   /**
    * Obtiene información extendida del estudiante (API secundaria).
@@ -428,7 +439,7 @@ ESTILOS:
         </div>
         <!-- svelte-ignore a11y_consider_explicit_label -->
         <button
-          on:click={() => (isSidebarCollapsed = !isSidebarCollapsed)}
+          onclick={() => (isSidebarCollapsed = !isSidebarCollapsed)}
           class="p-2 rounded-xl transition-all duration-300 group hidden lg:block {$theme ===
           'dark'
             ? 'bg-white/5 hover:bg-white/10'
@@ -526,8 +537,8 @@ ESTILOS:
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <div
                 class="relative overflow-hidden group"
-                on:mouseenter={() => (hoveredStudent = student.id)}
-                on:mouseleave={() => (hoveredStudent = null)}
+                onmouseenter={() => (hoveredStudent = student.id)}
+                onmouseleave={() => (hoveredStudent = null)}
                 in:fly={{ y: 20, delay: i * 50 }}
               >
                 <!-- Hover Effect Background -->
@@ -557,7 +568,7 @@ ESTILOS:
                     ? 'translateX(8px)'
                     : 'none'};
                   "
-                  on:click={(e) => {
+                  onclick={(e) => {
                     createRipple(e);
                     handleStudentClick(student);
                   }}
@@ -741,7 +752,7 @@ ESTILOS:
             <div class="flex-1">
               <div class="flex items-center gap-4 mb-4">
                 <button
-                  on:click={() => (selectedStudent = null)}
+                  onclick={() => (selectedStudent = null)}
                   class="lg:hidden p-2 rounded-xl transition-colors {$theme ===
                   'dark'
                     ? 'bg-white/5 hover:bg-white/10 text-white'
@@ -1002,7 +1013,7 @@ ESTILOS:
                   'asignaturas'
                     ? 'active'
                     : ''}"
-                  on:click={() => (activeTab = "asignaturas")}
+                  onclick={() => (activeTab = "asignaturas")}
                 >
                   <span
                     class="text-sm font-medium {activeTab === 'asignaturas'
@@ -1021,7 +1032,7 @@ ESTILOS:
                   'areas'
                     ? 'active'
                     : ''}"
-                  on:click={() => (activeTab = "areas")}
+                  onclick={() => (activeTab = "areas")}
                 >
                   <span
                     class="text-sm font-medium {activeTab === 'areas'
@@ -1078,7 +1089,7 @@ ESTILOS:
                           'dark'
                             ? 'bg-white/5 hover:bg-white/10'
                             : 'bg-gray-200/50 hover:bg-gray-300/70'}"
-                          on:click={() =>
+                          onclick={() =>
                             handleOpenNotasDetalle(
                               selectedStudent!,
                               asignatura,

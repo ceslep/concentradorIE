@@ -27,13 +27,23 @@ ESTILOS:
     import { fade } from "svelte/transition";
 
     // Props
-    export let show: boolean = false;
-    export let columnName: string = "";
-    export let aspecto: string | null = null;
-    export let porcentaje: string | null = null;
-    export let fechaa: string | null = null;
-    export let fecha: string | null = null;
-    export let onClose: () => void;
+    let {
+        show = false,
+        columnName = "",
+        aspecto = null,
+        porcentaje = null,
+        fechaa = null,
+        fecha = null,
+        onClose,
+    } = $props<{
+        show?: boolean;
+        columnName?: string;
+        aspecto?: string | null;
+        porcentaje?: string | null;
+        fechaa?: string | null;
+        fecha?: string | null;
+        onClose: () => void;
+    }>();
 
     // Handle escape key
     /**
@@ -51,8 +61,8 @@ ESTILOS:
         class="dialog-overlay"
         role="button"
         tabindex="0"
-        on:click={onClose}
-        on:keydown={handleKeydown}
+        onclick={onClose}
+        onkeydown={(e) => e.key === "Escape" && onClose()}
         transition:fade={{ duration: 200 }}
         aria-label="Close dialog"
     >
@@ -62,8 +72,8 @@ ESTILOS:
             aria-modal="true"
             aria-labelledby="dialog-title"
             tabindex="-1"
-            on:click|stopPropagation
-            on:keydown|stopPropagation
+            onclick={(e) => e.stopPropagation()}
+            onkeydown={(e) => e.stopPropagation()}
         >
             <div class="dialog-header">
                 <div class="dialog-header-left">
@@ -74,7 +84,7 @@ ESTILOS:
                         Detalles de {columnName}
                     </h2>
                 </div>
-                <button class="dialog-close" on:click={onClose}>
+                <button class="dialog-close" onclick={onClose}>
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
@@ -125,7 +135,7 @@ ESTILOS:
             </div>
 
             <div class="dialog-footer">
-                <button class="btn-close" on:click={onClose}> Cerrar </button>
+                <button class="btn-close" onclick={onClose}> Cerrar </button>
             </div>
         </div>
     </div>

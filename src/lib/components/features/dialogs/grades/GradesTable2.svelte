@@ -455,7 +455,7 @@ ESTILOS:
         {#if searchQuery}
           <button
             class="clear-search-btn"
-            on:click={() => (searchQuery = "")}
+            onclick={() => (searchQuery = "")}
             title="Limpiar búsqueda"
           >
             <span class="material-symbols-rounded">close</span>
@@ -470,7 +470,7 @@ ESTILOS:
       <div class="toolbar-group">
         <button
           class="toolbar-btn"
-          on:click={performUndo}
+          onclick={performUndo}
           disabled={!canUndo}
           title="Deshacer (Ctrl+Z)"
         >
@@ -478,7 +478,7 @@ ESTILOS:
         </button>
         <button
           class="toolbar-btn"
-          on:click={performRedo}
+          onclick={performRedo}
           disabled={!canRedo}
           title="Rehacer (Ctrl+Y)"
         >
@@ -491,7 +491,7 @@ ESTILOS:
       <div class="toolbar-group">
         <button
           class="toolbar-btn"
-          on:click={exportToExcel}
+          onclick={exportToExcel}
           title="Exportar a Excel"
         >
           <span class="material-symbols-rounded">download</span>
@@ -499,7 +499,7 @@ ESTILOS:
         </button>
         <button
           class="toolbar-btn"
-          on:click={exportToCSV}
+          onclick={exportToCSV}
           title="Exportar a CSV"
         >
           <span class="material-symbols-rounded">description</span>
@@ -527,7 +527,7 @@ ESTILOS:
           {/if}
           <span class="save-status-text">{saveStatusText}</span>
           {#if hasChanges && !isSaving}
-            <button class="save-now-btn" on:click={saveChanges}>Guardar</button>
+            <button class="save-now-btn" onclick={saveChanges}>Guardar</button>
           {/if}
         </div>
       </div>
@@ -557,7 +557,7 @@ ESTILOS:
             <th class="grade-header">
               <button
                 class="grade-header-button"
-                on:click={() => handleHeaderClick(`N${i + 1}`)}
+                onclick={() => handleHeaderClick(`N${i + 1}`)}
                 title="Click para ver detalles"
               >
                 N{i + 1}
@@ -581,7 +581,7 @@ ESTILOS:
                 contenteditable="true"
                 data-row-id={row.id}
                 data-field={`N${i + 1}`}
-                on:focus={(e) => {
+                onfocus={(e) => {
                   const target = e.target as HTMLElement;
                   editValue = target.textContent || "";
                   // Seleccionar todo el texto al enfocar
@@ -591,7 +591,7 @@ ESTILOS:
                   selection?.removeAllRanges();
                   selection?.addRange(range);
                 }}
-                on:blur={(e) => {
+                onblur={(e) => {
                   const target = e.target as HTMLElement;
                   const newValue = target.textContent?.trim() || "";
                   const rowId = target.dataset.rowId || "";
@@ -614,7 +614,7 @@ ESTILOS:
                     }
                   }
                 }}
-                on:keydown={(e) => {
+                onkeydown={(e) => {
                   const target = e.target as HTMLElement;
 
                   if (e.key === "Enter") {
@@ -648,7 +648,7 @@ ESTILOS:
                     setTimeout(() => navigateCell("right"), 10);
                   }
                 }}
-                on:input={(e) => {
+                oninput={(e) => {
                   // Limitar la entrada solo a números y punto decimal
                   const target = e.target as HTMLElement;
                   const text = target.textContent || "";

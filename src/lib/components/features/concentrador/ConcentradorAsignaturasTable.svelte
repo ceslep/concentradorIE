@@ -47,44 +47,49 @@ ESTILOS:
   } from "../../../storeConcentrador";
   import { fade } from "svelte/transition";
 
-  export let handleValoracionClick: (
-    est: EstudianteRow,
-    asignaturaAbrev: string,
-    periodo: string,
-    valoracion: string,
-  ) => Promise<void>;
-  export let onHeaderClick: (docenteId: string) => void;
+  let { handleValoracionClick, onHeaderClick } = $props<{
+    handleValoracionClick: (
+      est: EstudianteRow,
+      asignaturaAbrev: string,
+      periodo: string,
+      valoracion: string,
+    ) => Promise<void>;
+    onHeaderClick: (docenteId: string) => void;
+  }>();
 
-  let search = "";
+  let search = $state("");
 
-  $: currentTheme = $theme;
-  $: dark = currentTheme === "dark";
+  let dark = $derived($theme === "dark");
 
   // Modern Color Palette & Styles - Enhanced
-  $: bgSurface = dark ? "bg-gray-900" : "bg-white";
-  $: bgHeader = dark
-    ? "bg-gradient-to-r from-gray-900/98 via-gray-800/98 to-gray-900/98 backdrop-blur-xl"
-    : "bg-gradient-to-r from-gray-50/98 via-white/98 to-gray-50/98 backdrop-blur-xl";
-  $: textPrimary = dark ? "text-white" : "text-gray-900";
-  $: textSecondary = dark ? "text-gray-400" : "text-gray-500";
-  $: borderDivide = dark ? "divide-gray-700/50" : "divide-gray-100";
-  $: borderTable = dark ? "border-gray-700/50" : "border-gray-200";
-  $: hoverRow = dark ? "hover:bg-gray-800/60" : "hover:bg-gray-50";
-  $: stickyColBg = dark ? "bg-gray-900" : "bg-white";
+  let bgSurface = $derived(dark ? "bg-gray-900" : "bg-white");
+  let bgHeader = $derived(
+    dark
+      ? "bg-gradient-to-r from-gray-900/98 via-gray-800/98 to-gray-900/98 backdrop-blur-xl"
+      : "bg-gradient-to-r from-gray-50/98 via-white/98 to-gray-50/98 backdrop-blur-xl",
+  );
+  let textPrimary = $derived(dark ? "text-white" : "text-gray-900");
+  let textSecondary = $derived(dark ? "text-gray-400" : "text-gray-500");
+  let borderDivide = $derived(dark ? "divide-gray-700/50" : "divide-gray-100");
+  let borderTable = $derived(dark ? "border-gray-700/50" : "border-gray-200");
+  let hoverRow = $derived(dark ? "hover:bg-gray-800/60" : "hover:bg-gray-50");
+  let stickyColBg = $derived(dark ? "bg-gray-900" : "bg-white");
 
   /**
    * Filtra la lista de estudiantes basándose en el término de búsqueda interactivo.
    */
-  $: filteredEstudiantes = (() => {
-    if (!$parsed || $concentradorType !== "asignaturas")
-      return [] as EstudianteRow[];
-    const p = $parsed as ConcentradorParsed;
-    return !search.trim()
-      ? p.estudiantes
-      : p.estudiantes.filter((est) =>
-          est.nombres.toLowerCase().includes(search.toLowerCase()),
-        );
-  })();
+  let filteredEstudiantes = $derived(
+    (() => {
+      if (!$parsed || $concentradorType !== "asignaturas")
+        return [] as EstudianteRow[];
+      const p = $parsed as ConcentradorParsed;
+      return !search.trim()
+        ? p.estudiantes
+        : p.estudiantes.filter((est) =>
+            est.nombres.toLowerCase().includes(search.toLowerCase()),
+          );
+    })(),
+  );
 
   /**
    * Busca el valor de la calificación para una asignatura y período específicos.
@@ -294,7 +299,7 @@ ESTILOS:
                       ? 'text-gray-300 hover:bg-gradient-to-br hover:from-gray-800/80 hover:to-gray-700/80 hover:text-white hover:shadow-lg hover:shadow-indigo-500/20'
                       : 'text-gray-700 hover:bg-gradient-to-br hover:from-gray-100 hover:to-gray-50 hover:text-indigo-700 hover:shadow-lg hover:shadow-indigo-500/10'}
                            active:scale-95"
-                    on:click={() => {
+                    onclick={() => {
                       selectedAsignatura.set(asignaturaItem.abreviatura);
                       onHeaderClick(asignaturaItem.docenteId);
                     }}
@@ -377,7 +382,7 @@ ESTILOS:
                               $payload.periodo,
                             ),
                           )}"
-                          on:click={() =>
+                          onclick={() =>
                             handleValoracionClick(
                               est,
                               asignaturaItem.abreviatura,
@@ -408,7 +413,7 @@ ESTILOS:
                                 per,
                               ),
                             )}"
-                            on:click={() =>
+                            onclick={() =>
                               handleValoracionClick(
                                 est,
                                 asignaturaItem.abreviatura,
@@ -436,7 +441,7 @@ ESTILOS:
                               'DEF',
                             ),
                           )}"
-                          on:click={() =>
+                          onclick={() =>
                             handleValoracionClick(
                               est,
                               asignaturaItem.abreviatura,

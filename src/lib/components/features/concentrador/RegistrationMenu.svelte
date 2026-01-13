@@ -9,40 +9,68 @@ Implementa un Dashboard futurista con lógica de datos encadenada:
 
 USO:
 <RegistrationMenu {user} /> en App.svelte.
+
+LLAMADO POR:
+- App.svelte
 -->
 
 <script lang="ts">
-    import { onMount, createEventDispatcher } from "svelte";
+    import { onMount } from "svelte";
     import { fetchRegistrationMenu, fetchInfoDocentes } from "../../../api";
     import type { RegistrationMenuItem, TeacherInfo } from "../../../types";
+    import { asignturastoN } from "../../../../constants";
     import { fade, scale, fly } from "svelte/transition";
     import { quintOut } from "svelte/easing";
     import { theme } from "../../../themeStore";
     import { resetToDashboard } from "../../../storeConcentrador";
     import TeacherProfileDetail from "./TeacherProfileDetail.svelte";
+    import SubjectCard from "./SubjectCard.svelte";
+    import Loader from "../../shared/Loader.svelte";
 
-    export let user: any;
-    const dispatch = createEventDispatcher();
+    let { user, onLogout } = $props<{
+        user: any;
+        onLogout?: () => void;
+    }>();
 
-    let items: RegistrationMenuItem[] = [];
-    let teachers: TeacherInfo[] = [];
-    let loading = true;
-    let error: string | null = null;
-    let fallbackMode = false;
-    let searchQuery = "";
+    let items = $state<RegistrationMenuItem[]>([]);
+    let teachers = $state<TeacherInfo[]>([]);
+    let loading = $state(true);
+    let error = $state<string | null>(null);
+    let fallbackMode = $state(false);
+    let searchQuery = $state("");
 
-    const currentYear = new Date().getFullYear().toString();
+    const currentYear = import.meta.env.DEV
+        ? "2025"
+        : new Date().getFullYear().toString();
 
-    let selectedTeacherId: string | null = null;
-    let isProfileOpen = false;
+    let selectedTeacherId = $state<string | null>(null);
+    let isProfileOpen = $state(false);
 
-    // Derived filtered teachers for fallback mode
-    $: filteredTeachers = teachers.filter(
-        (t) =>
-            t.nombres.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            t.identificacion.includes(searchQuery) ||
-            t.sede.toLowerCase().includes(searchQuery.toLowerCase()),
+    // Derived filtered teachers for fallback mode (Svelte 5 Rune)
+    let filteredTeachers = $derived(
+        teachers.filter(
+            (t) =>
+                t.nombres.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                t.identificacion.includes(searchQuery) ||
+                t.sede.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
     );
+
+    /**
+     * Obtiene la ruta del icono de la asignatura
+     */
+    function getSubjectIcon(shortName: string): string {
+        const found = asignturastoN.find((a) => a.asignatura === shortName);
+        return found ? found.ruta : "";
+    }
+
+    /**
+     * Traduce el nombre corto de la asignatura a su versión completa
+     */
+    function getFullSubjectName(shortName: string): string {
+        const found = asignturastoN.find((a) => a.asignatura === shortName);
+        return found ? found.nombrec : shortName;
+    }
 
     async function loadData() {
         loading = true;
@@ -88,8 +116,30 @@ USO:
         isProfileOpen = true;
     }
 
+    async function viewTeacherSubjects(teacher: TeacherInfo) {
+        loading = true;
+        error = null;
+        try {
+            const data = await fetchRegistrationMenu(
+                teacher.identificacion,
+                currentYear,
+            );
+            if (data && data.length > 0) {
+                items = data;
+                fallbackMode = false;
+            } else {
+                error =
+                    "El docente no tiene asignaturas registradas para este periodo.";
+            }
+        } catch (e: any) {
+            error = e.message || "Error al cargar las asignaturas del docente.";
+        } finally {
+            loading = false;
+        }
+    }
+
     function handleLogout() {
-        dispatch("logout");
+        if (onLogout) onLogout();
     }
 </script>
 
@@ -103,7 +153,7 @@ USO:
     >
         <div class="flex items-center gap-3 w-full sm:w-auto">
             <button
-                on:click={resetToDashboard}
+                onclick={resetToDashboard}
                 class="flex items-center gap-2 px-5 md:px-6 py-2.5 md:py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl transition-all font-bold text-sm shadow-lg shadow-indigo-600/20 active:scale-95 group"
             >
                 <svg
@@ -154,7 +204,7 @@ USO:
         <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
             <!-- Theme Toggle -->
             <button
-                on:click={theme.toggle}
+                onclick={theme.toggle}
                 class="p-3 md:p-3.5 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-700 dark:text-gray-200 hover:scale-105 transition-all shadow-sm"
                 title={$theme === "dark" ? "Modo Claro" : "Modo Oscuro"}
             >
@@ -191,7 +241,7 @@ USO:
 
             <!-- Logout -->
             <button
-                on:click={handleLogout}
+                onclick={handleLogout}
                 class="p-3 md:p-3.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl transition-all shadow-inner group"
                 title="Cerrar Sesión"
             >
@@ -276,7 +326,7 @@ USO:
                         </div>
                     </div>
                     <button
-                        on:click={loadData}
+                        onclick={loadData}
                         class="p-4 md:p-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[1.5rem] md:rounded-[1.8rem] transition-all duration-300 shadow-xl shadow-indigo-600/30 active:scale-95 group"
                         title="Actualizar Datos"
                     >
@@ -300,16 +350,12 @@ USO:
     </header>
 
     {#if loading}
-        <!-- Skeleton Grid -->
-        <div
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"
-        >
-            {#each Array(8) as _}
-                <div
-                    class="h-80 rounded-[3rem] md:rounded-[4rem] bg-gray-100 dark:bg-gray-800/40 animate-pulse border border-white/10"
-                ></div>
-            {/each}
-        </div>
+        <Loader
+            message={fallbackMode
+                ? "Cargando lista de docentes..."
+                : "Cargando asignaturas..."}
+            size="lg"
+        />
     {:else if error}
         <!-- Error State -->
         <div
@@ -342,7 +388,7 @@ USO:
                 {error}
             </p>
             <button
-                on:click={loadData}
+                onclick={loadData}
                 class="mt-12 px-12 py-5 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-rose-600/30 active:scale-95"
             >
                 REINTENTAR
@@ -374,8 +420,8 @@ USO:
                     <div
                         class="teacher-card group relative bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl p-7 rounded-[2.5rem] border border-white dark:border-gray-800/50 hover:border-indigo-500/50 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(99,102,241,0.25)] flex flex-col justify-between h-full"
                         in:fly={{ y: 20, duration: 500 }}
-                        on:click={() => handleTeacherClick(teacher)}
-                        on:keydown={(e) =>
+                        onclick={() => handleTeacherClick(teacher)}
+                        onkeydown={(e) =>
                             e.key === "Enter" && handleTeacherClick(teacher)}
                         role="button"
                         tabindex="0"
@@ -416,9 +462,32 @@ USO:
                                 >
                             </div>
                             <button
-                                on:click|stopPropagation={() =>
-                                    handleTeacherClick(teacher)}
-                                class="w-full py-3.5 bg-gray-950 dark:bg-indigo-600 text-white rounded-[1.4rem] font-black text-[9px] uppercase tracking-[0.2em] transition-all hover:scale-[1.03] group-hover:shadow-2xl group-hover:shadow-indigo-500/40 flex items-center justify-center gap-2 active:scale-95"
+                                onclick={(e) => {
+                                    e.stopPropagation();
+                                    viewTeacherSubjects(teacher);
+                                }}
+                                class="w-full py-3.5 bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 rounded-[1.4rem] font-black text-[9px] uppercase tracking-[0.2em] transition-all hover:bg-indigo-600 hover:text-white group-hover:shadow-xl group-hover:shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-95 border border-indigo-500/20 hover:border-transparent"
+                            >
+                                Ver Asignaturas <svg
+                                    class="w-3.5 h-3.5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    ><path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2.5"
+                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                                    /></svg
+                                >
+                            </button>
+
+                            <button
+                                onclick={(e) => {
+                                    e.stopPropagation();
+                                    handleTeacherClick(teacher);
+                                }}
+                                class="w-full py-3.5 bg-gray-950 dark:bg-gray-800 text-white rounded-[1.4rem] font-black text-[9px] uppercase tracking-[0.2em] transition-all hover:scale-[1.03] group-hover:shadow-2xl group-hover:shadow-indigo-500/40 flex items-center justify-center gap-2 active:scale-95"
                             >
                                 Ver Expediente <svg
                                     class="w-3.5 h-3.5"
@@ -436,69 +505,75 @@ USO:
                         </div>
                     </div>
                 {/each}
-            {:else}
+            {:else if items.length > 0}
                 {#each items as item, i}
-                    <div
-                        class="course-card group relative bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white dark:border-gray-800/50 hover:border-purple-500/50 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(168,85,247,0.25)] flex flex-col justify-between"
-                        in:fly={{ y: 20, duration: 500, delay: i * 50 }}
-                    >
-                        <div>
-                            <div class="flex justify-between items-start mb-8">
-                                <span
-                                    class="px-4 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[9px] font-black uppercase tracking-[0.2em] border border-purple-500/20"
-                                >
-                                    GRAD {item.grado}
-                                </span>
-                                <div class="text-3xl">🏛️</div>
-                            </div>
-
-                            <h3
-                                class="text-2xl md:text-3xl font-black text-gray-950 dark:text-white mb-8 tracking-tighter leading-[0.9] group-hover:text-purple-600 transition-colors"
-                            >
-                                {item.gradoA}
-                            </h3>
-                        </div>
-
-                        <div class="space-y-3.5">
-                            {#each item.asignaturas as asig}
-                                <button
-                                    on:click={() =>
-                                        handleCourseClick(
-                                            item,
-                                            asig.asignatura,
-                                        )}
-                                    class="w-full group/btn relative flex items-center justify-between p-5 rounded-[1.8rem] bg-indigo-50/30 dark:bg-white/5 border border-transparent hover:border-purple-500/20 hover:bg-white dark:hover:bg-white/10 transition-all duration-500 overflow-hidden shadow-sm shadow-indigo-500/5"
-                                >
-                                    <span
-                                        class="relative z-10 font-bold text-gray-700 dark:text-gray-300 text-xs md:text-sm group-hover/btn:text-purple-600 transition-colors truncate pr-2"
-                                    >
-                                        {asig.asignatura}
-                                    </span>
-                                    <div
-                                        class="relative z-10 w-9 h-9 rounded-xl bg-white dark:bg-gray-800 shadow-xl flex items-center justify-center transition-all duration-500 group-hover/btn:rotate-90 group-hover/btn:bg-purple-600 group-hover/btn:text-white"
-                                    >
-                                        <svg
-                                            class="w-4.5 h-4.5"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="3"
-                                                d="M9 5l7 7-7 7"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div
-                                        class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-purple-500 to-indigo-600 transform -translate-x-full group-hover/btn:translate-x-0 transition-transform duration-500"
-                                    ></div>
-                                </button>
-                            {/each}
-                        </div>
-                    </div>
+                    <SubjectCard
+                        {item}
+                        {i}
+                        {getFullSubjectName}
+                        {getSubjectIcon}
+                        onCourseClick={(detail) =>
+                            handleCourseClick(detail.item, detail.asignatura)}
+                    />
                 {/each}
+            {:else if !fallbackMode && items.length === 0}
+                <div
+                    class="col-span-full py-20 flex flex-col items-center justify-center text-center space-y-6"
+                    in:fade
+                >
+                    <div
+                        class="w-32 h-32 bg-gray-100 dark:bg-gray-800/50 rounded-full flex items-center justify-center mb-4 border border-gray-200 dark:border-gray-700/50 shadow-inner"
+                    >
+                        <svg
+                            class="w-16 h-16 text-gray-400 dark:text-gray-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
+                    </div>
+                    <div class="space-y-2">
+                        <h3
+                            class="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tighter"
+                        >
+                            Sin Asignaturas
+                        </h3>
+                        <p
+                            class="text-gray-500 dark:text-gray-400 text-sm max-w-sm mx-auto"
+                        >
+                            No se encontraron cursos registrados para este
+                            docente en el año {currentYear}.
+                        </p>
+                    </div>
+                    <button
+                        onclick={() => {
+                            items = [];
+                            fallbackMode = true;
+                        }}
+                        class="px-8 py-3.5 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
+                    >
+                        <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2.5"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                            />
+                        </svg>
+                        Volver a Docentes
+                    </button>
+                </div>
             {/if}
         </div>
     {/if}
@@ -507,7 +582,7 @@ USO:
         <TeacherProfileDetail
             teacherId={selectedTeacherId}
             isOpen={isProfileOpen}
-            on:close={() => {
+            onClose={() => {
                 isProfileOpen = false;
                 selectedTeacherId = null;
             }}
@@ -534,14 +609,12 @@ USO:
             );
     }
 
-    .teacher-card,
-    .course-card {
+    .teacher-card {
         cursor: pointer;
         outline: none;
     }
 
-    .teacher-card:hover,
-    .course-card:hover {
+    .teacher-card:hover {
         transform: translateY(-16px) scale(1.02);
     }
 

@@ -27,29 +27,30 @@ ESTILOS:
 -->
 
 <script lang="ts">
-  import { createEventDispatcher, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { fade, scale } from "svelte/transition";
   import { GET_INFOCANT_ENDPOINT } from "../../../../../constants";
   import { theme } from "../../../../themeStore";
-  import Skeleton from "../../../shared/Skeleton.svelte";
   import type { InfoCantData } from "../../../../types";
   import { payload } from "../../../../storeConcentrador";
   import InfoCantCharts from "./InfoCantCharts.svelte";
+  import Loader from "../../../shared/Loader.svelte";
 
-  export let showDialog: boolean = false;
+  let { showDialog = $bindable(false), onClose } = $props<{
+    showDialog?: boolean;
+    onClose?: () => void;
+  }>();
 
-  let data: InfoCantData[] = [];
-  let showCharts: boolean = false;
+  let data: InfoCantData[] = $state([]);
+  let showCharts: boolean = $state(false);
   let processedData: (InfoCantData & {
     isNivelSummary?: boolean;
     isSedeTotal?: boolean;
     isGrandTotal?: boolean;
     nivelDisplay?: string;
-  })[] = [];
-  let loading: boolean = false;
-  let error: string | null = null;
-
-  const dispatch = createEventDispatcher();
+  })[] = $state([]);
+  let loading: boolean = $state(false);
+  let error: string | null = $state(null);
 
   async function fetchInfoCant() {
     loading = true;
@@ -156,23 +157,25 @@ ESTILOS:
     }
   });
 
-  $: if (showDialog) {
-    fetchInfoCant();
-  }
+  $effect(() => {
+    if (showDialog) {
+      fetchInfoCant();
+    }
+  });
 
   function closeDialog() {
     showDialog = false;
-    dispatch("close");
+    if (onClose) onClose();
   }
 </script>
 
 {#if showDialog}
   <div
     class="dialog-backdrop"
-    on:click={closeDialog}
+    onclick={closeDialog}
     role="button"
     tabindex="0"
-    on:keydown={(e) => {
+    onkeydown={(e) => {
       if (e.key === "Escape") closeDialog();
     }}
     transition:fade={{ duration: 200 }}
@@ -182,8 +185,8 @@ ESTILOS:
       class="dialog-content glass-panel {$theme === 'dark'
         ? 'dark-glass'
         : 'light-glass'}"
-      on:click|stopPropagation
-      on:keydown|stopPropagation={() => {}}
+      onclick={(e) => e.stopPropagation()}
+      onkeydown={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"
       tabindex="-1"
@@ -203,14 +206,14 @@ ESTILOS:
         <div class="header-actions">
           <button
             class="action-button"
-            on:click={() => (showCharts = !showCharts)}
+            onclick={() => (showCharts = !showCharts)}
             title={showCharts ? "Ver Tabla" : "Ver Gráficos"}
           >
             <span class="material-symbols-rounded">
               {showCharts ? "table_chart" : "bar_chart"}
             </span>
           </button>
-          <button class="close-button" on:click={closeDialog}>
+          <button class="close-button" onclick={closeDialog}>
             <span class="material-symbols-rounded">close</span>
           </button>
         </div>
@@ -219,9 +222,7 @@ ESTILOS:
       <!-- Content -->
       <div class="dialog-body custom-scrollbar">
         {#if loading}
-          <div class="p-6">
-            <Skeleton rows={6} columns={4} theme={$theme} />
-          </div>
+          <Loader message="Cargando información de cantidades..." />
         {:else if error}
           <div class="error-container">
             <span class="material-symbols-rounded error-icon">error</span>
@@ -308,7 +309,7 @@ ESTILOS:
 
       <!-- Footer -->
       <div class="dialog-footer">
-        <button class="btn-primary" on:click={closeDialog}> Entendido </button>
+        <button class="btn-primary" onclick={closeDialog}> Entendido </button>
       </div>
     </div>
   </div>

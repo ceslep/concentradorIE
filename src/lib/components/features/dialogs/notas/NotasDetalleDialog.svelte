@@ -35,36 +35,50 @@ ESTILOS:
     import ConvivenciaDialog from "../convivencia/ConvivenciaDialog.svelte";
     import StudentDetailsModal from "../../students/StudentDetailsModal.svelte";
     import { fetchStudentDetails } from "$lib/api";
+    import Loader from "../../../shared/Loader.svelte";
 
-    export let showDialog: boolean;
-    export let notasDetalle: NotaDetalle[] = [];
-    export let loading: boolean = false;
-    export let error: string | null = null;
-    export let year: string;
-    export let periodo: string;
-    export let estudianteId: string;
+    let {
+        showDialog = $bindable(false),
+        notasDetalle = $bindable([]),
+        loading = false,
+        error = $bindable(null),
+        year,
+        periodo,
+        estudianteId,
+        asignatura,
+        studentName,
+        onShowInasistencias,
+        showConvivenciaDialog = $bindable(false),
+        onClose,
+    } = $props<{
+        showDialog?: boolean;
+        notasDetalle?: NotaDetalle[];
+        loading?: boolean;
+        error?: string | null;
+        year: string;
+        periodo: string;
+        estudianteId: string;
+        asignatura: string;
+        studentName: string;
+        onShowInasistencias: (
+            estudianteId: string,
+            nombres: string,
+            asignatura: string,
+            periodo: string,
+        ) => void;
+        showConvivenciaDialog?: boolean;
+        onClose?: () => void;
+    }>();
 
-    export let asignatura: string;
-    export let studentName: string;
-    export let onShowInasistencias: (
-        estudianteId: string,
-        nombres: string,
-        asignatura: string,
-        periodo: string,
-    ) => void;
+    let showNotasHistoryDialog: boolean = $state(false);
+    let hasConvivenciaRecords: boolean = $state(false);
 
-    let showNotasHistoryDialog: boolean = false;
-    export let showConvivenciaDialog: boolean = false;
-    let hasConvivenciaRecords: boolean = false;
-
-    let docenteName: string = "";
-    let showStudentDetailsModal: boolean = false;
-    let estudianteDetalle: EstudianteDetalle | null = null;
-    let loadingStudentDetails: boolean = false; // Added this line
-
-    $: if (notasDetalle.length > 0) {
-        docenteName = notasDetalle[0].Docente;
-    }
+    let docenteName: string = $derived(
+        notasDetalle.length > 0 ? notasDetalle[0].Docente : "",
+    );
+    let showStudentDetailsModal: boolean = $state(false);
+    let estudianteDetalle: EstudianteDetalle | null = $state(null);
+    let loadingStudentDetails: boolean = $state(false);
 
     function openNotasHistoryDialog() {
         showNotasHistoryDialog = true;
@@ -115,11 +129,13 @@ ESTILOS:
         return new Date(parseInt(currentYear), month, day);
     }
 
-    $: sortedNotasDetalle = [...notasDetalle].sort((a, b) => {
-        const dateA = parseFecha(a.FechaNota, year);
-        const dateB = parseFecha(b.FechaNota, year);
-        return dateB.getTime() - dateA.getTime();
-    });
+    let sortedNotasDetalle = $derived(
+        [...notasDetalle].sort((a, b) => {
+            const dateA = parseFecha(a.FechaNota, year);
+            const dateB = parseFecha(b.FechaNota, year);
+            return dateB.getTime() - dateA.getTime();
+        }),
+    );
 
     function colorNotaDetalle(nota: string | null): string {
         if (nota === null) return "";
@@ -143,8 +159,8 @@ ESTILOS:
             class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-900/65 via-gray-900/60 to-gray-900/65 backdrop-blur-md transition-opacity cursor-default focus:outline-none"
             role="button"
             tabindex="0"
-            on:click={closeDialog}
-            on:keydown={(e) => e.key === "Escape" && closeDialog()}
+            onclick={closeDialog}
+            onkeydown={(e) => e.key === "Escape" && closeDialog()}
             aria-label="Cerrar modal"
         ></div>
 
@@ -233,7 +249,7 @@ ESTILOS:
                         class="flex items-center gap-1 p-1 rounded-xl bg-gray-100/80 dark:bg-gray-800/80"
                     >
                         <button
-                            on:click={openNotasHistoryDialog}
+                            onclick={openNotasHistoryDialog}
                             class="p-2.5 rounded-lg transition-all duration-200 text-gray-600 hover:text-indigo-600 hover:bg-white dark:text-gray-400 dark:hover:text-indigo-400 dark:hover:bg-gray-700 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                             title="Ver Historial"
                         >
@@ -243,7 +259,7 @@ ESTILOS:
                         </button>
 
                         <button
-                            on:click={() =>
+                            onclick={() =>
                                 onShowInasistencias(
                                     estudianteId,
                                     studentName,
@@ -259,7 +275,7 @@ ESTILOS:
                         </button>
 
                         <button
-                            on:click={() => (showConvivenciaDialog = true)}
+                            onclick={() => (showConvivenciaDialog = true)}
                             class="p-2.5 rounded-lg transition-all duration-200 text-gray-600 hover:text-blue-600 hover:bg-white dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-gray-700 hover:shadow-sm relative focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                             title="Consolidado de Convivencia"
                         >
@@ -275,7 +291,7 @@ ESTILOS:
                         </button>
 
                         <button
-                            on:click={async () => {
+                            onclick={async () => {
                                 loadingStudentDetails = true;
                                 try {
                                     estudianteDetalle =
@@ -317,7 +333,7 @@ ESTILOS:
                     <!-- Theme & Close Group -->
                     <div class="flex items-center gap-1">
                         <button
-                            on:click={theme.toggle}
+                            onclick={theme.toggle}
                             class="p-2.5 rounded-lg transition-all duration-200 text-gray-600 hover:text-amber-600 hover:bg-amber-50 dark:text-gray-400 dark:hover:text-amber-400 dark:hover:bg-amber-900/30 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
                             title="Cambiar tema"
                         >
@@ -335,7 +351,7 @@ ESTILOS:
                         </button>
 
                         <button
-                            on:click={closeDialog}
+                            onclick={closeDialog}
                             class="p-2.5 rounded-lg transition-all duration-200 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-red-500/30"
                             title="Cerrar"
                         >
@@ -353,29 +369,7 @@ ESTILOS:
                 class="flex-grow overflow-y-auto p-6 md:p-8 bg-gradient-to-br from-gray-50/80 via-gray-50/60 to-gray-50/80 dark:from-black/30 dark:via-black/20 dark:to-black/30 custom-scrollbar"
             >
                 {#if loading}
-                    <div
-                        class="flex flex-col items-center justify-center h-80 space-y-5"
-                    >
-                        <div class="relative">
-                            <div
-                                class="absolute inset-0 bg-indigo-500/20 rounded-full blur-2xl animate-pulse"
-                            ></div>
-                            <span
-                                class="material-symbols-rounded text-7xl text-indigo-600 dark:text-indigo-400 animate-spin relative"
-                                >progress_activity</span
-                            >
-                        </div>
-                        <div class="text-center space-y-2">
-                            <p
-                                class="text-base font-semibold text-gray-700 dark:text-gray-300"
-                            >
-                                Cargando notas...
-                            </p>
-                            <p class="text-sm text-gray-500 dark:text-gray-500">
-                                Por favor espera un momento
-                            </p>
-                        </div>
-                    </div>
+                    <Loader message="Cargando notas..." />
                 {:else if error}
                     <div
                         class="flex flex-col items-center justify-center h-80 text-center p-8"
@@ -506,7 +500,7 @@ ESTILOS:
                 class="flex-none px-6 md:px-8 py-5 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900/80 dark:to-gray-900/60 flex justify-end backdrop-blur-sm"
             >
                 <button
-                    on:click={closeDialog}
+                    onclick={closeDialog}
                     class="px-8 py-3 rounded-xl text-white font-bold text-sm shadow-xl shadow-indigo-500/40 dark:shadow-indigo-500/30 transition-all duration-200 transform hover:scale-[1.03] hover:shadow-2xl hover:shadow-indigo-500/50 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-600 hover:from-indigo-700 hover:via-blue-700 hover:to-indigo-700"
                 >
                     Cerrar

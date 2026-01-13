@@ -27,22 +27,31 @@ ESTILOS:
 -->
 
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
     import { GET_NOTAS_HISTORY_ENDPOINT } from "../../../../../constants";
     import type { NotaHistory } from "../../../../types";
     import Skeleton from "../../../shared/Skeleton.svelte";
     import { theme } from "../../../../themeStore";
     import Tooltip from "../../../shared/Tooltip.svelte";
 
-    export let showDialog: boolean = false;
-    export let studentId: string;
-    export let subject: string;
-    export let periodo: string;
-    export let year: string;
+    let {
+        showDialog = $bindable(false),
+        studentId,
+        subject,
+        periodo,
+        year,
+        onClose,
+    } = $props<{
+        showDialog?: boolean;
+        studentId: string;
+        subject: string;
+        periodo: string;
+        year: string;
+        onClose?: () => void;
+    }>();
 
-    let notasHistory: NotaHistory[] = [];
-    let loading: boolean = false;
-    let error: string | null = null;
+    let notasHistory: NotaHistory[] = $state([]);
+    let loading: boolean = $state(false);
+    let error: string | null = $state(null);
 
     // Siempre mostrar todas las columnas N1..N12
     let columnNames: (keyof NotaHistory)[] = [
@@ -59,8 +68,6 @@ ESTILOS:
         "nota11",
         "nota12",
     ];
-
-    const dispatch = createEventDispatcher();
 
     function areNotasEqual(nota1: NotaHistory, nota2: NotaHistory): boolean {
         for (let i = 1; i <= 12; i++) {
@@ -115,8 +122,8 @@ ESTILOS:
     }
 
     // Evitar fetch duplicado
-    let lastFetchedKey: string | null = null;
-    $: {
+    let lastFetchedKey = $state<string | null>(null);
+    $effect(() => {
         const key = `${studentId}-${subject}-${periodo}-${year}`;
         if (showDialog && studentId && subject && periodo && year) {
             if (key !== lastFetchedKey) {
@@ -126,11 +133,11 @@ ESTILOS:
         } else {
             lastFetchedKey = null;
         }
-    }
+    });
 
     function closeDialog() {
         showDialog = false;
-        dispatch("close");
+        if (onClose) onClose();
     }
 
     function isNotaHistoryRowEmpty(nota: NotaHistory): boolean {
@@ -164,18 +171,18 @@ ESTILOS:
         return !isNaN(num) && num < 3;
     }
 
-    $: filteredNotasHistory = notasHistory.filter(
-        (nota) => !isNotaHistoryRowEmpty(nota),
+    let filteredNotasHistory = $derived(
+        notasHistory.filter((nota) => !isNotaHistoryRowEmpty(nota)),
     );
 </script>
 
 {#if showDialog}
     <div
         class="dialog-backdrop"
-        on:click={closeDialog}
+        onclick={closeDialog}
         role="button"
         tabindex="0"
-        on:keydown={(e) => {
+        onkeydown={(e) => {
             if (e.key === "Escape") closeDialog();
         }}
         aria-label="Cerrar diálogo"
@@ -184,11 +191,11 @@ ESTILOS:
             class="dialog-content flex flex-col {$theme === 'dark'
                 ? 'bg-[#1f1f1f] text-[#e8eaed]'
                 : 'bg-white text-[#1f1f1f]'}"
-            on:click|stopPropagation
+            onclick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             tabindex="-1"
-            on:keydown={(e) => {
+            onkeydown={(e) => {
                 if (e.key === "Escape") closeDialog();
             }}
         >
@@ -319,7 +326,7 @@ ESTILOS:
                     : 'border-[#e8eaed]'}"
             >
                 <button
-                    on:click={closeDialog}
+                    onclick={closeDialog}
                     class="px-6 py-2.5 min-h-[44px] rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 {$theme ===
                     'dark'
                         ? 'text-[#8ab4f8] hover:bg-[#8ab4f8]/10 focus:ring-[#8ab4f8] focus:ring-offset-[#1f1f1f]'

@@ -29,38 +29,54 @@ NOTAS DE DESARROLLO:
     import GradesTableDialog from "./grades/GradesTableDialog.svelte";
     import type { NotaDetalle } from "../../../types";
 
-    // NotasDetalleDialog props
-    export let showNotasDetalleDialog: boolean;
-    export let currentNotasDetalle: NotaDetalle[];
-    export let notasDetalleLoading: boolean;
-    export let notasDetalleError: string | null;
-    export let payloadYear: string;
-    export let selectedPeriodoForDialog: string;
-    export let selectedEstudianteId: string;
-    export let selectedAsignaturaNombre: string;
-    export let selectedStudentName: string;
-    export let onShowInasistencias: (
-        estudianteId: string,
-        nombres: string,
-        asignatura: string,
-        periodo: string,
-    ) => void;
-    export let showConvivenciaDialog: boolean;
-
-    // InfoCantDialog props
-    export let showInfoCantDialog: boolean;
-
-    // InasistenciasDetallado props
-    export let showInasistenciasDetallado: boolean;
-    export let inasistenciasEstudianteId: string;
-    export let inasistenciasNombres: string;
-    export let inasistenciasAsignatura: string;
-    export let inasistenciasPeriodo: string;
-
-    // GradesTableDialog props
-    export let showGradesTableDialog: boolean;
-    export let selectedDocenteId: string;
-    export let payloadPeriodo: string;
+    let {
+        showNotasDetalleDialog = $bindable(false),
+        currentNotasDetalle,
+        notasDetalleLoading,
+        notasDetalleError,
+        payloadYear,
+        selectedPeriodoForDialog,
+        selectedEstudianteId,
+        selectedAsignaturaNombre,
+        selectedStudentName,
+        onShowInasistencias,
+        showConvivenciaDialog = $bindable(false),
+        showInfoCantDialog = $bindable(false),
+        showInasistenciasDetallado = $bindable(false),
+        inasistenciasEstudianteId,
+        inasistenciasNombres,
+        inasistenciasAsignatura,
+        inasistenciasPeriodo,
+        showGradesTableDialog = $bindable(false),
+        selectedDocenteId,
+        payloadPeriodo,
+    } = $props<{
+        showNotasDetalleDialog?: boolean;
+        currentNotasDetalle: NotaDetalle[];
+        notasDetalleLoading: boolean;
+        notasDetalleError: string | null;
+        payloadYear: string;
+        selectedPeriodoForDialog: string;
+        selectedEstudianteId: string;
+        selectedAsignaturaNombre: string;
+        selectedStudentName: string;
+        onShowInasistencias: (
+            estudianteId: string,
+            nombres: string,
+            asignatura: string,
+            periodo: string,
+        ) => void;
+        showConvivenciaDialog?: boolean;
+        showInfoCantDialog?: boolean;
+        showInasistenciasDetallado?: boolean;
+        inasistenciasEstudianteId: string;
+        inasistenciasNombres: string;
+        inasistenciasAsignatura: string;
+        inasistenciasPeriodo: string;
+        showGradesTableDialog?: boolean;
+        selectedDocenteId: string;
+        payloadPeriodo: string;
+    }>();
 </script>
 
 <!-- === DIALOGO DE NOTAS DETALLADAS === -->

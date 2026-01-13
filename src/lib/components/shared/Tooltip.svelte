@@ -31,13 +31,20 @@ ESTILOS:
     import { fade } from "svelte/transition";
     import { onMount, onDestroy, tick } from "svelte";
 
-    export let content: string | null;
-    export let position: "top" | "bottom" | "left" | "right" = "top";
+    let {
+        content,
+        position = "top",
+        children,
+    } = $props<{
+        content: string | null;
+        position?: "top" | "bottom" | "left" | "right";
+        children?: import("svelte").Snippet;
+    }>();
 
-    let showTooltip = false;
+    let showTooltip = $state(false);
     let triggerElement: HTMLElement;
-    let tooltipElement: HTMLDivElement;
-    let portalTarget: HTMLElement;
+    let tooltipElement: HTMLDivElement = $state()!;
+    let portalTarget: HTMLElement = $state()!;
 
     // Svelte action to move element to portalTarget
     function portal(node: HTMLElement, target: HTMLElement) {
@@ -127,12 +134,14 @@ ESTILOS:
         tooltipElement.style.position = "absolute";
     }
 
-    $: tooltipClasses = (() => {
-        let classes =
-            "z-[9999] px-3 py-2 text-sm font-medium rounded-lg shadow-sm whitespace-pre-wrap";
-        classes += ` ${$theme === "dark" ? "bg-gray-700 text-gray-200" : "bg-gray-800 text-white"}`;
-        return classes;
-    })();
+    let tooltipClasses = $derived(
+        (() => {
+            let classes =
+                "z-[9999] px-3 py-2 text-sm font-medium rounded-lg shadow-sm whitespace-pre-wrap";
+            classes += ` ${$theme === "dark" ? "bg-gray-700 text-gray-200" : "bg-gray-800 text-white"}`;
+            return classes;
+        })(),
+    );
 
     // Re-position tooltip on scroll or resize
     function handleScrollOrResize() {
@@ -152,21 +161,23 @@ ESTILOS:
     });
 
     // Reactive statement to re-position tooltip if content or position changes while visible
-    $: if (showTooltip && (content || position)) {
-        positionTooltip();
-    }
+    $effect(() => {
+        if (showTooltip && (content || position)) {
+            positionTooltip();
+        }
+    });
 </script>
 
 <div
     class="relative inline-block"
     role="group"
     bind:this={triggerElement}
-    on:mouseenter={show}
-    on:mouseleave={hide}
-    on:focusin={show}
-    on:focusout={hide}
+    onmouseenter={show}
+    onmouseleave={hide}
+    onfocusin={show}
+    onfocusout={hide}
 >
-    <slot></slot>
+    {@render children?.()}
 </div>
 
 {#if showTooltip}

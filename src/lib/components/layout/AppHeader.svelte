@@ -30,7 +30,6 @@ ESTILOS:
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import { theme } from "../../themeStore";
   import {
     loadConcentradorData,
@@ -43,10 +42,17 @@ ESTILOS:
     resetToDashboard,
   } from "../../storeConcentrador";
 
-  export let showPayloadForm: boolean;
-  export let showInfoCantDialog: boolean;
-
-  const dispatch = createEventDispatcher();
+  let {
+    showPayloadForm = $bindable(),
+    showInfoCantDialog = $bindable(),
+    user = null,
+    onLogout,
+  } = $props<{
+    showPayloadForm: boolean;
+    showInfoCantDialog: boolean;
+    user?: any;
+    onLogout?: () => void;
+  }>();
 
   /**
    * Maneja el cambio de tipo de concentrador (Asignaturas <-> Áreas).
@@ -84,7 +90,7 @@ ESTILOS:
    * Solicita el cierre de sesión mediante el despacho de un evento.
    */
   function handleLogout() {
-    dispatch("logout");
+    if (onLogout) onLogout();
   }
 
   /**
@@ -121,13 +127,22 @@ ESTILOS:
           >
             Concentrador IE
           </h1>
-          <p
-            class="text-[9px] sm:text-[10px] {$theme === 'dark'
-              ? 'text-gray-400'
-              : 'text-gray-500'} hidden sm:block"
-          >
-            Sistema de Gestión Académica
-          </p>
+          <div class="flex flex-col">
+            <p
+              class="text-[9px] sm:text-[10px] {$theme === 'dark'
+                ? 'text-gray-400'
+                : 'text-gray-500'} hidden sm:block leading-tight"
+            >
+              Sistema de Gestión Académica
+            </p>
+            {#if user?.nombres}
+              <p
+                class="text-[8px] sm:text-[9px] font-medium text-indigo-500 dark:text-indigo-400 leading-tight"
+              >
+                Usuario: {user.nombres}
+              </p>
+            {/if}
+          </div>
         </div>
       </div>
     </div>
@@ -138,7 +153,7 @@ ESTILOS:
     >
       <!-- Theme Toggle Button -->
       <button
-        on:click={theme.toggle}
+        onclick={theme.toggle}
         class="btn-premium p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 hover:scale-105 shadow-md {$theme ===
         'dark'
           ? 'bg-gradient-to-br from-gray-700 to-gray-800 text-gray-200 hover:from-gray-600 hover:to-gray-700'
@@ -158,7 +173,7 @@ ESTILOS:
       </button>
       <!-- Visibility Toggle Button -->
       <button
-        on:click={() => (showPayloadForm = !showPayloadForm)}
+        onclick={() => (showPayloadForm = !showPayloadForm)}
         class="btn-premium p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 hover:scale-105 shadow-md {$theme ===
         'dark'
           ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500'
@@ -202,7 +217,7 @@ ESTILOS:
           <input
             type="checkbox"
             class="sr-only peer"
-            on:change={handleConcentradorTypeChange}
+            onchange={handleConcentradorTypeChange}
             checked={$concentradorType === "areas"}
           />
           <div
@@ -234,7 +249,7 @@ ESTILOS:
           : 'bg-gray-100/80'} shadow-sm"
       >
         <button
-          on:click={() => viewMode.set("table-view")}
+          onclick={() => viewMode.set("table-view")}
           class="p-1.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500
                     {$viewMode === 'table-view'
             ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-md'
@@ -247,7 +262,7 @@ ESTILOS:
           >
         </button>
         <button
-          on:click={() => viewMode.set("cards-view")}
+          onclick={() => viewMode.set("cards-view")}
           class="p-1.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500
                     {$viewMode === 'cards-view'
             ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-md'
@@ -272,7 +287,7 @@ ESTILOS:
       <div class="flex gap-1 sm:gap-1.5">
         <!-- Export CSV -->
         <button
-          on:click={exportCSV}
+          onclick={exportCSV}
           disabled={$loading}
           class="btn-premium p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-300 hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed {$theme ===
           'dark'
@@ -288,7 +303,7 @@ ESTILOS:
 
         <!-- Export Excel -->
         <button
-          on:click={exportExcel}
+          onclick={exportExcel}
           disabled={$loading}
           class="btn-premium p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed {$theme ===
           'dark'
@@ -304,7 +319,7 @@ ESTILOS:
 
         <!-- Reload Button -->
         <button
-          on:click={() => loadConcentradorData()}
+          onclick={() => loadConcentradorData()}
           disabled={$loading}
           class="btn-premium p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:scale-105 hover:rotate-180 shadow-md disabled:opacity-50 disabled:cursor-not-allowed {$theme ===
           'dark'
@@ -322,7 +337,7 @@ ESTILOS:
 
         <!-- Info Button -->
         <button
-          on:click={() => (showInfoCantDialog = true)}
+          onclick={() => (showInfoCantDialog = true)}
           class="btn-premium p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all duration-300 hover:scale-105 shadow-md {$theme ===
           'dark'
             ? 'bg-gradient-to-br from-amber-600 to-orange-600 text-white hover:from-amber-500 hover:to-orange-500'
@@ -344,7 +359,7 @@ ESTILOS:
 
       <!-- Dashboard Button -->
       <button
-        on:click={resetToDashboard}
+        onclick={resetToDashboard}
         class="btn-premium p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 hover:scale-105 shadow-md {$theme ===
         'dark'
           ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500'
@@ -357,7 +372,7 @@ ESTILOS:
 
       <!-- Logout Button -->
       <button
-        on:click={handleLogout}
+        onclick={handleLogout}
         class="btn-premium p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300 hover:scale-105 shadow-md {$theme ===
         'dark'
           ? 'bg-gradient-to-br from-red-600 to-rose-600 text-white hover:from-red-500 hover:to-rose-500'

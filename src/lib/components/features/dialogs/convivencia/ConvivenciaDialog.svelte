@@ -29,7 +29,7 @@ ESTILOS:
 -->
 
 <script lang="ts">
-  import { createEventDispatcher, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { fade, scale } from "svelte/transition";
   import {
     fetchConsolidadoConvivencia,
@@ -41,20 +41,40 @@ ESTILOS:
     ConvivenciaDetallado,
   } from "../../../../types"; // Import ConvivenciaDetallado
 
-  export let showDialog: boolean;
-  export let estudianteId: string;
-  export let year: string;
-  export let hasConvivenciaRecords: boolean = false; // New export prop
+  let {
+    showDialog = $bindable(false),
+    estudianteId,
+    year,
+    hasConvivenciaRecords = $bindable(false),
+    onClose,
+  } = $props<{
+    showDialog?: boolean;
+    estudianteId: string;
+    year: string;
+    hasConvivenciaRecords?: boolean;
+    onClose?: () => void;
+  }>();
 
-  let convivenciaRecords: ConvivenciaRecord[] = [];
-  let loading = false;
-  let error: string | null = null;
-  let selectedRecord: ConvivenciaRecord | null = null;
-  let convivenciaDetallado: ConvivenciaDetallado | null = null; // New state variable
-  let loadingDetalle = false; // New loading state
-  let errorDetalle: string | null = null; // New error state
+  let convivenciaRecords: ConvivenciaRecord[] = $state([]);
+  let loading = $state(false);
+  let error: string | null = $state(null);
+  let selectedRecord: ConvivenciaRecord | null = $state(null);
+  let convivenciaDetallado: ConvivenciaDetallado | null = $state(null); // New state variable
+  let loadingDetalle = $state(false); // New loading state
+  let errorDetalle: string | null = $state(null); // New error state
 
-  const dispatch = createEventDispatcher();
+  $effect(() => {
+    if (showDialog && estudianteId && year) {
+      loadConvivenciaData();
+    }
+  });
+
+  // Watch for selectedRecord change to load detailed data
+  $effect(() => {
+    if (selectedRecord) {
+      loadConvivenciaDetalladoData(selectedRecord.ind);
+    }
+  });
 
   /**
    * Cierra el diálogo y reinicia todos los estados internos.
@@ -67,9 +87,8 @@ ESTILOS:
     convivenciaDetallado = null; // Reinicia datos detallados
     errorDetalle = null; // Reinicia errores de detalle
     hasConvivenciaRecords = false; // Reinicia estado de existencia
-    dispatch("close");
+    if (onClose) onClose();
   }
-
   /**
    * Carga la lista resumida de registros de convivencia del estudiante.
    */
@@ -115,15 +134,6 @@ ESTILOS:
       loadingDetalle = false;
     }
   }
-
-  $: if (showDialog && estudianteId && year) {
-    loadConvivenciaData();
-  }
-
-  // Watch for selectedRecord change to load detailed data
-  $: if (selectedRecord) {
-    loadConvivenciaDetalladoData(selectedRecord.ind);
-  }
 </script>
 
 {#if showDialog}
@@ -137,8 +147,8 @@ ESTILOS:
       class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
       role="button"
       tabindex="0"
-      on:click={closeDialog}
-      on:keydown={(e) => e.key === "Escape" && closeDialog()}
+      onclick={closeDialog}
+      onkeydown={(e: KeyboardEvent) => e.key === "Escape" && closeDialog()}
       aria-label="Close dialog"
     ></div>
 
@@ -185,7 +195,7 @@ ESTILOS:
           </div>
         </div>
         <button
-          on:click={closeDialog}
+          onclick={closeDialog}
           class="group p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/40"
         >
           <span
@@ -270,7 +280,7 @@ ESTILOS:
           {:else if convivenciaRecords.length > 0}
             {#each convivenciaRecords as record (record.ind)}
               <button
-                on:click={() => (selectedRecord = record)}
+                onclick={() => (selectedRecord = record)}
                 class="w-full text-left group relative p-4 rounded-xl transition-all duration-200 border
                        {selectedRecord === record
                   ? 'bg-white dark:bg-gray-800 border-indigo-500 dark:border-indigo-500 shadow-md ring-1 ring-indigo-500 z-10'

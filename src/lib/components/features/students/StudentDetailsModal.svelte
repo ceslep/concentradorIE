@@ -29,7 +29,6 @@ ESTILOS:
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import { fade, slide, scale } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import type { EstudianteDetalle } from "../../../types";
@@ -87,18 +86,23 @@ ESTILOS:
     etnias,
   } from "$lib/storeConcentrador";
 
-  export let showModal: boolean;
-  export let estudiante: EstudianteDetalle;
-
-  const dispatch = createEventDispatcher();
+  let {
+    showModal = $bindable(false),
+    estudiante,
+    onClose,
+  } = $props<{
+    showModal?: boolean;
+    estudiante: EstudianteDetalle;
+    onClose?: () => void;
+  }>();
 
   let activeTab: "personal" | "academic" | "contact" | "family" | "medical" =
-    "personal";
-  let isSaving = false;
+    $state("personal");
+  let isSaving = $state(false);
 
   function closeModal() {
     showModal = false;
-    dispatch("close");
+    if (onClose) onClose();
   }
 
   /**
@@ -112,65 +116,68 @@ ESTILOS:
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
-  // Reactive statements to update form fields when student prop changes
-  $: if (estudiante) {
-    eNombres.set(estudiante.nombres);
-    eInstitucion_externa.set(estudiante.institucion_externa);
-    eGenero.set(estudiante.genero);
-    eFecnac.set(estudiante.fecnac);
-    eEdad.set(estudiante.edad);
-    eNivel.set(estudiante.nivel);
-    eGrado.set(estudiante.grado);
-    eNumero.set(estudiante.numero);
-    eAnio.set(estudiante.anio);
-    ePass.set(estudiante.pass);
-    eActivo.set(estudiante.activo);
-    eBanda.set(estudiante.banda);
-    eHED.set(estudiante.HED);
-    eIdacudiente.set(estudiante.idacudiente);
-    eAcudiente.set(estudiante.acudiente);
-    eTelefono1.set(estudiante.telefono1);
-    eTelefono2.set(estudiante.telefono2);
-    eDireccion.set(estudiante.direccion);
-    eEmail_estudiante.set(estudiante.email_estudiante);
-    eEmail_acudiente.set(estudiante.email_acudiente);
-    eDesertor.set(estudiante.desertor);
-    eOtraInformacion.set(estudiante.otraInformacion);
-    eEstado.set(estudiante.estado);
-    eYear.set(estudiante.year);
-    eLugar.set(estudiante.lugar);
-    eSisben.set(estudiante.sisben);
-    eEstrato.set(estudiante.estrato);
-    eLugarNacimiento.set(estudiante.lugarNacimiento);
-    eLugarExpedicion.set(estudiante.lugarExpedicion);
-    eFechaExpedicion.set(estudiante.fechaExpedicion);
-    eTdei.set(estudiante.tdei);
-    eVictimaConflicto.set(estudiante.victimaConflicto);
-    eLugarDesplazamiento.set(estudiante.lugarDesplazamiento);
-    eFechaDesplazamiento.set(estudiante.fechaDesplazamiento);
-    eEtnia.set(estudiante.etnia);
-    eTipoSangre.set(estudiante.tipoSangre);
-    eEps.set(estudiante.eps);
-    ePadre.set(estudiante.padre);
-    ePadreid.set(estudiante.padreid);
-    eTelefonopadre.set(estudiante.telefonopadre);
-    eOcupacionpadre.set(estudiante.ocupacionpadre);
-    eMadre.set(estudiante.madre);
-    eMadreid.set(estudiante.madreid);
-    eTelefonomadre.set(estudiante.telefonomadre);
-    eOcupacionmadre.set(estudiante.ocupacionmadre);
-    eParentesco.set(estudiante.parentesco);
-    eDiscapacidad.set(estudiante.discapacidad);
-    eTelefono_acudiente.set(estudiante.telefono_acudiente);
-    eEanterior.set(estudiante.eanterior);
-    eSede.set(estudiante.sede);
-  }
+  // Reactive effects to update form fields when student prop changes
+  $effect(() => {
+    if (estudiante) {
+      eNombres.set(estudiante.nombres);
+      eInstitucion_externa.set(estudiante.institucion_externa);
+      eGenero.set(estudiante.genero);
+      eFecnac.set(estudiante.fecnac);
+      eEdad.set(estudiante.edad);
+      eNivel.set(estudiante.nivel);
+      eGrado.set(estudiante.grado);
+      eNumero.set(estudiante.numero);
+      eAnio.set(estudiante.anio);
+      ePass.set(estudiante.pass);
+      eActivo.set(estudiante.activo);
+      eBanda.set(estudiante.banda);
+      eHED.set(estudiante.HED);
+      eIdacudiente.set(estudiante.idacudiente);
+      eAcudiente.set(estudiante.acudiente);
+      eTelefono1.set(estudiante.telefono1);
+      eTelefono2.set(estudiante.telefono2);
+      eDireccion.set(estudiante.direccion);
+      eEmail_estudiante.set(estudiante.email_estudiante);
+      eEmail_acudiente.set(estudiante.email_acudiente);
+      eDesertor.set(estudiante.desertor);
+      eOtraInformacion.set(estudiante.otraInformacion);
+      eEstado.set(estudiante.estado);
+      eYear.set(estudiante.year);
+      eLugar.set(estudiante.lugar);
+      eSisben.set(estudiante.sisben);
+      eEstrato.set(estudiante.estrato);
+      eLugarNacimiento.set(estudiante.lugarNacimiento);
+      eLugarExpedicion.set(estudiante.lugarExpedicion);
+      eFechaExpedicion.set(estudiante.fechaExpedicion);
+      eTdei.set(estudiante.tdei);
+      eVictimaConflicto.set(estudiante.victimaConflicto);
+      eLugarDesplazamiento.set(estudiante.lugarDesplazamiento);
+      eFechaDesplazamiento.set(estudiante.fechaDesplazamiento);
+      eEtnia.set(estudiante.etnia);
+      eTipoSangre.set(estudiante.tipoSangre);
+      eEps.set(estudiante.eps);
+      ePadre.set(estudiante.padre);
+      ePadreid.set(estudiante.padreid);
+      eTelefonopadre.set(estudiante.telefonopadre);
+      eOcupacionpadre.set(estudiante.ocupacionpadre);
+      eMadre.set(estudiante.madre);
+      eMadreid.set(estudiante.madreid);
+      eTelefonomadre.set(estudiante.telefonomadre);
+      eOcupacionmadre.set(estudiante.ocupacionmadre);
+      eParentesco.set(estudiante.parentesco);
+      eDiscapacidad.set(estudiante.discapacidad);
+      eTelefono_acudiente.set(estudiante.telefono_acudiente);
+      eEanterior.set(estudiante.eanterior);
+      eSede.set(estudiante.sede);
+    }
+  });
 
   /**
    * Procesa el envío del formulario.
    * Actualmente simula la persistencia con un retardo.
    */
-  async function handleSubmit() {
+  async function handleSubmit(e: Event) {
+    if (e) e.preventDefault();
     isSaving = true;
     // Simular operación de guardado
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -192,8 +199,8 @@ ESTILOS:
   <div
     transition:fade={{ duration: 200 }}
     class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 font-sans bg-gradient-to-br from-indigo-900/40 via-purple-900/30 to-pink-900/40 backdrop-blur-3xl"
-    on:click={closeModal}
-    on:keydown={(e) => e.key === "Escape" && closeModal()}
+    onclick={closeModal}
+    onkeydown={(e: KeyboardEvent) => e.key === "Escape" && closeModal()}
     role="presentation"
   >
     <!-- Premium modal container with enhanced glassmorphism -->
@@ -206,7 +213,7 @@ ESTILOS:
         easing: cubicOut,
       }}
       class="relative w-full max-w-6xl max-h-[95vh] flex flex-col rounded-3xl shadow-[0_25px_80px_rgba(99,102,241,0.35),0_15px_40px_rgba(139,92,246,0.25)] backdrop-blur-2xl bg-white/20 dark:bg-gray-900/20 text-gray-900 dark:text-gray-100 overflow-hidden border-2 border-white/30 dark:border-white/15 premium-glass"
-      on:click|stopPropagation
+      onclick={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
@@ -274,7 +281,7 @@ ESTILOS:
           <!-- Enhanced close button with improved accessibility -->
           <button
             type="button"
-            on:click={closeModal}
+            onclick={closeModal}
             class="group relative p-3.5 rounded-2xl text-gray-600 hover:text-white dark:text-gray-300 dark:hover:text-white transition-all duration-300 overflow-hidden hover:shadow-[0_8px_24px_rgba(99,102,241,0.35)] focus:outline-none focus:ring-4 focus:ring-indigo-500/30 flex-shrink-0"
             title="Cerrar (Esc)"
             aria-label="Cerrar ventana modal"
@@ -306,7 +313,7 @@ ESTILOS:
             type="button"
             aria-selected={activeTab === "personal"}
             aria-controls="personal-panel"
-            on:click={() => (activeTab = "personal")}
+            onclick={() => (activeTab = "personal")}
             class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'personal'
               ? 'text-indigo-600 dark:text-indigo-400 bg-white/5 dark:bg-white/5'
@@ -334,7 +341,7 @@ ESTILOS:
             type="button"
             aria-selected={activeTab === "academic"}
             aria-controls="academic-panel"
-            on:click={() => (activeTab = "academic")}
+            onclick={() => (activeTab = "academic")}
             class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'academic'
               ? 'text-emerald-600 dark:text-emerald-400 bg-white/5 dark:bg-white/5'
@@ -362,7 +369,7 @@ ESTILOS:
             type="button"
             aria-selected={activeTab === "contact"}
             aria-controls="contact-panel"
-            on:click={() => (activeTab = "contact")}
+            onclick={() => (activeTab = "contact")}
             class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'contact'
               ? 'text-blue-600 dark:text-blue-400 bg-white/5 dark:bg-white/5'
@@ -390,7 +397,7 @@ ESTILOS:
             type="button"
             aria-selected={activeTab === "family"}
             aria-controls="family-panel"
-            on:click={() => (activeTab = "family")}
+            onclick={() => (activeTab = "family")}
             class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'family'
               ? 'text-pink-600 dark:text-pink-400 bg-white/5 dark:bg-white/5'
@@ -418,7 +425,7 @@ ESTILOS:
             type="button"
             aria-selected={activeTab === "medical"}
             aria-controls="medical-panel"
-            on:click={() => (activeTab = "medical")}
+            onclick={() => (activeTab = "medical")}
             class="group relative min-w-fit flex items-center gap-3 py-4 px-6 font-semibold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-t-xl {activeTab ===
             'medical'
               ? 'text-orange-600 dark:text-orange-400 bg-white/5 dark:bg-white/5'
@@ -443,7 +450,7 @@ ESTILOS:
       </div>
 
       <div class="flex-grow overflow-y-auto custom-scrollbar px-8 py-6">
-        <form on:submit|preventDefault={handleSubmit} class="space-y-8">
+        <form onsubmit={handleSubmit} class="space-y-8">
           {#if activeTab === "personal"}
             <div transition:fade class="space-y-6">
               <fieldset
@@ -1432,7 +1439,7 @@ ESTILOS:
         <!-- Cancel Button -->
         <button
           type="button"
-          on:click={closeModal}
+          onclick={closeModal}
           disabled={isSaving}
           class="px-6 py-3 rounded-2xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-500/20 disabled:opacity-50"
         >
@@ -1442,7 +1449,7 @@ ESTILOS:
         <!-- Save Button with animated gradient -->
         <button
           type="submit"
-          on:click={handleSubmit}
+          onclick={handleSubmit}
           disabled={isSaving}
           class="group relative px-8 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold shadow-[0_8px_20px_rgba(99,102,241,0.35)] hover:shadow-[0_12px_28px_rgba(99,102,241,0.5)] transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 overflow-hidden focus:outline-none focus:ring-4 focus:ring-indigo-500/40 disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
         >

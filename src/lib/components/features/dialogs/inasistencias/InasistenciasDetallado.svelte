@@ -35,30 +35,37 @@ ESTILOS:
   } from "../../../../types";
   import { theme } from "../../../../themeStore";
   import { fade, scale } from "svelte/transition";
+  import Loader from "../../../shared/Loader.svelte";
 
-  export let showDialog: boolean;
-  export let estudianteId: string;
-  export let nombres: string;
-  export let asignatura: string;
-  export let periodo: string;
-  export let year: string;
+  let {
+    showDialog = $bindable(false),
+    estudianteId,
+    nombres,
+    asignatura,
+    periodo,
+    year,
+    onClose,
+  } = $props<{
+    showDialog?: boolean;
+    estudianteId: string;
+    nombres: string;
+    asignatura: string;
+    periodo: string;
+    year: string;
+    onClose?: () => void;
+  }>();
 
-  let inasistencias: Inasistencia[] = [];
-  let loading = false;
-  let error: string | null = null;
+  let inasistencias: Inasistencia[] = $state([]);
+  let loading = $state(false);
+  let error: string | null = $state(null);
 
-  /**
-   * Cierra el diálogo y limpia los datos cargados.
-   */
   function closeDialog() {
     showDialog = false;
     inasistencias = [];
     error = null;
+    if (onClose) onClose();
   }
 
-  /**
-   * Ejecuta la consulta de inasistencias detalladas mediante la API.
-   */
   async function loadInasistencias() {
     loading = true;
     error = null;
@@ -78,9 +85,8 @@ ESTILOS:
     }
   }
 
-  // Reactive statement to re-fetch data when props change and dialog is open
-  let lastFetchedKey: string | null = null;
-  $: {
+  let lastFetchedKey: string | null = $state(null);
+  $effect(() => {
     if (showDialog && estudianteId && nombres && asignatura && periodo) {
       const key = `${estudianteId}-${nombres}-${asignatura}-${periodo}`;
       if (key !== lastFetchedKey) {
@@ -89,9 +95,9 @@ ESTILOS:
       }
     } else if (!showDialog) {
       lastFetchedKey = null;
-      inasistencias = []; // Clear data when dialog is closed
+      inasistencias = [];
     }
-  }
+  });
 </script>
 
 {#if showDialog}
@@ -105,8 +111,8 @@ ESTILOS:
       class="absolute inset-0 bg-gradient-to-br from-gray-900/65 via-gray-900/60 to-gray-900/65 backdrop-blur-md transition-opacity"
       role="button"
       tabindex="0"
-      on:click={closeDialog}
-      on:keydown={(e) => e.key === "Escape" && closeDialog()}
+      onclick={closeDialog}
+      onkeydown={(e) => e.key === "Escape" && closeDialog()}
       aria-label="Cerrar diálogo"
       title="Cerrar diálogo"
     ></div>
@@ -165,7 +171,7 @@ ESTILOS:
           </div>
         </div>
         <button
-          on:click={closeDialog}
+          onclick={closeDialog}
           class="group p-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30 flex-shrink-0"
         >
           <span
@@ -180,27 +186,7 @@ ESTILOS:
         class="flex-1 overflow-y-auto p-0 custom-scrollbar bg-gradient-to-br from-gray-50/80 via-gray-50/60 to-gray-50/80 dark:from-black/30 dark:via-black/20 dark:to-black/30"
       >
         {#if loading}
-          <div class="flex flex-col items-center justify-center h-80 space-y-5">
-            <div class="relative">
-              <div
-                class="absolute inset-0 bg-indigo-500/20 rounded-full blur-2xl animate-pulse"
-              ></div>
-              <span
-                class="material-symbols-rounded text-7xl text-indigo-600 dark:text-indigo-400 animate-spin relative"
-                >progress_activity</span
-              >
-            </div>
-            <div class="text-center space-y-2">
-              <p
-                class="text-base font-semibold text-gray-700 dark:text-gray-300"
-              >
-                Cargando inasistencias...
-              </p>
-              <p class="text-sm text-gray-500 dark:text-gray-500">
-                Por favor espera un momento
-              </p>
-            </div>
-          </div>
+          <Loader message="Cargando inasistencias..." />
         {:else if error}
           <div
             class="flex flex-col items-center justify-center h-80 text-center p-8"
@@ -401,7 +387,7 @@ ESTILOS:
         class="flex-none px-6 md:px-8 py-5 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900/80 dark:to-gray-900/60 flex justify-end backdrop-blur-sm"
       >
         <button
-          on:click={closeDialog}
+          onclick={closeDialog}
           class="px-8 py-3 rounded-xl bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 font-bold hover:from-gray-200 hover:to-gray-100 dark:hover:from-gray-600 dark:hover:to-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 dark:focus:ring-gray-600 dark:focus:ring-offset-gray-900"
         >
           Cerrar

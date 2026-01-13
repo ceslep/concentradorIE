@@ -315,7 +315,7 @@ ESTILOS:
               id="fld-asignacion"
               class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.Asignacion}
-              on:change={() => {
+              onchange={() => {
                 updateNiveles();
                 loadConcentradorData();
               }}
@@ -353,7 +353,7 @@ ESTILOS:
               id="fld-nivel"
               class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.nivel}
-              on:change={() => {
+              onchange={() => {
                 updateNumeros();
                 loadConcentradorData();
               }}
@@ -391,7 +391,7 @@ ESTILOS:
               id="fld-numero"
               class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.numero}
-              on:change={() => loadConcentradorData()}
+              onchange={() => loadConcentradorData()}
               {disabled}
             >
               {#each numeros as numero}
@@ -426,7 +426,7 @@ ESTILOS:
               id="fld-periodo"
               class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.periodo}
-              on:change={() => loadConcentradorData()}
+              onchange={() => loadConcentradorData()}
               {disabled}
             >
               {#each periods as period}
@@ -461,7 +461,7 @@ ESTILOS:
               id="fld-year"
               class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               bind:value={$payload.year}
-              on:change={() => loadConcentradorData()}
+              onchange={() => loadConcentradorData()}
               {disabled}
             >
               {#each years as yearOption}
@@ -500,7 +500,7 @@ ESTILOS:
               id="fld-activos"
               class="w-full appearance-none bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm border-2 border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-300 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-500/10 select-glow"
               value={activosString}
-              on:change={(e) => {
+              onchange={(e) => {
                 const target = e.target as HTMLSelectElement;
                 setActivos(target.value);
                 loadConcentradorData();
@@ -535,7 +535,7 @@ ESTILOS:
           <button
             id="btn-toggle-periodos"
             type="button"
-            on:click={toggleShowPeriodos}
+            onclick={toggleShowPeriodos}
             class="w-full appearance-none bg-gradient-to-r from-indigo-500/90 to-purple-500/90 hover:from-indigo-600 hover:to-purple-600 border-2 border-indigo-400/50 dark:border-indigo-500/50 text-white text-xs font-bold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-indigo-500/30 flex items-center justify-between gap-2 active:scale-95 toggle-glow"
             {disabled}
           >
@@ -574,7 +574,7 @@ ESTILOS:
                 <input
                   type="checkbox"
                   checked={$selectedPeriodos.includes(p)}
-                  on:change={() => handlePeriodoChange(p)}
+                  onchange={() => handlePeriodoChange(p)}
                   class="peer sr-only"
                 />
                 <div

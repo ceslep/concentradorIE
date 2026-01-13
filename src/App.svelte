@@ -40,6 +40,8 @@ ESTILOS:
   import AppHeader from "./lib/components/layout/AppHeader.svelte";
   import BackgroundDecorations from "./lib/components/layout/BackgroundDecorations.svelte";
   import Login from "./lib/components/features/auth/Login.svelte";
+  import LogoutConfirmDialog from "./lib/components/features/auth/LogoutConfirmDialog.svelte";
+  import { theme } from "./lib/themeStore";
   import DashboardSelection from "./lib/components/layout/DashboardSelection.svelte";
   import StudentCardsView from "./lib/components/features/concentrador/StudentCardsView.svelte";
   import RegistrationMenu from "./lib/components/features/concentrador/RegistrationMenu.svelte";
@@ -82,6 +84,7 @@ ESTILOS:
   let showGradesTableDialog = false;
   let showNotasDetalleDialog = false;
   let showInfoCantDialog = false;
+  let showLogoutDialog = false;
 
   // Authentication State
   let isAuthenticated = false;
@@ -130,6 +133,7 @@ ESTILOS:
     isAuthenticated = false;
     user = null;
     sessionStorage.removeItem("user");
+    showLogoutDialog = false; // Ensure dialog is closed
   }
 
   /**
@@ -216,19 +220,20 @@ ESTILOS:
 </script>
 
 {#if !isAuthenticated}
-  <Login on:loginSuccess={handleLoginSuccess} />
+  <Login onLoginSuccess={(detail) => handleLoginSuccess(detail.user)} />
 {:else}
   <BackgroundDecorations>
     {#if !$parsed && !$loading && $concentradorType !== "registro"}
       <!-- === PANTALLA DE SELECCIÓN INICIAL === -->
-      <DashboardSelection onLogout={handleLogout} />
+      <DashboardSelection {user} onLogout={() => (showLogoutDialog = true)} />
     {:else}
       <!-- === VISTA PRINCIPAL DEL CONCENTRADOR === -->
       {#if $concentradorType !== "registro"}
         <AppHeader
+          {user}
           bind:showPayloadForm
           bind:showInfoCantDialog
-          on:logout={handleLogout}
+          onLogout={() => (showLogoutDialog = true)}
         />
         <PayloadFormSection show={showPayloadForm} loading={$loading} />
         <ControlsSection />
@@ -237,9 +242,9 @@ ESTILOS:
       <ErrorAlert error={$error} />
 
       {#if $concentradorType === "registro"}
-        <RegistrationMenu {user} on:logout={handleLogout} />
+        <RegistrationMenu {user} onLogout={handleLogout} />
       {:else if $viewMode === "cards-view"}
-        <StudentCardsView on:openNotasDetalle={handleOpenNotasDetalleEvent} />
+        <StudentCardsView onOpenNotasDetalle={handleOpenNotasDetalleEvent} />
       {:else if $concentradorType === "asignaturas"}
         <ConcentradorAsignaturasTable
           {handleValoracionClick}
@@ -278,6 +283,33 @@ ESTILOS:
       {inasistenciasPeriodo}
       bind:showGradesTableDialog
       {selectedDocenteId}
+    />
+
+    <!-- User Info Floating Badge (Bottom Right) -->
+    <button
+      class="fixed bottom-4 right-4 z-[9999] cursor-pointer group focus:outline-none"
+      onclick={() => (showLogoutDialog = true)}
+      title="Cerrar sesión"
+    >
+      <div
+        class="glass-card-custom px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg animate-fade-in-up border border-indigo-500/20 group-hover:border-rose-500/50 group-hover:bg-rose-500/10 transition-all duration-300"
+      >
+        <div
+          class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse group-hover:bg-rose-500"
+        ></div>
+        <span
+          class="text-[10px] sm:text-xs font-medium {$theme === 'dark'
+            ? 'text-indigo-300'
+            : 'text-indigo-600'} group-hover:text-rose-500"
+        >
+          {user?.nombres || "Usuario"}
+        </span>
+      </div>
+    </button>
+
+    <LogoutConfirmDialog
+      bind:showDialog={showLogoutDialog}
+      onConfirm={handleLogout}
     />
   </BackgroundDecorations>
 {/if}

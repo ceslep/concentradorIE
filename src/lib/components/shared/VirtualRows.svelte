@@ -30,14 +30,23 @@ ESTILOS:
 
 <script lang="ts">
   import { onMount } from "svelte";
-  export let items: any[] = [];
-  export let rowHeight = 48;
-  export let overscan = 5;
-  export let containerHeight = 600;
+  let {
+    items = [],
+    rowHeight = 48,
+    overscan = 5,
+    containerHeight = 600,
+    children,
+  } = $props<{
+    items?: any[];
+    rowHeight?: number;
+    overscan?: number;
+    containerHeight?: number;
+    children?: import("svelte").Snippet<[any, number]>;
+  }>();
 
   let scrollTop = 0;
-  let start = 0;
-  let end = 0;
+  let start = $state(0);
+  let end = $state(0);
   let viewport: HTMLDivElement | null = null;
 
   function update() {
@@ -65,7 +74,7 @@ ESTILOS:
 <div
   bind:this={viewport}
   class="vr-container"
-  on:scroll={onScroll}
+  onscroll={onScroll}
   style="height:{containerHeight}px;"
 >
   <div class="vr-phantom" style="height:{items.length * rowHeight}px"></div>
@@ -75,7 +84,7 @@ ESTILOS:
       style="transform: translateY({(start + i) *
         rowHeight}px); height:{rowHeight}px;"
     >
-      <slot {item} {i}></slot>
+      {@render children?.(item, start + i)}
     </div>
   {/each}
 </div>

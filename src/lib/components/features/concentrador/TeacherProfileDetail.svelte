@@ -1,22 +1,27 @@
 <script lang="ts">
-    import { onMount, createEventDispatcher } from "svelte";
+    import { onMount } from "svelte";
     import { fly, fade, scale } from "svelte/transition";
     import { fetchTeacherDetail } from "../../../api";
     import type { TeacherDetail } from "../../../types";
 
-    export let teacherId: string;
-    export let isOpen: boolean = false;
+    let {
+        teacherId,
+        isOpen = false,
+        onClose,
+    } = $props<{
+        teacherId: string;
+        isOpen?: boolean;
+        onClose: () => void;
+    }>();
 
-    const dispatch = createEventDispatcher<{ close: void }>();
-
-    let loading = true;
-    let error: string | null = null;
-    let detail: TeacherDetail | null = null;
-    let revealedFields: Record<string, boolean> = {
+    let loading = $state(true);
+    let error = $state<string | null>(null);
+    let detail = $state<TeacherDetail | null>(null);
+    let revealedFields = $state<Record<string, boolean>>({
         pass: false,
         maestra: false,
         clave_acceso: false,
-    };
+    });
 
     onMount(async () => {
         if (teacherId) {
@@ -46,7 +51,7 @@
     }
 
     function close() {
-        dispatch("close");
+        if (onClose) onClose();
     }
 
     const toggleFields: (keyof TeacherDetail)[] = [
@@ -58,24 +63,26 @@
         "soloexcusas",
     ];
 
-    const labels: Record<keyof TeacherDetail, string> = {
+    const labels: Record<string, string> = {
         activo: "Cuenta Activa",
         solocitaCodigo: "Solicita Código",
         verEstudiantes: "Ver Estudiantes",
         banda: "Modo Banda",
         acceso_total: "Acceso Total",
         soloexcusas: "Solo Excusas",
-    } as Record<keyof TeacherDetail, string>;
+    };
 </script>
 
 {#if isOpen}
     <!-- Overlay -->
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
         class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 backdrop-blur-3xl bg-gray-950/40"
         in:fade={{ duration: 300 }}
-        on:click|self={close}
+        onclick={(e) => {
+            if (e.target === e.currentTarget) close();
+        }}
     >
         <div
             class="relative w-full max-w-5xl bg-gray-950/80 border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]"
@@ -146,7 +153,7 @@
                 </div>
 
                 <button
-                    on:click={close}
+                    onclick={close}
                     class="p-4 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/5 active:scale-90 group"
                     aria-label="Cerrar detalles"
                 >
@@ -209,7 +216,7 @@
                         </h3>
                         <p class="text-gray-400 max-w-sm">{error}</p>
                         <button
-                            on:click={loadDetail}
+                            onclick={loadDetail}
                             class="mt-8 px-6 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-all border border-white/10"
                             >Reintentar Conexión</button
                         >
@@ -352,7 +359,7 @@
                                             </label>
                                             <button
                                                 type="button"
-                                                on:click={() =>
+                                                onclick={() =>
                                                     toggleReveal(field)}
                                                 class="text-gray-500 hover:text-white transition-colors"
                                                 aria-label="Toggle reveal {field}"

@@ -27,10 +27,10 @@ NOTAS DE DESARROLLO:
         loadConcentradorData,
     } from "../../storeConcentrador";
 
-    /**
-     * Prop opcional para manejar el cierre de sesión desde esta pantalla.
-     */
-    export let onLogout: (() => void) | undefined = undefined;
+    let { onLogout, user = null } = $props<{
+        onLogout?: () => void;
+        user?: any;
+    }>();
 
     /**
      * Establece el tipo de concentrador, el modo de vista por defecto y dispara la carga de datos.
@@ -56,7 +56,7 @@ NOTAS DE DESARROLLO:
     {#if onLogout}
         <div class="absolute top-0 right-0 py-4 sm:py-0">
             <button
-                on:click={handleLogout}
+                onclick={handleLogout}
                 class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 group"
             >
                 <span class="group-hover:-translate-x-1 transition-transform"
@@ -76,7 +76,8 @@ NOTAS DE DESARROLLO:
                 <span
                     class="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent"
                 >
-                    ¿Qué deseas realizar hoy?
+                    {user?.nombres ? `¡Hola, ${user.nombres}!` : "Bienvenido"} ¿Qué
+                    deseas realizar hoy?
                 </span>
             </h1>
             <p
@@ -93,7 +94,7 @@ NOTAS DE DESARROLLO:
         >
             <!-- Tarjeta: Concentrador de Asignaturas -->
             <button
-                on:click={() => handleSelection("asignaturas")}
+                onclick={() => handleSelection("asignaturas")}
                 class="group relative flex flex-col items-center p-8 bg-blue-50/50 hover:bg-white dark:bg-blue-900/10 dark:hover:bg-gray-800 rounded-[2.5rem] border-2 border-blue-100 dark:border-blue-900/30 hover:border-blue-400 dark:hover:border-blue-500 shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 transform hover:scale-[1.03] overflow-hidden text-center"
             >
                 <!-- Decoración de fondo -->
@@ -131,7 +132,7 @@ NOTAS DE DESARROLLO:
 
             <!-- Tarjeta: Registro de Notas -->
             <button
-                on:click={() => handleSelection("registro")}
+                onclick={() => handleSelection("registro")}
                 class="group relative flex flex-col items-center p-8 bg-indigo-50/50 hover:bg-white dark:bg-indigo-900/10 dark:hover:bg-gray-800 rounded-[2.5rem] border-2 border-indigo-100 dark:border-indigo-900/30 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-lg hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 transform hover:scale-[1.03] overflow-hidden text-center"
             >
                 <!-- Decoración de fondo -->
@@ -169,7 +170,7 @@ NOTAS DE DESARROLLO:
 
             <!-- Tarjeta: Concentrador de Áreas -->
             <button
-                on:click={() => handleSelection("areas")}
+                onclick={() => handleSelection("areas")}
                 class="group relative flex flex-col items-center p-8 bg-emerald-50/50 hover:bg-white dark:bg-emerald-900/10 dark:hover:bg-gray-800 rounded-[2.5rem] border-2 border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-400 dark:hover:border-emerald-500 shadow-lg hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 transform hover:scale-[1.03] overflow-hidden text-center"
             >
                 <!-- Decoración de fondo -->

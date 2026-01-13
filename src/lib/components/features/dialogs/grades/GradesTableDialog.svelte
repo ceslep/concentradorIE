@@ -32,21 +32,26 @@ ESTILOS:
   import { theme } from "../../../../themeStore";
   import { selectedAsignatura } from "../../../../storeConcentrador";
 
-  export let showDialog: boolean;
-  export let docenteId: string; // New prop
-  export let periodo: string;
+  let {
+    showDialog = $bindable(false),
+    docenteId,
+    periodo,
+    onClose,
+  } = $props<{
+    showDialog?: boolean;
+    docenteId: string;
+    periodo: string;
+    onClose?: () => void;
+  }>();
 
-  /**
-   * Cierra el diálogo restaurando la visibilidad a false.
-   */
   function closeDialog() {
     showDialog = false;
+    if (onClose) onClose();
   }
 
-  // Estado compartido para evitar recargas innecesarias entre tabla y estadísticas
-  let tableData: any[] = [];
-  let showStats = false;
-  let isLoading = false;
+  let tableData: any[] = $state([]);
+  let showStats = $state(false);
+  let isLoading = $state(false);
 </script>
 
 {#if showDialog}
@@ -80,7 +85,7 @@ ESTILOS:
             "la Asignatura Seleccionada"}
         </h3>
         <button
-          on:click={closeDialog}
+          onclick={closeDialog}
           class="text-gray-400 hover:text-red-500 transition duration-300 transform hover:scale-110"
           title="Cerrar"
         >
@@ -100,7 +105,7 @@ ESTILOS:
                         {!showStats
             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
             : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}"
-          on:click={() => (showStats = false)}
+          onclick={() => (showStats = false)}
         >
           <span class="material-symbols-rounded text-lg">table_chart</span>
           Tabla
@@ -110,7 +115,7 @@ ESTILOS:
                         {showStats
             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
             : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}"
-          on:click={() => (showStats = true)}
+          onclick={() => (showStats = true)}
         >
           <span class="material-symbols-rounded text-lg">bar_chart</span>
           Estadísticas
@@ -140,7 +145,7 @@ ESTILOS:
           : 'border-gray-200 bg-gray-50'}"
       >
         <button
-          on:click={closeDialog}
+          onclick={closeDialog}
           class="px-6 py-2 rounded-lg text-white font-semibold transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-50
                             {$theme === 'dark'
             ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'

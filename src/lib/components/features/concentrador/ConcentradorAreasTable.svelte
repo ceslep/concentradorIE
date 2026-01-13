@@ -43,49 +43,46 @@ ESTILOS:
   } from "../../../storeConcentrador";
   import { fade } from "svelte/transition";
 
-  export let handleValoracionClick: (
-    est: EstudianteRowArea,
-    itemAbrev: string,
-    periodo: string,
-    valoracion: string,
-  ) => Promise<void>;
-  let handleShowInasistencias: (
-    estudianteId: string,
-    nombres: string,
-    asignatura: string,
-    periodo: string,
-  ) => void;
+  let { handleValoracionClick } = $props<{
+    handleValoracionClick: (
+      est: EstudianteRowArea,
+      itemAbrev: string,
+      periodo: string,
+      valoracion: string,
+    ) => Promise<void>;
+  }>();
 
-  let search = "";
+  let search = $state("");
 
-  $: currentTheme = $theme;
-  $: dark = currentTheme === "dark";
+  let dark = $derived($theme === "dark");
 
   // Modern Color Palette & Styles
-  $: bgSurface = dark ? "bg-gray-800" : "bg-white";
-  $: bgHeader = dark
-    ? "bg-gray-900/95 backdrop-blur-sm"
-    : "bg-gray-50/95 backdrop-blur-sm";
-  $: textPrimary = dark ? "text-white" : "text-gray-900";
-  $: textSecondary = dark ? "text-gray-400" : "text-gray-500";
-  $: borderDivide = dark ? "divide-gray-700" : "divide-gray-100";
-  $: borderTable = dark ? "border-gray-700" : "border-gray-200";
-  $: hoverRow = dark ? "hover:bg-gray-700/50" : "hover:bg-gray-50";
-  $: stickyColBg = dark ? "bg-gray-800" : "bg-white";
+  let bgSurface = $derived(dark ? "bg-gray-800" : "bg-white");
+  let bgHeader = $derived(
+    dark ? "bg-gray-900/95 backdrop-blur-sm" : "bg-gray-50/95 backdrop-blur-sm",
+  );
+  let textPrimary = $derived(dark ? "text-white" : "text-gray-900");
+  let textSecondary = $derived(dark ? "text-gray-400" : "text-gray-500");
+  let borderDivide = $derived(dark ? "divide-gray-700" : "divide-gray-100");
+  let borderTable = $derived(dark ? "border-gray-700" : "border-gray-200");
+  let hoverRow = $derived(dark ? "hover:bg-gray-700/50" : "hover:bg-gray-50");
+  let stickyColBg = $derived(dark ? "bg-gray-800" : "bg-white");
 
   /**
    * Filtra reactivamente la lista de estudiantes por nombre.
    */
-  $: filteredEstudiantes = (() => {
-    if (!$parsed || $concentradorType !== "areas")
-      return [] as EstudianteRowArea[];
-    const p = $parsed as ConcentradorAreasParsed;
-    const list = p.estudiantes;
+  let filteredEstudiantes = $derived(
+    (() => {
+      if (!$parsed || $concentradorType !== "areas")
+        return [] as EstudianteRowArea[];
+      const p = $parsed as ConcentradorAreasParsed;
+      const list = p.estudiantes;
 
-    if (!search.trim()) return list;
-    const q = search.toLowerCase();
-    return list.filter((est) => est.nombres.toLowerCase().includes(q));
-  })();
+      if (!search.trim()) return list;
+      const q = search.toLowerCase();
+      return list.filter((est) => est.nombres.toLowerCase().includes(q));
+    })(),
+  );
 
   function getPeriodColorClass(periodo: string): string {
     switch (periodo) {
@@ -305,7 +302,7 @@ ESTILOS:
                         class="w-12 h-9 rounded-lg font-bold text-sm transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 {colorNota(
                           valorPeriodo(est, itemAbrev.abreviatura, 'DEF'),
                         )}"
-                        on:click={() =>
+                        onclick={() =>
                           handleValoracionClick(
                             est,
                             itemAbrev.abreviatura,
@@ -323,7 +320,7 @@ ESTILOS:
                             class="w-6 h-7 rounded-md text-[10px] font-bold flex items-center justify-center transition-transform hover:scale-110 focus:outline-none {colorNota(
                               valorPeriodo(est, itemAbrev.abreviatura, per),
                             )}"
-                            on:click={() =>
+                            onclick={() =>
                               handleValoracionClick(
                                 est,
                                 itemAbrev.abreviatura,
@@ -340,7 +337,7 @@ ESTILOS:
                           class="w-6 h-7 rounded-md text-[10px] font-bold flex items-center justify-center transition-transform hover:scale-110 focus:outline-none ring-1 ring-inset ring-black/5 dark:ring-white/10 {colorNota(
                             valorPeriodo(est, itemAbrev.abreviatura, 'DEF'),
                           )}"
-                          on:click={() =>
+                          onclick={() =>
                             handleValoracionClick(
                               est,
                               itemAbrev.abreviatura,

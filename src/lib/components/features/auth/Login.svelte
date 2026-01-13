@@ -30,23 +30,31 @@ ESTILOS:
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { theme } from "../../../themeStore";
-  import { LOGIN_ENDPOINT } from "../../../../constants";
+  import {
+    LOGIN_ENDPOINT,
+    GOOGLE_LOGIN_ENDPOINT,
+    GOOGLE_CLIENT_ID,
+  } from "../../../../constants";
   import { Card, Button, Label, Input, Alert, Spinner } from "flowbite-svelte";
+  import { onMount } from "svelte";
 
-  const dispatch = createEventDispatcher();
+  let { onLoginSuccess } = $props<{
+    onLoginSuccess?: (detail: { user: any }) => void;
+  }>();
 
-  let identificacion = "";
-  let clave_acceso = "";
-  let loading = false;
-  let error = "";
+  let identificacion = $state("");
+  let clave_acceso = $state("");
+  let loading = $state(false);
+  let error = $state("");
 
-  let showPassword = false;
+  let showPassword = $state(false);
 
   /**
    * Procesa el inicio de sesión enviando las credenciales al servidor.
    * Maneja estados de carga, errores de red y despacho de éxito.
    */
-  async function handleLogin() {
+  async function handleLogin(e: Event) {
+    if (e) e.preventDefault();
     loading = true;
     error = "";
 
@@ -63,7 +71,7 @@ ESTILOS:
 
       if (data.success) {
         // Notifica a App.svelte del éxito para actualizar la sesión global
-        dispatch("loginSuccess", { user: data.user });
+        if (onLoginSuccess) onLoginSuccess({ user: data.user });
       } else {
         error = data.message || "Error al iniciar sesión";
       }
@@ -74,6 +82,81 @@ ESTILOS:
       loading = false;
     }
   }
+
+  /**
+   * Maneja el callback de Google tras el inicio de sesión exitoso.
+   */
+  async function handleGoogleResponse(googleResponse: any) {
+    loading = true;
+    error = "";
+
+    try {
+      const response = await fetch(GOOGLE_LOGIN_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ credential: googleResponse.credential }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (onLoginSuccess) onLoginSuccess({ user: data.user });
+      } else {
+        error = data.message || "Error al iniciar sesión con Google";
+      }
+    } catch (e) {
+      error = "Error de conexión con el servidor";
+      console.error(e);
+    } finally {
+      loading = false;
+    }
+  }
+
+  onMount(() => {
+    // Inicializar Google Identity Services
+    if (typeof (window as any).google !== "undefined") {
+      (window as any).google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+        auto_select: true, // Inicia sesión automáticamente si es posible
+        cancel_on_tap_outside: true,
+      });
+
+      (window as any).google.accounts.id.renderButton(
+        document.getElementById("googleBtn"),
+        {
+          theme: $theme === "dark" ? "filled_black" : "outline",
+          size: "large",
+          width: "100%",
+          text: "signin_with",
+          shape: "rectangular",
+          logo_alignment: "left",
+        },
+      );
+
+      // Activar Google One Tap
+      (window as any).google.accounts.id.prompt();
+    }
+  });
+
+  // Re-renderizar botón de Google cuando cambie el tema
+  $effect(() => {
+    if ($theme && typeof (window as any).google !== "undefined") {
+      const btn = document.getElementById("googleBtn");
+      if (btn) {
+        (window as any).google.accounts.id.renderButton(btn, {
+          theme: $theme === "dark" ? "filled_black" : "outline",
+          size: "large",
+          width: "100%",
+          text: "signin_with",
+          shape: "rectangular",
+          logo_alignment: "left",
+        });
+      }
+    }
+  });
 </script>
 
 <div
@@ -137,10 +220,7 @@ ESTILOS:
             </p>
           </div>
 
-          <form
-            on:submit|preventDefault={handleLogin}
-            class="space-y-4 sm:space-y-6"
-          >
+          <form onsubmit={handleLogin} class="space-y-4 sm:space-y-6">
             <div>
               <Label for="identificacion" class="mb-2 text-sm"
                 >Identificación</Label
@@ -171,7 +251,7 @@ ESTILOS:
                 <button
                   type="button"
                   class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none min-h-[44px]"
-                  on:click={() => (showPassword = !showPassword)}
+                  onclick={() => (showPassword = !showPassword)}
                 >
                   <span class="material-symbols-rounded text-xl">
                     {showPassword ? "visibility_off" : "visibility"}
@@ -202,6 +282,23 @@ ESTILOS:
                 >
               {/if}
             </Button>
+
+            <div class="relative flex items-center py-2">
+              <div
+                class="flex-grow border-t border-gray-300 dark:border-gray-600"
+              ></div>
+              <span class="flex-shrink mx-4 text-gray-400 text-xs uppercase"
+                >O continúa con</span
+              >
+              <div
+                class="flex-grow border-t border-gray-300 dark:border-gray-600"
+              ></div>
+            </div>
+
+            <div
+              id="googleBtn"
+              class="w-full overflow-hidden rounded-lg shadow-sm"
+            ></div>
           </form>
         </div>
       </div>
