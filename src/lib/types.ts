@@ -409,3 +409,43 @@ export interface EstudianteDetalle {
   eanterior: string;
   sede: string;
 }
+
+export interface Sede {
+  ind: string;
+  sede: string;
+  grados: { nivel: string; numero: string }[];
+}
+
+export interface RegistrationMenuItem {
+  grado: string;
+  nivel: number;
+  numero: number;
+  gradoA: string;
+  asignaturas: { asignatura: string }[];
+}
+
+export interface TeacherInfo {
+  identificacion: string;
+  nombres: string;
+  sede: string;
+  asignacion: string;
+}
+
+export interface TeacherDetail {
+  identificacion: string;
+  nombres: string;
+  correo: string;
+  asignacion: string;
+  activo: 'S' | 'N';
+  pass: string;
+  codigoTemporal: string;
+  solocitaCodigo: 'S' | 'N';
+  verEstudiantes: 'S' | 'N';
+  maestra: string;
+  banda: 'S' | 'N';
+  acceso_total: 'S' | 'N';
+  idn: string;
+  soloexcusas: 'S' | 'N';
+  fechaactualizacion: string;
+  clave_acceso: string;
+}

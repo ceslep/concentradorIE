@@ -1,11 +1,6 @@
-import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT, GET_CONCENTRADOR_AREAS_ENDPOINT, GET_VALORACIONES_AREAS_ENDPOINT, GET_NOTAS_DETALLADO_AREAS_ENDPOINT, GET_ORDERS_ENDPOINT, GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT, GET_CONVIVENCIA_DETALLADO_ENDPOINT, GET_ESTUDIANTE_DETAILS_ENDPOINT, GET_GENERAR_MENU_ENDPOINT } from '../constants'
-import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion, ValoracionAreasResponseItem, AreaOrder, AreaOrderPayload, ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado, AsignaturaOrdenItem, EstudianteRow, Asignatura, Area, EstudianteDetalle } from './types' // Import EstudianteRow, Asignatura, Area
+import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT, GET_CONCENTRADOR_AREAS_ENDPOINT, GET_VALORACIONES_AREAS_ENDPOINT, GET_NOTAS_DETALLADO_AREAS_ENDPOINT, GET_ORDERS_ENDPOINT, GET_CONSOLIDADO_CONVIVENCIA_ENDPOINT, GET_CONVIVENCIA_DETALLADO_ENDPOINT, GET_ESTUDIANTE_DETAILS_ENDPOINT, GET_GENERAR_MENU_ENDPOINT, GET_INFO_DOCENTES_ENDPOINT, GET_DOCENTE_INFO_ENDPOINT } from '../constants'
+import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion, ValoracionAreasResponseItem, AreaOrder, AreaOrderPayload, ConvivenciaRecord, ConsolidadoConvivenciaPayload, ConvivenciaDetallado, AsignaturaOrdenItem, EstudianteRow, Asignatura, Area, EstudianteDetalle, Sede, RegistrationMenuItem, TeacherInfo, TeacherDetail } from './types' // Import Sede, RegistrationMenuItem, TeacherInfo
 
-export interface Sede {
-  ind: string;
-  sede: string;
-  grados: { nivel: string; numero: string }[];
-}
 
 export interface ConcentradorPayload {
   Asignacion: string
@@ -298,16 +293,6 @@ export async function fetchStudentDetails(estudianteId: string, year: string): P
   return data;
 }
 
-/**
- * Representa un elemento en el menú de registro de notas.
- */
-export interface RegistrationMenuItem {
-  grado: string;
-  nivel: number;
-  numero: number;
-  gradoA: string;
-  asignaturas: { asignatura: string }[];
-}
 
 /**
  * Obtiene la lista de cursos y asignaturas para el registro de notas.
@@ -325,6 +310,46 @@ export async function fetchRegistrationMenu(docente: string, year: string): Prom
   
   if (!res.ok) {
     throw new Error('Error al obtener el menú de registro: ' + res.status)
+  }
+  
+  return res.json()
+}
+
+/**
+ * Obtiene la lista de docentes y sus asignaciones de forma general.
+ * @param periodo - Periodo académico ("-" para lista general).
+ */
+export async function fetchInfoDocentes(periodo: string = "-"): Promise<TeacherInfo[]> {
+  const res = await fetch(GET_INFO_DOCENTES_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ periodo })
+  })
+  
+  if (!res.ok) {
+    throw new Error('Error al obtener información de docentes: ' + res.status)
+  }
+  
+  return res.json()
+}
+
+/**
+ * Obtiene el detalle completo de un docente específico.
+ * @param docente - Identificación del docente.
+ */
+export async function fetchTeacherDetail(docente: string): Promise<TeacherDetail> {
+  const res = await fetch(GET_DOCENTE_INFO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ docente })
+  })
+  
+  if (!res.ok) {
+    throw new Error('Error al obtener el detalle del docente: ' + res.status)
   }
   
   return res.json()

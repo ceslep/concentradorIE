@@ -224,20 +224,20 @@ ESTILOS:
       <DashboardSelection onLogout={handleLogout} />
     {:else}
       <!-- === VISTA PRINCIPAL DEL CONCENTRADOR === -->
-      <AppHeader
-        bind:showPayloadForm
-        bind:showInfoCantDialog
-        on:logout={handleLogout}
-      />
-
-      <PayloadFormSection show={showPayloadForm} loading={$loading} />
-
-      <ControlsSection />
+      {#if $concentradorType !== "registro"}
+        <AppHeader
+          bind:showPayloadForm
+          bind:showInfoCantDialog
+          on:logout={handleLogout}
+        />
+        <PayloadFormSection show={showPayloadForm} loading={$loading} />
+        <ControlsSection />
+      {/if}
 
       <ErrorAlert error={$error} />
 
       {#if $concentradorType === "registro"}
-        <RegistrationMenu {user} />
+        <RegistrationMenu {user} on:logout={handleLogout} />
       {:else if $viewMode === "cards-view"}
         <StudentCardsView on:openNotasDetalle={handleOpenNotasDetalleEvent} />
       {:else if $concentradorType === "asignaturas"}

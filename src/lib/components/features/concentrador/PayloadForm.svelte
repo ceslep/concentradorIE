@@ -35,9 +35,8 @@ ESTILOS:
     loadConcentradorData,
     toggleShowPeriodos,
   } from "../../../storeConcentrador";
-  import type { Sede } from "../../../api";
   import { fetchAsignaciones, fetchPeriodos, fetchYears } from "../../../api";
-  import type { Periodo, Year } from "../../../types";
+  import type { Sede, Periodo, Year } from "../../../types";
   import { onMount } from "svelte";
   import { theme } from "../../../themeStore";
   import { slide } from "svelte/transition";
@@ -224,7 +223,7 @@ ESTILOS:
             (g: { nivel: string; numero: string }) => g.nivel,
           ),
         ),
-      ];
+      ] as string[];
       niveles = uniqueNiveles;
       if (niveles.length > 0) {
         if (!$payload.nivel || !niveles.includes($payload.nivel)) {

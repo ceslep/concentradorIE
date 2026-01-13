@@ -22,6 +22,8 @@ export const GET_PERIODOS_NOTAS_ENDPOINT = `${API_BASE_URL}/getPeriodosNotas.php
 export const LOGIN_ENDPOINT = `${API_BASE_URL}/login.php`;
 export const GET_ESTUDIANTE_DETAILS_ENDPOINT = `${API_BASE_URL}/getEstugrupos.php`;
 export const GET_GENERAR_MENU_ENDPOINT = `${API_BASE_URL}/generarMenu.php`;
+export const GET_INFO_DOCENTES_ENDPOINT = API_BASE_URL + '/getInfoDocentes.php';
+export const GET_DOCENTE_INFO_ENDPOINT = API_BASE_URL + '/getInfoDocente.php';
 
 // Ejemplo de uso (fetch):
 // fetch(GET_CONCENTRADOR_ENDPOINT)
