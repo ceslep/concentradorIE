@@ -47,11 +47,14 @@ NOTAS DE DESARROLLO:
     function handleLogout() {
         if (onLogout) onLogout();
     }
+
+    import DevLabel from "../shared/DevLabel.svelte";
 </script>
 
 <div
     class="flex flex-col items-center justify-center min-h-[85vh] py-12 px-4 sm:px-6 lg:px-8 animate-fade-in relative"
 >
+    <DevLabel name="DashboardSelection.svelte" />
     <!-- Botón de Salir -->
     {#if onLogout}
         <div class="absolute top-0 right-0 py-4 sm:py-0">

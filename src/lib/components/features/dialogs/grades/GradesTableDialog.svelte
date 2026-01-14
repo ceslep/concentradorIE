@@ -52,6 +52,8 @@ ESTILOS:
   let tableData: any[] = $state([]);
   let showStats = $state(false);
   let isLoading = $state(false);
+
+  import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 {#if showDialog}
@@ -60,6 +62,7 @@ ESTILOS:
     class:opacity-100={showDialog}
     class:opacity-0={!showDialog}
   >
+    <DevLabel name="GradesTableDialog.svelte" />
     <div
       class="rounded-2xl shadow-2xl w-auto max-w-[98vw] max-h-[95vh] overflow-hidden flex flex-col border transform transition-all duration-300 ease-out
                    {$theme === 'dark'

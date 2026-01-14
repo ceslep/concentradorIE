@@ -192,6 +192,8 @@ ESTILOS:
 
   const LABEL_CLASSES =
     "block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2 transition-colors duration-200";
+
+  import DevLabel from "../../shared/DevLabel.svelte";
 </script>
 
 {#if showModal}
@@ -203,6 +205,7 @@ ESTILOS:
     onkeydown={(e: KeyboardEvent) => e.key === "Escape" && closeModal()}
     role="presentation"
   >
+    <DevLabel name="StudentDetailsModal.svelte" />
     <!-- Premium modal container with enhanced glassmorphism -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div

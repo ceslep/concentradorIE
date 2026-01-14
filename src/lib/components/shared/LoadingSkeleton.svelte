@@ -36,9 +36,12 @@ ESTILOS:
     export let loading: boolean;
     export let parsed: any;
     export let currentOrden: AsignaturaOrdenItem[];
+
+    import DevLabel from "./DevLabel.svelte";
 </script>
 
 {#if loading && !parsed}
+    <DevLabel name="LoadingSkeleton.svelte" />
     {#if currentOrden && currentOrden.length}
         {@const cols = currentOrden.length + 1}
         {@const rest = 70 / Math.max(1, currentOrden.length)}

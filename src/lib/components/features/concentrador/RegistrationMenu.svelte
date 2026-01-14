@@ -22,9 +22,9 @@ LLAMADO POR:
     import { fade, scale, fly } from "svelte/transition";
     import { quintOut } from "svelte/easing";
     import { theme } from "../../../themeStore";
-    import { resetToDashboard } from "../../../storeConcentrador";
+    import { resetToDashboard, accesoTotal } from "../../../storeConcentrador";
     import TeacherProfileDetail from "./TeacherProfileDetail.svelte";
-    import SubjectCard from "./SubjectCard.svelte";
+    import DocenteAsignaturaSelection from "./DocenteAsignaturaSelection.svelte";
     import Loader from "../../shared/Loader.svelte";
 
     let { user, onLogout } = $props<{
@@ -128,11 +128,13 @@ LLAMADO POR:
                 items = data;
                 fallbackMode = false;
             } else {
-                error =
-                    "El docente no tiene asignaturas registradas para este periodo.";
+                // Mantener en modo fallback para permitir seleccionar otro docente
+                error = `El docente ${teacher.nombres} no tiene asignaturas registradas para ${currentYear}. Por favor selecciona otro docente.`;
+                fallbackMode = true;
             }
         } catch (e: any) {
             error = e.message || "Error al cargar las asignaturas del docente.";
+            fallbackMode = true; // Volver a lista de docentes en caso de error
         } finally {
             loading = false;
         }
@@ -141,11 +143,14 @@ LLAMADO POR:
     function handleLogout() {
         if (onLogout) onLogout();
     }
+
+    import DevLabel from "../../shared/DevLabel.svelte";
 </script>
 
 <div
-    class="registration-dashboard w-full max-w-7xl mx-auto py-8 md:py-12 px-4 md:px-8 min-h-screen"
+    class="registration-dashboard w-full max-w-7xl mx-auto py-8 md:py-12 px-4 md:px-8 min-h-screen relative"
 >
+    <DevLabel name="RegistrationMenu.svelte" />
     <!-- Independent Navigation Bar -->
     <nav
         class="flex flex-col sm:flex-row items-center justify-between mb-8 md:mb-12 bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl p-4 md:p-6 rounded-[2rem] md:rounded-[3rem] border border-white/20 dark:border-gray-700/50 shadow-xl shadow-indigo-500/5 gap-4"
@@ -170,6 +175,33 @@ LLAMADO POR:
                 >
                 <span class="hidden md:inline">Volver al</span> Dashboard
             </button>
+
+            {#if $accesoTotal && !fallbackMode}
+                <button
+                    onclick={() => {
+                        items = [];
+                        fallbackMode = true;
+                        selectedTeacherId = null;
+                        searchQuery = "";
+                    }}
+                    class="flex items-center gap-2 px-5 md:px-6 py-2.5 md:py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl transition-all font-bold text-sm shadow-lg shadow-emerald-600/20 active:scale-95 group"
+                >
+                    <svg
+                        class="w-4 h-4 group-hover:-translate-x-1 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        />
+                    </svg>
+                    <span class="hidden md:inline">Volver a</span> Docentes
+                </button>
+            {/if}
         </div>
 
         <!-- Search Bar (Visible in fallback mode) -->
@@ -507,7 +539,7 @@ LLAMADO POR:
                 {/each}
             {:else if items.length > 0}
                 {#each items as item, i}
-                    <SubjectCard
+                    <DocenteAsignaturaSelection
                         {item}
                         {i}
                         {getFullSubjectName}

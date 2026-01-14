@@ -25,8 +25,6 @@ export const GET_GENERAR_MENU_ENDPOINT = `${API_BASE_URL}/generarMenu.php`;
 export const GET_INFO_DOCENTES_ENDPOINT = API_BASE_URL + '/getInfoDocentes.php';
 export const GET_DOCENTE_INFO_ENDPOINT = API_BASE_URL + '/getInfoDocente.php';
 export const GOOGLE_LOGIN_ENDPOINT = `${API_BASE_URL}/google_login.php`;
-
-// Reemplaza esto con tu Client ID de Google Cloud Console
 export const GOOGLE_CLIENT_ID = "460775351784-6b3vev8mdsrcv2l67fu1bc1btb60qgq7.apps.googleusercontent.com";
 
 // Ejemplo de uso (fetch):
@@ -162,3 +160,5 @@ export const asignturastoN=[
     "ruta": "/src/assets/icons/output/tecnologia_no_bg.png"
   }
 ]
+
+export const SHOW_COMPONENT_NAMES = false;

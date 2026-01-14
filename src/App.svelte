@@ -55,7 +55,9 @@ ESTILOS:
     selectedAsignatura,
     currentOrden,
     viewMode, // Re-added import
+    accesoTotal, // Global access level store
   } from "./lib/storeConcentrador";
+  import DevLabel from "./lib/components/shared/DevLabel.svelte";
   import { fetchNotasDetallado, fetchNotasDetalladoAreas } from "./lib/api";
   import type {
     NotaDetalle,
@@ -115,9 +117,14 @@ ESTILOS:
     // loadConcentrador() will now be called from PayloadForm.svelte after it initializes
     // Check for existing session
     const storedUser = sessionStorage.getItem("user");
+    const storedAccesoTotal = sessionStorage.getItem("accesoTotal");
     if (storedUser) {
       user = JSON.parse(storedUser);
       isAuthenticated = true;
+      // Restore accesoTotal from session storage
+      if (storedAccesoTotal !== null) {
+        accesoTotal.set(storedAccesoTotal === "true");
+      }
     }
   });
 
@@ -127,12 +134,19 @@ ESTILOS:
     user = event.detail.user;
     isAuthenticated = true;
     sessionStorage.setItem("user", JSON.stringify(user));
+
+    // Set global access level state
+    const hasAccesoTotal = event.detail.accesoTotal === true;
+    accesoTotal.set(hasAccesoTotal);
+    sessionStorage.setItem("accesoTotal", String(hasAccesoTotal));
   }
 
   function handleLogout() {
     isAuthenticated = false;
     user = null;
     sessionStorage.removeItem("user");
+    sessionStorage.removeItem("accesoTotal");
+    accesoTotal.set(false); // Reset access level on logout
     showLogoutDialog = false; // Ensure dialog is closed
   }
 
@@ -220,9 +234,13 @@ ESTILOS:
 </script>
 
 {#if !isAuthenticated}
-  <Login onLoginSuccess={(detail) => handleLoginSuccess(detail.user)} />
+  <Login on:loginSuccess={handleLoginSuccess} />
 {:else}
   <BackgroundDecorations>
+    <DevLabel
+      name="App.svelte"
+      style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 50;"
+    />
     {#if !$parsed && !$loading && $concentradorType !== "registro"}
       <!-- === PANTALLA DE SELECCIÓN INICIAL === -->
       <DashboardSelection {user} onLogout={() => (showLogoutDialog = true)} />
@@ -303,6 +321,12 @@ ESTILOS:
             : 'text-indigo-600'} group-hover:text-rose-500"
         >
           {user?.nombres || "Usuario"}
+          {#if $accesoTotal}
+            <span
+              class="material-symbols-rounded text-xs text-amber-500 ml-1 align-middle"
+              title="Acceso Total">verified</span
+            >
+          {/if}
         </span>
       </div>
     </button>

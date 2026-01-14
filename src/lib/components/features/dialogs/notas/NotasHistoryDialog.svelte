@@ -174,6 +174,8 @@ ESTILOS:
     let filteredNotasHistory = $derived(
         notasHistory.filter((nota) => !isNotaHistoryRowEmpty(nota)),
     );
+
+    import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 {#if showDialog}
@@ -199,6 +201,7 @@ ESTILOS:
                 if (e.key === "Escape") closeDialog();
             }}
         >
+            <DevLabel name="NotasHistoryDialog.svelte" />
             <div
                 class="px-6 pt-6 pb-5 border-b {$theme === 'dark'
                     ? 'border-[#3c4043]'

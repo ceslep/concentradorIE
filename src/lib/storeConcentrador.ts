@@ -70,6 +70,7 @@ export const lastDuration = writable<number>(0);
 export const concentradorType = writable<'asignaturas' | 'areas' | 'registro'>('asignaturas'); // Default to asignaturas
 export const selectedAsignatura = writable<string | null>(null); // For GradesTableDialog
 export const viewMode = writable<'cards-view' | 'table-view'>('table-view'); // New store to control view mode
+export const accesoTotal = writable<boolean>(false); // Global access level from login (acceso_total === "S")
 
 // Derived Stores
 export const currentOrden = derived([parsed, concentradorType], ([$parsed, $concentradorType]) => {

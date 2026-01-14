@@ -53,6 +53,8 @@ ESTILOS:
     if (columnWidths && columnWidths[index]) return columnWidths[index];
     return `${100 / columns}%`;
   }
+
+  import DevLabel from "./DevLabel.svelte";
 </script>
 
 <div
@@ -66,6 +68,7 @@ ESTILOS:
     ? '#4a5568'
     : '#cbd5e1'}; position: relative;"
 >
+  <DevLabel name="Skeleton.svelte" />
   <div class="spinner"></div>
   <div
     class="skeleton skeleton-block skeleton-header"

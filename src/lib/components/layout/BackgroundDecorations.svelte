@@ -27,6 +27,7 @@ ESTILOS:
 
 <script lang="ts">
     import { theme } from "../../themeStore";
+    import DevLabel from "../shared/DevLabel.svelte";
 </script>
 
 <!-- Premium Background with Subtle Pattern -->
@@ -36,6 +37,7 @@ ESTILOS:
         ? 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.08) 0%, transparent 50%), #0f172a'
         : 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.05) 0%, transparent 50%), #ffffff'};"
 >
+    <DevLabel name="BackgroundDecorations.svelte" />
     <!-- Decorative Background Elements -->
     <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <!-- Efectos de gradiente radial para el fondo "Digital Aurora" -->

@@ -236,9 +236,12 @@ ESTILOS:
   function getActivityBarHeight(avg: number): string {
     return `${(avg / 5) * 100}%`;
   }
+
+  import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 <div class="stats-container">
+  <DevLabel name="GradesStatistics.svelte" />
   {#if loading}
     <!-- Skeleton Loading -->
     <div class="summary-grid animate-pulse">

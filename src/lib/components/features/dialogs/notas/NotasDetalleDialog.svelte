@@ -146,6 +146,8 @@ ESTILOS:
         }
         return "text-gray-900 dark:text-gray-100 font-semibold";
     }
+
+    import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 {#if showDialog}
@@ -163,6 +165,7 @@ ESTILOS:
             onkeydown={(e) => e.key === "Escape" && closeDialog()}
             aria-label="Cerrar modal"
         ></div>
+        <DevLabel name="NotasDetalleDialog.svelte" />
 
         <!-- Modal Container -->
         <div

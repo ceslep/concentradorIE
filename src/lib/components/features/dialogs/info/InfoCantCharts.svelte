@@ -400,9 +400,12 @@ ESTILOS:
         if (barChart) barChart.destroy();
         initCharts();
     }
+
+    import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 <div class="charts-container">
+    <DevLabel name="InfoCantCharts.svelte" />
     <div class="chart-card glass-effect">
         <div class="canvas-wrapper">
             <canvas bind:this={doughnutCanvas}></canvas>

@@ -29,6 +29,8 @@ LLAMADO POR:
         onConfirm();
         closeDialog();
     }
+
+    import DevLabel from "../../shared/DevLabel.svelte";
 </script>
 
 {#if showDialog}
@@ -36,6 +38,7 @@ LLAMADO POR:
         class="fixed inset-0 z-[10000] flex items-center justify-center p-4 font-sans"
         transition:fade={{ duration: 200 }}
     >
+        <DevLabel name="LogoutConfirmDialog.svelte" />
         <!-- Backdrop with enhanced blur -->
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div

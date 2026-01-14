@@ -98,6 +98,8 @@ ESTILOS:
       inasistencias = [];
     }
   });
+
+  import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 {#if showDialog}
@@ -106,6 +108,7 @@ ESTILOS:
     transition:fade={{ duration: 250 }}
     style="font-family: 'Inter', sans-serif;"
   >
+    <DevLabel name="InasistenciasDetallado.svelte" />
     <!-- Backdrop -->
     <div
       class="absolute inset-0 bg-gradient-to-br from-gray-900/65 via-gray-900/60 to-gray-900/65 backdrop-blur-md transition-opacity"

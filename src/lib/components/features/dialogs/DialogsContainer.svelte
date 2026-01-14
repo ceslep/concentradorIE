@@ -28,6 +28,7 @@ NOTAS DE DESARROLLO:
     import InasistenciasDetallado from "./inasistencias/InasistenciasDetallado.svelte";
     import GradesTableDialog from "./grades/GradesTableDialog.svelte";
     import type { NotaDetalle } from "../../../types";
+    import DevLabel from "../../shared/DevLabel.svelte";
 
     let {
         showNotasDetalleDialog = $bindable(false),
@@ -78,6 +79,8 @@ NOTAS DE DESARROLLO:
         payloadPeriodo: string;
     }>();
 </script>
+
+<DevLabel name="DialogsContainer.svelte" />
 
 <!-- === DIALOGO DE NOTAS DETALLADAS === -->
 <NotasDetalleDialog

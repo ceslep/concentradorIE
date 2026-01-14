@@ -437,10 +437,13 @@ ESTILOS:
   }
 
   $: applySearchFilter();
+
+  import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 <!-- ========== TOOLBAR ========== -->
 <div class="grades-toolbar">
+  <DevLabel name="GradesTable2.svelte" />
   <div class="toolbar-left">
     {#if enableSearch}
       <div class="search-container">

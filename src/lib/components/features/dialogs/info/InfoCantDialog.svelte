@@ -167,6 +167,8 @@ ESTILOS:
     showDialog = false;
     if (onClose) onClose();
   }
+
+  import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 {#if showDialog}
@@ -192,6 +194,7 @@ ESTILOS:
       tabindex="-1"
       transition:scale={{ duration: 300, start: 0.95, opacity: 0 }}
     >
+      <DevLabel name="InfoCantDialog.svelte" />
       <!-- Header -->
       <div class="dialog-header">
         <div class="header-content">

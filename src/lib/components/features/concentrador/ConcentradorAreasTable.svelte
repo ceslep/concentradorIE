@@ -42,6 +42,7 @@ ESTILOS:
     currentOrden,
   } from "../../../storeConcentrador";
   import { fade } from "svelte/transition";
+  import DevLabel from "../../shared/DevLabel.svelte";
 
   let { handleValoracionClick } = $props<{
     handleValoracionClick: (
@@ -184,10 +185,11 @@ ESTILOS:
   </div>
 {:else if $parsed && $concentradorType === "areas"}
   <div
-    class="rounded-2xl shadow-xl overflow-hidden flex-grow flex flex-col {bgSurface} border {borderTable} font-sans"
+    class="rounded-2xl shadow-xl overflow-hidden flex-grow flex flex-col {bgSurface} border {borderTable} font-sans relative"
     style="font-family: 'Inter', sans-serif;"
     in:fade={{ duration: 300 }}
   >
+    <DevLabel name="ConcentradorAreasTable.svelte" />
     <div class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar">
       <table class="min-w-full text-sm text-left border-collapse">
         <thead

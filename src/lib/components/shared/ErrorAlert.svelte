@@ -28,6 +28,7 @@ ESTILOS:
 <script lang="ts">
     import { fade } from "svelte/transition";
     import { theme } from "../../themeStore";
+    import DevLabel from "./DevLabel.svelte";
 
     export let error: string | null = null;
 </script>
@@ -38,6 +39,7 @@ ESTILOS:
         class="glass-effect-strong border-2 border-red-500/50 px-6 py-4 rounded-2xl relative animate-shake shadow-premium-xl mx-4 my-4 flex items-center gap-3"
         role="alert"
     >
+        <DevLabel name="ErrorAlert.svelte" />
         <div class="flex items-start gap-3 w-full">
             <div
                 class="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg"

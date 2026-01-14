@@ -69,6 +69,8 @@ ESTILOS:
       update();
     }
   });
+
+  import DevLabel from "./DevLabel.svelte";
 </script>
 
 <div
@@ -77,6 +79,10 @@ ESTILOS:
   onscroll={onScroll}
   style="height:{containerHeight}px;"
 >
+  <DevLabel
+    name="VirtualRows.svelte"
+    style="position: sticky; top: 0; z-index: 50;"
+  />
   <div class="vr-phantom" style="height:{items.length * rowHeight}px"></div>
   {#each items.slice(start, end) as item, i}
     <div

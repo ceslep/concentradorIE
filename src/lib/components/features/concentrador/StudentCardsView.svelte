@@ -345,6 +345,8 @@ ESTILOS:
         return "text-slate-500";
     }
   }
+
+  import DevLabel from "../../shared/DevLabel.svelte";
 </script>
 
 <div
@@ -353,6 +355,7 @@ ESTILOS:
     ? 'bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950'
     : 'bg-gradient-to-br from-gray-50 via-gray-100 to-indigo-50'}"
 >
+  <DevLabel name="StudentCardsView.svelte" />
   <!-- Background Effects -->
   <div class="absolute inset-0 overflow-hidden pointer-events-none">
     <div

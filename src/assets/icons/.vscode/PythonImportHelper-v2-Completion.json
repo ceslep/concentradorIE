@@ -1,0 +1,90 @@
+[
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "io",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "io",
+        "description": "io",
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "remove_with_rembg",
+        "kind": 2,
+        "importPath": "rb",
+        "description": "rb",
+        "peekOfCode": "def remove_with_rembg(path: Path) -> Image.Image:\n    with open(path, 'rb') as f:\n        inp = f.read()\n    out_bytes = rembg_remove(inp)\n    return Image.open(io.BytesIO(out_bytes)).convert('RGBA')\ndef remove_with_grabcut(path: Path) -> Image.Image:\n    img = cv2.imread(str(path), cv2.IMREAD_COLOR)\n    if img is None:\n        raise RuntimeError(\"No se pudo leer la imagen\")\n    h, w = img.shape[:2]",
+        "detail": "rb",
+        "documentation": {}
+    },
+    {
+        "label": "remove_with_grabcut",
+        "kind": 2,
+        "importPath": "rb",
+        "description": "rb",
+        "peekOfCode": "def remove_with_grabcut(path: Path) -> Image.Image:\n    img = cv2.imread(str(path), cv2.IMREAD_COLOR)\n    if img is None:\n        raise RuntimeError(\"No se pudo leer la imagen\")\n    h, w = img.shape[:2]\n    rect = (int(w*0.05), int(h*0.05), int(w*0.9), int(h*0.9))\n    mask = np.zeros((h, w), np.uint8)\n    bgd = np.zeros((1,65), np.float64)\n    fgd = np.zeros((1,65), np.float64)\n    cv2.grabCut(img, mask, rect, bgd, fgd, 5, cv2.GC_INIT_WITH_RECT)",
+        "detail": "rb",
+        "documentation": {}
+    },
+    {
+        "label": "process_file",
+        "kind": 2,
+        "importPath": "rb",
+        "description": "rb",
+        "peekOfCode": "def process_file(path: Path, outdir: Path, method: str, force: bool, inplace: bool):\n    outname = (path.stem + \"_no_bg.png\") if not inplace else (path.with_suffix('.png').name)\n    outpath = outdir / outname\n    if outpath.exists() and not force:\n        print(f\"Skip {path.name}: {outpath.name} exists (use --force to overwrite)\")\n        return\n    try:\n        if method == 'rembg':\n            if not HAVE_REMBG:\n                raise RuntimeError(\"rembg no está instalado\")",
+        "detail": "rb",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "rb",
+        "description": "rb",
+        "peekOfCode": "def main():\n    p = argparse.ArgumentParser(description=\"Quita fondo a imágenes en la carpeta actual\")\n    p.add_argument('--output-dir', '-o', type=Path, default=Path('output'), help='Carpeta de salida')\n    p.add_argument('--method', choices=['auto','rembg','grabcut'], default='auto', help='Backend a usar')\n    p.add_argument('--force', action='store_true', help='Sobrescribir salidas existentes')\n    p.add_argument('--inplace', action='store_true', help='Guardar sobre la imagen original (con extensión .png)')\n    args = p.parse_args()\n    if args.inplace:\n        outdir = Path('.')\n    else:",
+        "detail": "rb",
+        "documentation": {}
+    },
+    {
+        "label": "SUPPORTED",
+        "kind": 5,
+        "importPath": "rb",
+        "description": "rb",
+        "peekOfCode": "SUPPORTED = ('.jpg', '.jpeg', '.png', '.webp', '.tif', '.tiff', '.bmp')\ndef remove_with_rembg(path: Path) -> Image.Image:\n    with open(path, 'rb') as f:\n        inp = f.read()\n    out_bytes = rembg_remove(inp)\n    return Image.open(io.BytesIO(out_bytes)).convert('RGBA')\ndef remove_with_grabcut(path: Path) -> Image.Image:\n    img = cv2.imread(str(path), cv2.IMREAD_COLOR)\n    if img is None:\n        raise RuntimeError(\"No se pudo leer la imagen\")",
+        "detail": "rb",
+        "documentation": {}
+    }
+]

@@ -134,6 +134,8 @@ ESTILOS:
       loadingDetalle = false;
     }
   }
+
+  import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 {#if showDialog}
@@ -145,12 +147,13 @@ ESTILOS:
     <!-- Backdrop -->
     <div
       class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+      onclick={closeDialog}
       role="button"
       tabindex="0"
-      onclick={closeDialog}
       onkeydown={(e: KeyboardEvent) => e.key === "Escape" && closeDialog()}
       aria-label="Close dialog"
     ></div>
+    <DevLabel name="ConvivenciaDialog.svelte" />
 
     <!-- Modal Container -->
     <div

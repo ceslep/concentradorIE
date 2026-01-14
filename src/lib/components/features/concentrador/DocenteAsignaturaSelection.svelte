@@ -1,5 +1,5 @@
 <!-- 
-SUBJECTCARD.SVELTE
+DOCENTEASIGNATURASELECTION.SVELTE
 
 DESCRIPCIÓN:
 Componente que renderiza una tarjeta de curso individual en el menú de registro.
@@ -36,12 +36,15 @@ LLAMADO POR:
             onCourseClick({ item, asignatura });
         }
     }
+
+    import DevLabel from "../../shared/DevLabel.svelte";
 </script>
 
 <div
     class="course-card group relative bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white dark:border-gray-800/50 hover:border-purple-500/50 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(168,85,247,0.25)] flex flex-col justify-between"
     in:fly={{ y: 20, duration: 500, delay: i * 50 }}
 >
+    <DevLabel name="DocenteAsignaturaSelection.svelte" />
     <div>
         <div class="flex justify-between items-start mb-6 w-full">
             <div class="flex flex-col gap-2 items-start max-w-[70%]">

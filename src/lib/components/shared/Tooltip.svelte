@@ -30,6 +30,7 @@ ESTILOS:
     import { theme } from "../../themeStore";
     import { fade } from "svelte/transition";
     import { onMount, onDestroy, tick } from "svelte";
+    import DevLabel from "./DevLabel.svelte";
 
     let {
         content,
@@ -177,6 +178,7 @@ ESTILOS:
     onfocusin={show}
     onfocusout={hide}
 >
+    <DevLabel name="Tooltip.svelte" />
     {@render children?.()}
 </div>
 

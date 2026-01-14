@@ -31,6 +31,7 @@ ESTILOS:
 <script lang="ts">
   import PayloadForm from "./PayloadForm.svelte";
   import { theme } from "../../../themeStore";
+  import DevLabel from "../../shared/DevLabel.svelte";
 
   export let show: boolean = true;
   export let loading: boolean = false;
@@ -43,6 +44,7 @@ ESTILOS:
       ? 'rgba(99, 102, 241, 0.3)'
       : 'rgba(99, 102, 241, 0.2)'};"
   >
+    <DevLabel name="PayloadFormSection.svelte" />
     <!-- Multi-layer animated gradient overlays -->
     <div
       class="absolute inset-0 opacity-40 dark:opacity-30 pointer-events-none"

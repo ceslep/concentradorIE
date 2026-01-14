@@ -40,6 +40,7 @@ ESTILOS:
   import { onMount } from "svelte";
   import { theme } from "../../../themeStore";
   import { slide } from "svelte/transition";
+  import DevLabel from "../../shared/DevLabel.svelte";
 
   export let disabled: boolean = false;
 
@@ -273,6 +274,7 @@ ESTILOS:
   <div
     class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-gray-200/50 dark:border-gray-700/50 overflow-hidden transition-all duration-300 cyber-border-form relative"
   >
+    <DevLabel name="PayloadForm.svelte" />
     <!-- Decorative gradient overlay -->
     <div
       class="absolute inset-0 opacity-30 dark:opacity-20 pointer-events-none"

@@ -17,4 +17,7 @@ NOTAS DE DESARROLLO:
 <script lang="ts">
     import { theme } from "../../../themeStore";
     import type { Writable } from "svelte/store";
+    import DevLabel from "../../shared/DevLabel.svelte";
 </script>
+
+<DevLabel name="ControlsSection.svelte" />

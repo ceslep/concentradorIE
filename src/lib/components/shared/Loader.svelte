@@ -20,27 +20,23 @@ ESTILOS:
 <script lang="ts">
     import { fade, scale } from "svelte/transition";
 
-    let {
-        message = "Cargando datos...",
-        size = "md",
-        subtitle = "Por favor espera un momento",
-    } = $props<{
-        message?: string;
-        size?: "sm" | "md" | "lg";
-        subtitle?: string;
-    }>();
+    export let message: string = "Cargando datos...";
+    export let size: "sm" | "md" | "lg" = "md";
+    export let subtitle: string = "Por favor espera un momento";
 
-    const sizeClasses = {
+    const sizeClasses: Record<"sm" | "md" | "lg", string> = {
         sm: "text-4xl",
         md: "text-7xl",
         lg: "text-9xl",
     };
 
-    const containerClasses = {
+    const containerClasses: Record<"sm" | "md" | "lg", string> = {
         sm: "h-40",
         md: "h-80",
         lg: "h-96",
     };
+
+    import DevLabel from "./DevLabel.svelte";
 </script>
 
 <div
@@ -49,6 +45,7 @@ ESTILOS:
     ]} space-y-5"
     in:fade={{ duration: 200 }}
 >
+    <DevLabel name="Loader.svelte" />
     <div class="relative" in:scale={{ duration: 300, start: 0.8 }}>
         <!-- Glow effect -->
         <div

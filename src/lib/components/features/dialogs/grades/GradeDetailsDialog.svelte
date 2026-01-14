@@ -54,6 +54,8 @@ ESTILOS:
             onClose();
         }
     }
+
+    import DevLabel from "../../../shared/DevLabel.svelte";
 </script>
 
 {#if show}
@@ -66,6 +68,7 @@ ESTILOS:
         transition:fade={{ duration: 200 }}
         aria-label="Close dialog"
     >
+        <DevLabel name="GradeDetailsDialog.svelte" />
         <div
             class="dialog-content"
             role="dialog"

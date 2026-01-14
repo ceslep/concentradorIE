@@ -40,6 +40,7 @@ ESTILOS:
     concentradorType,
     viewMode,
     resetToDashboard,
+    accesoTotal,
   } from "../../storeConcentrador";
 
   let {
@@ -99,13 +100,16 @@ ESTILOS:
   function openInfoCant() {
     showInfoCantDialog = true;
   }
+
+  import DevLabel from "../shared/DevLabel.svelte";
 </script>
 
 <!-- Premium Header with Glassmorphism -->
 <header
-  class="glass-effect rounded-xl p-1.5 sm:p-2 mb-2 shadow-premium-xl animate-slide-in-down"
+  class="glass-effect rounded-xl p-1.5 sm:p-2 mb-2 shadow-premium-xl animate-slide-in-down relative"
   style="font-family: var(--font-body);"
 >
+  <DevLabel name="AppHeader.svelte" />
   <div
     class="flex flex-col sm:flex-row justify-between items-center gap-1 sm:gap-1.5"
   >
@@ -140,6 +144,12 @@ ESTILOS:
                 class="text-[8px] sm:text-[9px] font-medium text-indigo-500 dark:text-indigo-400 leading-tight"
               >
                 Usuario: {user.nombres}
+                {#if $accesoTotal}
+                  <span
+                    class="material-symbols-rounded text-[10px] text-amber-500 ml-1 align-middle"
+                    title="Acceso Total">verified</span
+                  >
+                {/if}
               </p>
             {/if}
           </div>

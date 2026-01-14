@@ -60,7 +60,6 @@
         "verEstudiantes",
         "banda",
         "acceso_total",
-        "soloexcusas",
     ];
 
     const labels: Record<string, string> = {
@@ -71,6 +70,8 @@
         acceso_total: "Acceso Total",
         soloexcusas: "Solo Excusas",
     };
+
+    import DevLabel from "../../shared/DevLabel.svelte";
 </script>
 
 {#if isOpen}
@@ -84,6 +85,7 @@
             if (e.target === e.currentTarget) close();
         }}
     >
+        <DevLabel name="TeacherProfileDetail.svelte" />
         <div
             class="relative w-full max-w-5xl bg-gray-950/80 border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]"
             in:fly={{ y: 40, duration: 600, opacity: 0 }}

@@ -38,40 +38,33 @@ ESTILOS:
   import { Card, Button, Label, Input, Alert, Spinner } from "flowbite-svelte";
   import { onMount } from "svelte";
 
-  let { onLoginSuccess } = $props<{
-    onLoginSuccess?: (detail: { user: any }) => void;
-  }>();
+  const dispatch = createEventDispatcher();
 
   let identificacion = $state("");
   let clave_acceso = $state("");
   let loading = $state(false);
   let error = $state("");
-
   let showPassword = $state(false);
 
   /**
-   * Procesa el inicio de sesión enviando las credenciales al servidor.
-   * Maneja estados de carga, errores de red y despacho de éxito.
+   * Process login with credentials.
    */
   async function handleLogin(e: Event) {
-    if (e) e.preventDefault();
+    e?.preventDefault();
     loading = true;
     error = "";
-
     try {
       const response = await fetch(LOGIN_ENDPOINT, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identificacion, clave_acceso }),
       });
-
       const data = await response.json();
-
       if (data.success) {
-        // Notifica a App.svelte del éxito para actualizar la sesión global
-        if (onLoginSuccess) onLoginSuccess({ user: data.user });
+        dispatch("loginSuccess", {
+          user: data.user,
+          accesoTotal: data.user?.acceso_total === "S",
+        });
       } else {
         error = data.message || "Error al iniciar sesión";
       }
@@ -84,25 +77,23 @@ ESTILOS:
   }
 
   /**
-   * Maneja el callback de Google tras el inicio de sesión exitoso.
+   * Handle Google login response.
    */
   async function handleGoogleResponse(googleResponse: any) {
     loading = true;
     error = "";
-
     try {
       const response = await fetch(GOOGLE_LOGIN_ENDPOINT, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ credential: googleResponse.credential }),
       });
-
       const data = await response.json();
-
       if (data.success) {
-        if (onLoginSuccess) onLoginSuccess({ user: data.user });
+        dispatch("loginSuccess", {
+          user: data.user,
+          accesoTotal: data.user?.acceso_total === "S",
+        });
       } else {
         error = data.message || "Error al iniciar sesión con Google";
       }
@@ -115,15 +106,13 @@ ESTILOS:
   }
 
   onMount(() => {
-    // Inicializar Google Identity Services
     if (typeof (window as any).google !== "undefined") {
       (window as any).google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleResponse,
-        auto_select: true, // Inicia sesión automáticamente si es posible
+        auto_select: true,
         cancel_on_tap_outside: true,
       });
-
       (window as any).google.accounts.id.renderButton(
         document.getElementById("googleBtn"),
         {
@@ -135,13 +124,10 @@ ESTILOS:
           logo_alignment: "left",
         },
       );
-
-      // Activar Google One Tap
       (window as any).google.accounts.id.prompt();
     }
   });
 
-  // Re-renderizar botón de Google cuando cambie el tema
   $effect(() => {
     if ($theme && typeof (window as any).google !== "undefined") {
       const btn = document.getElementById("googleBtn");
@@ -157,6 +143,7 @@ ESTILOS:
       }
     }
   });
+  import DevLabel from "../../shared/DevLabel.svelte";
 </script>
 
 <div
@@ -165,6 +152,7 @@ ESTILOS:
     ? 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.08) 0%, transparent 50%), #0f172a'
     : 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.05) 0%, transparent 50%), #ffffff'};"
 >
+  <DevLabel name="Login.svelte" />
   <!-- Decorative Background Elements -->
   <div
     class="fixed inset-0 pointer-events-none opacity-30"

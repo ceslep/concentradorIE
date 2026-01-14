@@ -46,6 +46,7 @@ ESTILOS:
     selectedAsignatura,
   } from "../../../storeConcentrador";
   import { fade } from "svelte/transition";
+  import DevLabel from "../../shared/DevLabel.svelte";
 
   let { handleValoracionClick, onHeaderClick } = $props<{
     handleValoracionClick: (
@@ -240,6 +241,7 @@ ESTILOS:
     style="font-family: 'Inter', sans-serif;"
     in:fade={{ duration: 300 }}
   >
+    <DevLabel name="ConcentradorAsignaturasTable.svelte" />
     <!-- Subtle gradient overlay at top -->
     <div
       class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"
