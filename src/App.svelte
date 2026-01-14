@@ -45,6 +45,7 @@ ESTILOS:
   import DashboardSelection from "./lib/components/layout/DashboardSelection.svelte";
   import StudentCardsView from "./lib/components/features/concentrador/StudentCardsView.svelte";
   import RegistrationMenu from "./lib/components/features/concentrador/RegistrationMenu.svelte";
+  import ConfigurationMenu from "./lib/components/features/concentrador/ConfigurationAsignaturasMenu.svelte";
   import {
     parsed,
     loading,
@@ -241,12 +242,12 @@ ESTILOS:
       name="App.svelte"
       style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 50;"
     />
-    {#if !$parsed && !$loading && $concentradorType !== "registro"}
+    {#if !$parsed && !$loading && $concentradorType !== "registro" && $concentradorType !== "configuracion"}
       <!-- === PANTALLA DE SELECCIÓN INICIAL === -->
       <DashboardSelection {user} onLogout={() => (showLogoutDialog = true)} />
     {:else}
       <!-- === VISTA PRINCIPAL DEL CONCENTRADOR === -->
-      {#if $concentradorType !== "registro"}
+      {#if $concentradorType !== "registro" && $concentradorType !== "configuracion"}
         <AppHeader
           {user}
           bind:showPayloadForm
@@ -261,6 +262,8 @@ ESTILOS:
 
       {#if $concentradorType === "registro"}
         <RegistrationMenu {user} onLogout={handleLogout} />
+      {:else if $concentradorType === "configuracion"}
+        <ConfigurationMenu {user} onLogout={handleLogout} />
       {:else if $viewMode === "cards-view"}
         <StudentCardsView onOpenNotasDetalle={handleOpenNotasDetalleEvent} />
       {:else if $concentradorType === "asignaturas"}

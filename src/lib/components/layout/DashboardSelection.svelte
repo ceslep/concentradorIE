@@ -36,10 +36,12 @@ NOTAS DE DESARROLLO:
      * Establece el tipo de concentrador, el modo de vista por defecto y dispara la carga de datos.
      * @param type - El tipo de concentrador seleccionado ('asignaturas' | 'areas' | 'registro').
      */
-    function handleSelection(type: "asignaturas" | "areas" | "registro") {
+    function handleSelection(
+        type: "asignaturas" | "areas" | "registro" | "configuracion",
+    ) {
         concentradorType.set(type);
         viewMode.set("table-view"); // Por defecto iniciamos en vista de tabla tras la selección
-        if (type !== "registro") {
+        if (type !== "registro" && type !== "configuracion") {
             loadConcentradorData();
         }
     }
@@ -114,7 +116,7 @@ NOTAS DE DESARROLLO:
                 <h2
                     class="text-2xl font-bold text-blue-900 dark:text-blue-300 mb-2"
                 >
-                    Asignaturas
+                    Concentrador Asignaturas
                 </h2>
                 <p
                     class="text-blue-700/70 dark:text-blue-400/70 mb-6 leading-relaxed"
@@ -190,7 +192,7 @@ NOTAS DE DESARROLLO:
                 <h2
                     class="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mb-2"
                 >
-                    Áreas Académicas
+                    Concentrador Áreas Académicas
                 </h2>
                 <p
                     class="text-emerald-700/70 dark:text-emerald-400/70 mb-6 leading-relaxed"
@@ -203,6 +205,44 @@ NOTAS DE DESARROLLO:
                     class="mt-auto flex items-center gap-2 font-bold text-emerald-600 dark:text-emerald-400"
                 >
                     Acceder <span
+                        class="group-hover:translate-x-2 transition-transform duration-300"
+                        >→</span
+                    >
+                </div>
+            </button>
+
+            <!-- Tarjeta: Configuración -->
+            <button
+                onclick={() => handleSelection("configuracion")}
+                class="group relative flex flex-col items-center p-8 bg-purple-50/50 hover:bg-white dark:bg-purple-900/10 dark:hover:bg-gray-800 rounded-[2.5rem] border-2 border-purple-100 dark:border-purple-900/30 hover:border-purple-400 dark:hover:border-purple-500 shadow-lg hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 transform hover:scale-[1.03] overflow-hidden text-center"
+            >
+                <!-- Decoración de fondo -->
+                <div
+                    class="absolute -top-12 -right-12 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-colors"
+                ></div>
+
+                <div
+                    class="w-20 h-20 bg-purple-500 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl shadow-purple-500/20 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500"
+                >
+                    ⚙️
+                </div>
+
+                <h2
+                    class="text-2xl font-bold text-purple-900 dark:text-purple-300 mb-2"
+                >
+                    Configuración de Asignaturas y Áreas Académicas
+                </h2>
+                <p
+                    class="text-purple-700/70 dark:text-purple-400/70 mb-6 leading-relaxed"
+                >
+                    Administra y configura las Asignaturas y Áreas Académicas
+                    del sistema.
+                </p>
+
+                <div
+                    class="mt-auto flex items-center gap-2 font-bold text-purple-600 dark:text-purple-400"
+                >
+                    Configurar <span
                         class="group-hover:translate-x-2 transition-transform duration-300"
                         >→</span
                     >

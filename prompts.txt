@@ -1,0 +1,1 @@
+contextuaklizate con @Database.sql esta es mi base de datos almacenada en https://app.iedeoccidente.com que se manipula con los php almacenados en https://app.iedeoccidente.com/consex2 si necesitas crear un php crealo en la carpeta php que yo lo subire manualmente al hosting, en el caso de que te lo pida y no lo ejecutes en local
